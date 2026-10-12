@@ -86,13 +86,28 @@ jobs:
       - name: Prebuild Android
         run: npx expo prebuild --platform android
 
-      - name: Fix Kotlin version compatibility
+      - name: Fix Expo Plugin Repositories and Compatibility
         run: |
-          # 1. Suprimir el check de versión de Kotlin del Compose Compiler
+          # 1. Ensure pluginManagement and repositories are correctly set up in android/settings.gradle if missing
+          if ! grep -q "expo-module-gradle-plugin" android/settings.gradle; then
+            echo "Adding expo module plugin resolution to settings.gradle"
+            cat << 'EOF' >> android/settings.gradle
+
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          EOF
+          fi
+
+          # 2. Suprimir el check de versión de Kotlin del Compose Compiler
           echo "suppressKotlinVersionCompatibilityCheck=true" >> android/gradle.properties
           echo "kotlinVersion=1.9.25" >> android/gradle.properties
 
-          # 2. Forzar Kotlin 1.9.25 y Compose suppression en todos los subproyectos
+          # 3. Forzar Kotlin 1.9.25 y Compose suppression en todos los subproyectos
           cat << 'EOF' >> android/build.gradle
 
           allprojects {
