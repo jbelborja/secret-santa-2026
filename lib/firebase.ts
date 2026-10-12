@@ -16,14 +16,20 @@ const firebaseConfig = {
 // Avoid re-initializing on hot reload
 const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Auth with AsyncStorage persistence (required for React Native)
+import { Platform } from 'react-native';
+
+// Auth with persistence: AsyncStorage on native mobile, default browser persistence on web
 let auth: Auth;
-try {
-  auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage),
-  });
-} catch {
+if (Platform.OS === 'web') {
   auth = getAuth(app);
+} else {
+  try {
+    auth = initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
+  } catch {
+    auth = getAuth(app);
+  }
 }
 
 export { app, auth };

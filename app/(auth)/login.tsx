@@ -16,6 +16,7 @@ import {
   signUpWithEmail,
   signInWithApple,
   useGoogleAuth,
+  formatAuthError,
 } from '@/lib/auth';
 
 export default function LoginScreen() {
@@ -84,11 +85,13 @@ export default function LoginScreen() {
   const handleGoogleAuth = async () => {
     setError(null);
     try {
-      await signInWithGoogle();
-      // On success, state listener in RootLayout / AuthLayout handles redirect
+      const result = await signInWithGoogle();
+      if (result) {
+        router.replace('/(tabs)');
+      }
     } catch (err: unknown) {
       console.error('Google Sign In error:', err);
-      setError(err instanceof Error ? err.message : 'Google Sign In failed');
+      setError(formatAuthError(err));
     }
   };
 

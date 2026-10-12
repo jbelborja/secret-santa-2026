@@ -6,6 +6,7 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
   GoogleAuthProvider,
+  signInWithPopup,
   OAuthProvider,
   signInWithCredential,
   User as FirebaseUser,
@@ -20,6 +21,36 @@ import { User } from '../types';
 WebBrowser.maybeCompleteAuthSession();
 
 /**
+ * Format Firebase Auth errors into clear, actionable messages
+ */
+export function formatAuthError(err: unknown): string {
+  if (!(err instanceof Error)) return 'An unexpected authentication error occurred.';
+  const code = (err as any)?.code || '';
+  if (code === 'auth/configuration-not-found') {
+    return 'Authentication is not activated in your Firebase project yet. Go to Firebase Console > Authentication > Click "Get started" and enable Email/Password & Google.';
+  }
+  if (code === 'auth/operation-not-allowed') {
+    return 'This sign-in method is disabled. In Firebase Console > Authentication > Sign-in method, please enable Email/Password and Google.';
+  }
+  if (code === 'auth/email-already-in-use') {
+    return 'This email address is already registered. Please sign in instead.';
+  }
+  if (code === 'auth/weak-password') {
+    return 'Password is too weak. Please use at least 6 characters.';
+  }
+  if (code === 'auth/invalid-email') {
+    return 'Please enter a valid email address.';
+  }
+  if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
+    return 'Invalid email or password.';
+  }
+  if (code === 'auth/popup-closed-by-user') {
+    return 'Sign-in popup was closed before completing.';
+  }
+  return err.message.replace(/^Firebase:\s*(Error\s*)?/, '').replace(/\s*\(auth\/[^)]+\)\.?$/, '');
+}
+
+/**
  * Ensures a user document exists in Firestore.
  */
 export async function syncUserDocument(user: FirebaseUser, displayName?: string): Promise<User> {
@@ -32,14 +63,22 @@ export async function syncUserDocument(user: FirebaseUser, displayName?: string)
     createdAt: new Date(),
   };
 
-  const ref = userDoc(user.uid);
-  await setDoc(ref, userData, { merge: true });
+  try {
+    const ref = userDoc(user.uid);
+    await setDoc(ref, userData, { merge: true });
+  } catch (err) {
+    console.warn('Firestore profile sync note:', err);
+  }
   return userData;
 }
 
 export async function signInWithEmail(email: string, password: string): Promise<FirebaseUser> {
-  const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
-  return credential.user;
+  try {
+    const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
+    return credential.user;
+  } catch (err) {
+    throw new Error(formatAuthError(err));
+  }
 }
 
 export async function signUpWithEmail(
@@ -47,12 +86,16 @@ export async function signUpWithEmail(
   password: string,
   displayName: string
 ): Promise<FirebaseUser> {
-  const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
-  if (displayName) {
-    await updateProfile(credential.user, { displayName: displayName.trim() });
+  try {
+    const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+    if (displayName) {
+      await updateProfile(credential.user, { displayName: displayName.trim() });
+    }
+    await syncUserDocument(credential.user, displayName.trim());
+    return credential.user;
+  } catch (err) {
+    throw new Error(formatAuthError(err));
   }
-  await syncUserDocument(credential.user, displayName.trim());
-  return credential.user;
 }
 
 export async function logOut(): Promise<void> {
@@ -104,7 +147,8 @@ export function useGoogleAuth() {
   const [error, setError] = useState<string | null>(null);
 
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-  const isConfigured = Boolean(webClientId);
+  const isWeb = Platform.OS === 'web';
+  const isConfigured = isWeb || Boolean(webClientId);
 
   const discovery = {
     authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
@@ -113,7 +157,7 @@ export function useGoogleAuth() {
 
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
     {
-      clientId: webClientId,
+      clientId: webClientId || 'dummy-client-id',
       scopes: ['openid', 'profile', 'email'],
       responseType: AuthSession.ResponseType.IdToken,
       redirectUri: AuthSession.makeRedirectUri({
@@ -133,7 +177,7 @@ export function useGoogleAuth() {
           const result = await signInWithCredential(auth, credential);
           await syncUserDocument(result.user);
         } catch (err: unknown) {
-          setError(err instanceof Error ? err.message : 'Google sign-in failed');
+          setError(formatAuthError(err));
         } finally {
           setLoading(false);
         }
@@ -142,20 +186,41 @@ export function useGoogleAuth() {
       }
     }
 
-    handleResponse();
-  }, [response]);
+    if (!isWeb) {
+      handleResponse();
+    }
+  }, [response, isWeb]);
 
   const signIn = async () => {
-    if (!isConfigured) {
-      throw new Error('Google Web Client ID is not configured in environment variables');
-    }
     setError(null);
+
+    if (isWeb) {
+      setLoading(true);
+      try {
+        const provider = new GoogleAuthProvider();
+        provider.addScope('profile');
+        provider.addScope('email');
+        const result = await signInWithPopup(auth, provider);
+        await syncUserDocument(result.user);
+        return result.user;
+      } catch (err: unknown) {
+        const msg = formatAuthError(err);
+        setError(msg);
+        throw new Error(msg);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (!isConfigured) {
+      throw new Error('Google Web Client ID is not configured in environment variables for mobile');
+    }
     return promptAsync();
   };
 
   return {
     signIn,
-    loading: loading || !request,
+    loading: loading || (!isWeb && !request && isConfigured),
     isConfigured,
     error,
   };
