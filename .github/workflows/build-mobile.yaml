@@ -88,9 +88,10 @@ jobs:
 
       - name: Fix Expo Plugin Repositories and Compatibility
         run: |
-          # 1. Prepend pluginManagement to the very top of android/settings.gradle AFTER prebuild
+          # 1. Asegurar que settings.gradle tenga el pluginManagement correcto al principio
           python3 -c "
-          with open('android/settings.gradle', 'r') as f:
+          settings_path = 'android/settings.gradle'
+          with open(settings_path, 'r') as f:
               content = f.read()
 
           plugin_mgmt = '''pluginManagement {
@@ -99,24 +100,26 @@ jobs:
                   mavenCentral()
                   gradlePluginPortal()
                   maven { url(\"$PWD/node_modules/expo-modules-core/android\"); }
+                  maven { url(\"$PWD/node_modules/expo-font/android\"); }
               }
           }
 
           '''
 
-          if 'pluginManagement' not in content:
-              with open('android/settings.gradle', 'w') as f:
-                  f.write(plugin_mgmt + content)
-              print('Successfully prepended pluginManagement to settings.gradle')
-          else:
-              print('pluginManagement already exists')
+          # Eliminar cualquier pluginManagement previo duplicado para evitar errores de orden
+          if 'pluginManagement' in content:
+              content = content.split('}', 1)[1].strip()
+
+          with open(settings_path, 'w') as f:
+              f.write(plugin_mgmt + content)
+          print('settings.gradle patched successfully with pluginManagement')
           "
 
-          # 2. Suprimir el check de versión de Kotlin del Compose Compiler
+          # 2. Suprimir el check de versión de Kotlin del Compose Compiler y forzar 1.9.25
           echo "suppressKotlinVersionCompatibilityCheck=true" >> android/gradle.properties
           echo "kotlinVersion=1.9.25" >> android/gradle.properties
 
-          # 3. Forzar Kotlin 1.9.25 y Compose suppression en todos los subproyectos
+          # 3. Parchear el build.gradle global para evitar problemas con componentes de software en Gradle 8+
           cat << 'EOF' >> android/build.gradle
 
           allprojects {
@@ -137,8 +140,9 @@ jobs:
               }
           }
           EOF
-          echo "=== android/gradle.properties ==="
-          cat android/gradle.properties
+          
+          echo "=== android/settings.gradle ==="
+          cat android/settings.gradle
 
       - name: Build APK (Release)
         working-directory: ./android
