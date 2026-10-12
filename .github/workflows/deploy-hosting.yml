@@ -13,9 +13,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.x
-          cache: npm
-      - run: npm ci
+          node-version: '20'
+      - run: npm install
       - name: Export web build
         run: npx expo export --platform web --output-dir dist
         env:
