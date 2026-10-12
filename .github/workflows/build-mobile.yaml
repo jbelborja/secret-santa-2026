@@ -88,33 +88,37 @@ jobs:
 
       - name: Fix Expo Plugin Repositories and Compatibility
         run: |
-          # 1. Generate a clean android/settings.gradle with PREFER_SETTINGS repositories mode
-          cat << EOF > android/settings.gradle
-          pluginManagement {
-              repositories {
+          # 1. Patch the generated android/settings.gradle to prepend pluginManagement and allow project repos
+          python3 -c "
+          import os
+          settings_path = 'android/settings.gradle'
+          with open(settings_path, 'r') as f:
+              content = f.read()
+
+          pwd = os.getcwd()
+          plugin_mgmt = f'''pluginManagement {{
+              repositories {{
                   google()
                   mavenCentral()
                   gradlePluginPortal()
-                  maven { url("$PWD/node_modules/expo-modules-core/android") }
-                  maven { url("$PWD/node_modules/expo-font/android") }
-              }
-          }
+                  maven {{ url(\"{pwd}/node_modules/expo-modules-core/android\") }}
+                  maven {{ url(\"{pwd}/node_modules/expo-font/android\") }}
+              }}
+          }}
 
-          rootProject.name = 'SecretSanta'
+          '''
 
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
-              repositories {
-                  google()
-                  mavenCentral()
-                  maven { url("$PWD/node_modules/expo-modules-core/android") }
-                  maven { url("$PWD/node_modules/expo-font/android") }
-              }
-          }
+          if 'pluginManagement' not in content:
+              content = plugin_mgmt + content
 
-          include ':app'
-          includeBuild('../node_modules/@react-native/gradle-plugin')
-          EOF
+          # Allow project repos so React Native and plugin repositories don't fail the build
+          content = content.replace('RepositoriesMode.FAIL_ON_PROJECT_REPOS', 'RepositoriesMode.ALLOW_PROJECT_REPOS')
+          content = content.replace('RepositoriesMode.PREFER_SETTINGS', 'RepositoriesMode.ALLOW_PROJECT_REPOS')
+
+          with open(settings_path, 'w') as f:
+              f.write(content)
+          print('settings.gradle successfully patched with pluginManagement and ALLOW_PROJECT_REPOS')
+          "
 
           # 2. Suprimir el check de versión de Kotlin del Compose Compiler y forzar 1.9.25
           echo "suppressKotlinVersionCompatibilityCheck=true" >> android/gradle.properties
