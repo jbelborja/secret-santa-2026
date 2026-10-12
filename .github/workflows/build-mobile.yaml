@@ -88,20 +88,28 @@ jobs:
 
       - name: Fix Expo Plugin Repositories and Compatibility
         run: |
-          # 1. Ensure pluginManagement and repositories are correctly set up in android/settings.gradle if missing
-          if ! grep -q "expo-module-gradle-plugin" android/settings.gradle; then
-            echo "Adding expo module plugin resolution to settings.gradle"
-            cat << 'EOF' >> android/settings.gradle
+          # 1. Prepend pluginManagement to the very top of android/settings.gradle
+          python3 -c "
+          with open('android/settings.gradle', 'r') as f:
+              content = f.read()
 
-          pluginManagement {
+          plugin_mgmt = '''pluginManagement {
               repositories {
                   google()
                   mavenCentral()
                   gradlePluginPortal()
               }
           }
-          EOF
-          fi
+
+          '''
+
+          if 'pluginManagement' not in content:
+              with open('android/settings.gradle', 'w') as f:
+                  f.write(plugin_mgmt + content)
+              print('Successfully prepended pluginManagement to settings.gradle')
+          else:
+              print('pluginManagement already exists')
+          "
 
           # 2. Suprimir el check de versión de Kotlin del Compose Compiler
           echo "suppressKotlinVersionCompatibilityCheck=true" >> android/gradle.properties
