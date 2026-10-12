@@ -86,65 +86,13 @@ jobs:
       - name: Prebuild Android
         run: npx expo prebuild --platform android
 
-      - name: Fix Expo Plugin Repositories and Compatibility
+      - name: Fix Kotlin version compatibility
         run: |
-          # 1. Ensure settings.gradle has pluginManagement and the local expo-modules-core repo at the top
-          python3 -c "
-          import os
-          settings_path = 'android/settings.gradle'
-          with open(settings_path, 'r') as f:
-              content = f.read()
-
-          pwd = os.getcwd()
-          plugin_mgmt = f'''pluginManagement {{
-              repositories {{
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-                  maven {{ url(\"{pwd}/node_modules/expo-modules-core/android\") }}
-                  maven {{ url(\"{pwd}/node_modules/expo-font/android\") }}
-              }}
-          }}
-
-          '''
-
-          # Remove any existing pluginManagement block to avoid duplicates or ordering issues
-          if 'pluginManagement' in content:
-              parts = content.split('}')
-              for i, part in enumerate(parts):
-                  if 'pluginManagement' in part:
-                      content = '}'.join(parts[i+1:]).strip()
-                      break
-
-          content = plugin_mgmt + content
-
-          # Ensure project repos are allowed
-          content = content.replace('RepositoriesMode.FAIL_ON_PROJECT_REPOS', 'RepositoriesMode.ALLOW_PROJECT_REPOS')
-          content = content.replace('RepositoriesMode.PREFER_SETTINGS', 'RepositoriesMode.ALLOW_PROJECT_REPOS')
-
-          with open(settings_path, 'w') as f:
-              f.write(content)
-          print('settings.gradle successfully updated with pluginManagement')
-          "
-
-          # 2. Patch ExpoModulesCorePlugin.gradle to fix Gradle 8 software component 'release' error
-          python3 -c "
-          import os
-          plugin_path = 'node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle'
-          if os.path.exists(plugin_path):
-              with open(plugin_path, 'r') as f:
-                  code = f.read()
-              code = code.replace(\"from components.release\", \"from(components.findByName('release') ?: components.findByName('android'))\")
-              with open(plugin_path, 'w') as f:
-                  f.write(code)
-              print('ExpoModulesCorePlugin.gradle patched successfully')
-          "
-
-          # 3. Suprimir el check de versión de Kotlin del Compose Compiler y forzar 1.9.25
+          # 1. Suprimir el check de versión de Kotlin del Compose Compiler
           echo "suppressKotlinVersionCompatibilityCheck=true" >> android/gradle.properties
           echo "kotlinVersion=1.9.25" >> android/gradle.properties
 
-          # 4. Parchear el build.gradle global para evitar problemas con componentes de software en Gradle 8+
+          # 2. Forzar Kotlin 1.9.25 y Compose suppression en todos los subproyectos
           cat << 'EOF' >> android/build.gradle
 
           allprojects {
@@ -165,9 +113,8 @@ jobs:
               }
           }
           EOF
-          
-          echo "=== android/settings.gradle ==="
-          cat android/settings.gradle
+          echo "=== android/gradle.properties ==="
+          cat android/gradle.properties
 
       - name: Build APK (Release)
         working-directory: ./android
