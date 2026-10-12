@@ -23,7 +23,7 @@ permissions:
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    if: github.event_name == "push" || inputs.platform == "android" || inputs.platform == "all"
+    if: ${{ github.event_name == 'push' || inputs.platform == 'android' || inputs.platform == 'all' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -135,7 +135,7 @@ jobs:
 
   build-ios:
     runs-on: macos-14
-    if: github.event_name == "push" || inputs.platform == "ios" || inputs.platform == "all"
+    if: ${{ github.event_name == 'push' || inputs.platform == 'ios' || inputs.platform == 'all' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -253,7 +253,7 @@ jobs:
               "      end\n"
               "    end\n"
               "    if installer.respond_to?(:target_installation_results)\n"
-              "      installer.target_installation_results.pod_target_installation_results.each do |_, res|\n"
+              "      installer.target_installation_results.pod_taget_installation_results.each do |_, res|\n"
               "        res.resource_bundle_targets.each do |rb_target|\n"
               "          rb_target.build_configurations.each do |config|\n"
               "            config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'\n"
@@ -323,7 +323,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release view latest-build || gh release create latest-build --title "Latest Secret Santa App" --notes "Automated native build of Secret Santa app" || true
-          gh release upload latest-build "secret-santa-ios.ipa#secret-santa.ipa" --clobber
+          gh release upload latest-build "secret-santa-ios.ipa#secret-santa.apk" --clobber
 
   prune-artifacts:
     runs-on: ubuntu-latest
