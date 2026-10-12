@@ -255,7 +255,7 @@ jobs:
               "      end\n"
               "    end\n"
               "    if installer.respond_to?(:target_installation_results)\n"
-              "      installer.target_installation_results.pod_taget_installation_results.each do |_, res|\n"
+              "      installer.target_installation_results.pod_target_installation_results.each do |_, res|\n"
               "        res.resource_bundle_targets.each do |rb_target|\n"
               "          rb_target.build_configurations.each do |config|\n"
               "            config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'\n"
