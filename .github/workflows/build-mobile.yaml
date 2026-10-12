@@ -88,35 +88,33 @@ jobs:
 
       - name: Fix Expo Plugin Repositories and Compatibility
         run: |
-          # 1. Safely prepend pluginManagement using python without escaping issues
-          python3 -c "
-          import os
-          settings_path = 'android/settings.gradle'
-          with open(settings_path, 'r') as f:
-              content = f.read()
-
-          pwd = os.getcwd()
-          plugin_mgmt = f'''pluginManagement {{
-              repositories {{
+          # 1. Generate a clean android/settings.gradle with proper pluginManagement at the top
+          cat << EOF > android/settings.gradle
+          pluginManagement {
+              repositories {
                   google()
                   mavenCentral()
                   gradlePluginPortal()
-                  maven {{ url(\"{pwd}/node_modules/expo-modules-core/android\") }}
-                  maven {{ url(\"{pwd}/node_modules/expo-font/android\") }}
-              }}
-          }}
+                  maven { url("$PWD/node_modules/expo-modules-core/android") }
+                  maven { url("$PWD/node_modules/expo-font/android") }
+              }
+          }
 
-          '''
+          rootProject.name = 'SecretSanta'
 
-          # Remove existing pluginManagement if present
-          if 'pluginManagement' in content:
-              parts = content.split('}')
-              content = '}'.join(parts[1:]).strip()
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+                  maven { url("$PWD/node_modules/expo-modules-core/android") }
+                  maven { url("$PWD/node_modules/expo-font/android") }
+              }
+          }
 
-          with open(settings_path, 'w') as f:
-              f.write(plugin_mgmt + content)
-          print('settings.gradle successfully prepended with pluginManagement')
-          "
+          include ':app'
+          includeBuild('../node_modules/@react-native/gradle-plugin')
+          EOF
 
           # 2. Suprimir el check de versión de Kotlin del Compose Compiler y forzar 1.9.25
           echo "suppressKotlinVersionCompatibilityCheck=true" >> android/gradle.properties
