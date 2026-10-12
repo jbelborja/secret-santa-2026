@@ -111,7 +111,6 @@ jobs:
           # Remove any existing pluginManagement block to avoid duplicates or ordering issues
           if 'pluginManagement' in content:
               parts = content.split('}')
-              # Find where pluginManagement ends
               for i, part in enumerate(parts):
                   if 'pluginManagement' in part:
                       content = '}'.join(parts[i+1:]).strip()
@@ -130,11 +129,11 @@ jobs:
 
           # 2. Patch ExpoModulesCorePlugin.gradle to fix Gradle 8 software component 'release' error
           python3 -c "
+          import os
           plugin_path = 'node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle'
           if os.path.exists(plugin_path):
               with open(plugin_path, 'r') as f:
                   code = f.read()
-              # Handle missing 'release' component gracefully in newer AGP/Gradle versions
               code = code.replace(\"from components.release\", \"from(components.findByName('release') ?: components.findByName('android'))\")
               with open(plugin_path, 'w') as f:
                   f.write(code)
