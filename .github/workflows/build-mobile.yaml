@@ -88,31 +88,34 @@ jobs:
 
       - name: Fix Expo Plugin Repositories and Compatibility
         run: |
-          # 1. Asegurar que settings.gradle tenga el pluginManagement correcto al principio
+          # 1. Safely prepend pluginManagement using python without escaping issues
           python3 -c "
+          import os
           settings_path = 'android/settings.gradle'
           with open(settings_path, 'r') as f:
               content = f.read()
 
-          plugin_mgmt = '''pluginManagement {
-              repositories {
+          pwd = os.getcwd()
+          plugin_mgmt = f'''pluginManagement {{
+              repositories {{
                   google()
                   mavenCentral()
                   gradlePluginPortal()
-                  maven { url(\"$PWD/node_modules/expo-modules-core/android\"); }
-                  maven { url(\"$PWD/node_modules/expo-font/android\"); }
-              }
-          }
+                  maven {{ url(\"{pwd}/node_modules/expo-modules-core/android\") }}
+                  maven {{ url(\"{pwd}/node_modules/expo-font/android\") }}
+              }}
+          }}
 
           '''
 
-          # Eliminar cualquier pluginManagement previo duplicado para evitar errores de orden
+          # Remove existing pluginManagement if present
           if 'pluginManagement' in content:
-              content = content.split('}', 1)[1].strip()
+              parts = content.split('}')
+              content = '}'.join(parts[1:]).strip()
 
           with open(settings_path, 'w') as f:
               f.write(plugin_mgmt + content)
-          print('settings.gradle patched successfully with pluginManagement')
+          print('settings.gradle successfully prepended with pluginManagement')
           "
 
           # 2. Suprimir el check de versión de Kotlin del Compose Compiler y forzar 1.9.25
