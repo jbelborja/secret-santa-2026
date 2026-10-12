@@ -88,7 +88,7 @@ jobs:
 
       - name: Fix Expo Plugin Repositories and Compatibility
         run: |
-          # 1. Generate a clean android/settings.gradle with proper pluginManagement at the top
+          # 1. Generate a clean android/settings.gradle with PREFER_SETTINGS repositories mode
           cat << EOF > android/settings.gradle
           pluginManagement {
               repositories {
@@ -103,7 +103,7 @@ jobs:
           rootProject.name = 'SecretSanta'
 
           dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
               repositories {
                   google()
                   mavenCentral()
