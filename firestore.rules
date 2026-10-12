@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users can read/write their own profile
+    match /users/{userId} {
+      allow read: if request.auth.uid == userId;
+      allow create: if request.auth.uid == userId;
+      allow update: if request.auth.uid == userId;
+    }
+    
+    // Raffles
+    match /raffles/{raffleId} {
+      // Manager has full access
+      allow read, write: if request.auth != null && resource.data.managerId == request.auth.uid;
+      // Accepted participants can read the raffle
+      allow read: if request.auth != null && 
+        exists(/databases/$(database)/documents/raffles/$(raffleId)/participants/$(request.auth.uid));
+      // Anyone authenticated can create a raffle
+      allow create: if request.auth != null && request.resource.data.managerId == request.auth.uid;
+      
+      // Participants subcollection
+      match /participants/{participantId} {
+        // Manager can read/write all participants
+        allow read, write: if request.auth != null && 
+          get(/databases/$(database)/documents/raffles/$(raffleId)).data.managerId == request.auth.uid;
+        // Participants can read only their own doc
+        allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+        // Participants can update their own status and push token
+        allow update: if request.auth != null && 
+          resource.data.userId == request.auth.uid &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'expoPushToken', 'userId', 'joinedAt']);
+      }
+    }
+  }
+}

@@ -1,0 +1,349 @@
+name: Build Mobile App
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Plataforma a compilar"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - android
+          - ios
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    if: github.event_name == "push" || inputs.platform == "android" || inputs.platform == "all"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Create google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            echo "$GOOGLE_SERVICES_JSON" > google-services.json
+          else
+            echo "Aviso: GOOGLE_SERVICES_JSON no configurado, creando archivo dummy para prebuild"
+            cat << 'EOF' > google-services.json
+          {
+            "project_info": {
+              "project_number": "123456789012",
+              "project_id": "dummy-secret-santa",
+              "storage_bucket": "dummy-secret-santa.firebasestorage.app"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:123456789012:android:dummy",
+                  "android_client_info": {
+                    "package_name": "com.secretsanta.app"
+                  }
+                },
+                "oauth_client": [],
+                "api_key": [
+                  {
+                    "current_key": "AIzaSyDummyKey"
+                  }
+                ],
+                "services": {
+                  "appinvite_service": {
+                    "other_platform_oauth_client": []
+                  }
+                }
+              }
+            ],
+            "configuration_version": "1"
+          }
+          EOF
+          fi
+
+      - name: Prebuild Android
+        run: npx expo prebuild --platform android
+
+      - name: Fix Kotlin version compatibility
+        run: |
+          # 1. Suprimir el check de versión de Kotlin del Compose Compiler
+          echo "suppressKotlinVersionCompatibilityCheck=true" >> android/gradle.properties
+          echo "kotlinVersion=1.9.25" >> android/gradle.properties
+
+          # 2. Forzar Kotlin 1.9.25 y Compose suppression en todos los subproyectos
+          cat << 'EOF' >> android/build.gradle
+
+          allprojects {
+              configurations.all {
+                  resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+                      if (details.requested.group == 'org.jetbrains.kotlin') {
+                          details.useVersion '1.9.25'
+                      }
+                  }
+              }
+              tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+                  kotlinOptions {
+                      freeCompilerArgs += [
+                          "-P",
+                          "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
+                      ]
+                  }
+              }
+          }
+          EOF
+          echo "=== android/gradle.properties ==="
+          cat android/gradle.properties
+
+      - name: Build APK (Release)
+        working-directory: ./android
+        run: ./gradlew assembleRelease -PkotlinVersion=1.9.25
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: secret-santa-android
+          path: android/app/build/outputs/apk/release/app-release.apk
+
+      - name: Publish Android APK to Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view latest-build || gh release create latest-build --title "Latest Secret Santa App" --notes "Automated native build of Secret Santa app" || true
+          gh release upload latest-build "android/app/build/outputs/apk/release/app-release.apk#secret-santa.apk" --clobber
+
+  build-ios:
+    runs-on: macos-14
+    if: github.event_name == "push" || inputs.platform == "ios" || inputs.platform == "all"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Create GoogleService-Info.plist
+        env:
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+        run: |
+          if [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then
+            echo "$GOOGLE_SERVICE_INFO_PLIST" > GoogleService-Info.plist
+          else
+            echo "Aviso: GOOGLE_SERVICE_INFO_PLIST no configurado, creando archivo dummy para prebuild"
+            cat << 'EOF' > GoogleService-Info.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CLIENT_ID</key>
+            <string>dummy.apps.googleusercontent.com</string>
+            <key>REVERSED_CLIENT_ID</key>
+            <string>com.googleusercontent.apps.dummy</string>
+            <key>API_KEY</key>
+            <string>AIzaSyDummy</string>
+            <key>GCM_SENDER_ID</key>
+            <string>123456789012</string>
+            <key>PLIST_VERSION</key>
+            <string>1</string>
+            <key>BUNDLE_ID</key>
+            <string>com.secretsanta.app</string>
+            <key>PROJECT_ID</key>
+            <string>dummy-secret-santa</string>
+            <key>STORAGE_BUCKET</key>
+            <string>dummy-secret-santa.firebasestorage.app</string>
+            <key>IS_ADS_ENABLED</key>
+            <false/>
+            <key>IS_ANALYTICS_ENABLED</key>
+            <false/>
+            <key>IS_APPINVITE_ENABLED</key>
+            <true/>
+            <key>IS_GCM_ENABLED</key>
+            <true/>
+            <key>IS_SIGNIN_ENABLED</key>
+            <true/>
+            <key>GOOGLE_APP_ID</key>
+            <string>1:123456789012:ios:dummy</string>
+          </dict>
+          </plist>
+          EOF
+          fi
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        id: pods-cache
+        with:
+          path: ~/Library/Caches/CocoaPods
+          key: pods-cache-${{ hashFiles('package.json') }}
+          restore-keys: pods-cache-
+
+      - name: Prebuild iOS
+        run: npx expo prebuild --platform ios
+
+      - name: Patch Podfile and Install CocoaPods
+        working-directory: ./ios
+        run: |
+          python3 << 'PYEOF'
+          import re
+
+          with open('Podfile', 'r') as f:
+              content = f.read()
+
+          # Fix 1: Modular headers for Firebase and Google pods inside the target
+          modular_pods = (
+              "\n"
+              "  # Modular headers for Firebase and Google\n"
+              "  pod 'FirebaseCore', :modular_headers => true\n"
+              "  pod 'FirebaseCoreInternal', :modular_headers => true\n"
+              "  pod 'FirebaseInstallations', :modular_headers => true\n"
+              "  pod 'FirebaseMessaging', :modular_headers => true\n"
+              "  pod 'GoogleDataTransport', :modular_headers => true\n"
+              "  pod 'GoogleUtilities', :modular_headers => true\n"
+              "  pod 'PromisesObjC', :modular_headers => true\n"
+              "  pod 'nanopb', :modular_headers => true\n"
+          )
+          content = re.sub(
+              r"(^\s*target '[^']+' do\s*$)",
+              r"\1" + modular_pods,
+              content,
+              count=1,
+              flags=re.MULTILINE
+          )
+
+          # Fix 2: Deployment target 15.1, CLANG_ALLOW_NON_MODULAR_INCLUDES, and DEFINES_MODULE in targets and bundles
+          fix = (
+              "\n"
+              "    # Fix for Xcode + Firebase + React Native\n"
+              "    installer.pods_project.build_configurations.each do |config|\n"
+              "      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'\n"
+              "    end\n"
+              "    installer.pods_project.targets.each do |target|\n"
+              "      target.build_configurations.each do |config|\n"
+              "        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'\n"
+              "        config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'\n"
+              "        if target.name.start_with?('Firebase') || target.name.start_with?('Google') || ['nanopb', 'PromisesObjC'].include?(target.name)\n"
+              "          config.build_settings['DEFINES_MODULE'] = 'YES'\n"
+              "          config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'\n"
+              "        end\n"
+              "      end\n"
+              "    end\n"
+              "    if installer.respond_to?(:target_installation_results)\n"
+              "      installer.target_installation_results.pod_target_installation_results.each do |_, res|\n"
+              "        res.resource_bundle_targets.each do |rb_target|\n"
+              "          rb_target.build_configurations.each do |config|\n"
+              "            config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'\n"
+              "            config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'\n"
+              "          end\n"
+              "        end\n"
+              "      end\n"
+              "    end\n"
+          )
+          content = re.sub(
+              r'(^\s*post_install do \|installer\|)',
+              r'\1' + fix,
+              content,
+              count=1,
+              flags=re.MULTILINE
+          )
+
+          with open('Podfile', 'w') as f:
+              f.write(content)
+
+          print("Podfile patched successfully")
+          PYEOF
+
+          echo "=== Verifying Podfile ==="
+          grep -n "FirebaseCore\|GoogleUtilities\|IPHONEOS\|CLANG_ALLOW_NON_MODULAR\|DEFINES_MODULE" Podfile
+
+          pod install --repo-update
+
+      - name: Build iOS App (.app / .ipa)
+        working-directory: ./ios
+        run: |
+          WORKSPACE_NAME=$(basename *.xcworkspace .xcworkspace)
+          echo "Building workspace and scheme: $WORKSPACE_NAME"
+
+          set -o pipefail
+          xcodebuild \
+            -workspace "${WORKSPACE_NAME}.xcworkspace" \
+            -scheme "$WORKSPACE_NAME" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES=YES \
+            IPHONEOS_DEPLOYMENT_TARGET=15.1 \
+            build 2>&1 | tee xcodebuild.log || {
+              echo "=== XCODEBUILD FAILED: ERRORS DETECTED ==="
+              grep -E "(error:|fatal error:|\*\* BUILD FAILED \*\*)" xcodebuild.log | head -n 30 || tail -n 60 xcodebuild.log
+              exit 65
+            }
+
+          # Package resulting .app into .ipa
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/${WORKSPACE_NAME}.app Payload/
+          zip -r secret-santa-ios.ipa Payload
+          mv secret-santa-ios.ipa ../secret-santa-ios.ipa
+
+      - name: Upload iOS App Artifact (.ipa)
+        uses: actions/upload-artifact@v4
+        with:
+          name: secret-santa-ios
+          path: secret-santa-ios.ipa
+
+      - name: Publish iOS IPA to Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view latest-build || gh release create latest-build --title "Latest Secret Santa App" --notes "Automated native build of Secret Santa app" || true
+          gh release upload latest-build "secret-santa-ios.ipa#secret-santa.ipa" --clobber
+
+  prune-artifacts:
+    runs-on: ubuntu-latest
+    needs: [build-android, build-ios]
+    if: always()
+    steps:
+      - name: Prune old artifacts (keep last 3 of each app)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          for ARTIFACT_TYPE in "secret-santa-android" "secret-santa-ios"; do
+            echo "Processing artifacts for: $ARTIFACT_TYPE"
+            gh api "repos/$REPO/actions/artifacts?per_page=100" \
+              --jq ".artifacts | [.[] | select(.name == \"$ARTIFACT_TYPE\")] | sort_by(.created_at) | reverse | .[3:][] | .id" > to_delete.txt || true
+
+            while IFS= read -r id; do
+              if [ -n "$id" ]; then
+                echo "Deleting old artifact ID: $id"
+                gh api --method DELETE "repos/$REPO/actions/artifacts/$id" || true
+              fi
+            done < to_delete.txt
+          done
