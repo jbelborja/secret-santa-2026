@@ -88,7 +88,7 @@ jobs:
 
       - name: Fix Expo Plugin Repositories and Compatibility
         run: |
-          # 1. Prepend pluginManagement to the very top of android/settings.gradle including local expo maven repos
+          # 1. Prepend pluginManagement to the very top of android/settings.gradle AFTER prebuild
           python3 -c "
           with open('android/settings.gradle', 'r') as f:
               content = f.read()
