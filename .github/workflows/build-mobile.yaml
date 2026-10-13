@@ -12,9 +12,6 @@ on:
           - all
           - android
           - ios
-  push:
-    branches:
-      - main
 
 permissions:
   contents: write
@@ -23,7 +20,7 @@ permissions:
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' || inputs.platform == 'android' || inputs.platform == 'all' }}
+    if: ${{ inputs.platform == 'android' || inputs.platform == 'all' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -136,7 +133,7 @@ jobs:
 
   build-ios:
     runs-on: macos-14
-    if: ${{ github.event_name == 'push' || inputs.platform == 'ios' || inputs.platform == 'all' }}
+    if: ${{ inputs.platform == 'ios' || inputs.platform == 'all' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
