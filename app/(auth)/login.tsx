@@ -107,16 +107,16 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         className="px-6 py-12 justify-center"
       >
-        {/* Festive Header */}
+        {/* Header */}
         <View className="items-center mb-8">
-          <View className="w-24 h-24 rounded-full bg-red-50 border-2 border-red-200 items-center justify-center mb-3 shadow-sm">
-            <Text className="text-5xl">🎅</Text>
+          <View className="w-20 h-20 rounded-2xl bg-red-50 border border-red-100 items-center justify-center mb-4 shadow-sm">
+            <Ionicons name="gift-outline" size={36} color="#B91C1C" />
           </View>
-          <Text className="text-3xl font-black text-[#B91C1C] tracking-tight">
+          <Text className="text-3xl font-black text-gray-900 tracking-tight">
             Secret Santa
           </Text>
-          <Text className="text-base text-gray-600 mt-1.5 text-center">
-            Create or join a Secret Santa raffle 🎄
+          <Text className="text-sm text-gray-500 mt-1.5 text-center">
+            Organize and participate in gift exchange raffles
           </Text>
         </View>
 
@@ -134,8 +134,8 @@ export default function LoginScreen() {
         <View className="space-y-1 mb-4">
           {isSignUp ? (
             <Input
-              label="Your Full Name"
-              placeholder="e.g. Santa Claus"
+              label="Full Name"
+              placeholder="e.g. Jane Doe"
               value={displayName}
               onChangeText={setDisplayName}
               autoCapitalize="words"
@@ -145,7 +145,7 @@ export default function LoginScreen() {
 
           <Input
             label="Email Address"
-            placeholder="santa@northpole.com"
+            placeholder="name@example.com"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -165,7 +165,7 @@ export default function LoginScreen() {
 
         {/* Primary Action Button */}
         <Button
-          title={isSignUp ? 'Create Account 🎁' : 'Sign In 🎄'}
+          title={isSignUp ? 'Create Account' : 'Sign In'}
           onPress={handleEmailAuth}
           variant="primary"
           size="lg"

@@ -54,7 +54,9 @@ export default function ParticipantsManagementScreen() {
   if (user && raffle.managerId !== user.uid) {
     return (
       <View className="flex-1 items-center justify-center p-6 bg-white">
-        <Text className="text-4xl mb-2">⛔</Text>
+        <View className="w-16 h-16 rounded-2xl bg-red-50 items-center justify-center mb-4 border border-red-100">
+          <Ionicons name="ban-outline" size={32} color="#DC2626" />
+        </View>
         <Text className="text-lg font-bold text-gray-800">Manager access only</Text>
       </View>
     );
@@ -142,7 +144,7 @@ export default function ParticipantsManagementScreen() {
               </View>
 
               <Button
-                title="Add to Raffle 🎄"
+                title="Add to Raffle"
                 onPress={handleAdd}
                 variant="primary"
                 size="md"

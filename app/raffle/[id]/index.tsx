@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  RefreshControl,
   Pressable,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -18,6 +17,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
+import { Badge } from '@/components/ui/Badge';
 
 export default function RaffleParticipantScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -29,13 +29,15 @@ export default function RaffleParticipantScreen() {
   const [actionLoading, setActionLoading] = useState(false);
 
   if (raffleLoading || partsLoading) {
-    return <LoadingSpinner message="Loading holiday raffle..." />;
+    return <LoadingSpinner message="Loading raffle details..." />;
   }
 
   if (raffleError || !raffle) {
     return (
       <View className="flex-1 items-center justify-center p-6 bg-white">
-        <Text className="text-4xl mb-3">⛄</Text>
+        <View className="w-16 h-16 rounded-2xl bg-red-50 items-center justify-center mb-4 border border-red-100">
+          <Ionicons name="alert-circle-outline" size={32} color="#DC2626" />
+        </View>
         <Text className="text-lg font-bold text-gray-800 text-center">
           {raffleError || 'Raffle not found'}
         </Text>
@@ -74,7 +76,7 @@ export default function RaffleParticipantScreen() {
           id: '',
           raffleId: id,
           userId: user.uid,
-          name: user.displayName || 'Santa Fan',
+          name: user.displayName || 'Participant',
           email: user.email || '',
           status: 'accepted',
           exclusions: [],
@@ -110,16 +112,14 @@ export default function RaffleParticipantScreen() {
       contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
     >
       {/* Header Info Card */}
-      <Card elevated className="p-5 mb-4 border border-red-100 bg-white">
+      <Card elevated className="p-5 mb-4 border border-gray-100 bg-white">
         <View className="flex-row items-start justify-between">
           <View className="flex-1 mr-3">
             <View className="flex-row items-center mb-1.5">
               <StatusBadge status={raffle.status} />
               {isManager ? (
-                <View className="ml-2 bg-amber-100 px-2 py-0.5 rounded-full">
-                  <Text className="text-[10px] font-bold text-amber-800">
-                    Manager 👑
-                  </Text>
+                <View className="ml-2">
+                  <Badge label="Organiser" variant="warning" size="sm" />
                 </View>
               ) : null}
             </View>
@@ -134,7 +134,7 @@ export default function RaffleParticipantScreen() {
           </View>
 
           <View className="bg-red-50 p-2.5 rounded-2xl items-center justify-center border border-red-100">
-            <Ionicons name="pricetag" size={20} color="#B91C1C" />
+            <Ionicons name="pricetag-outline" size={18} color="#B91C1C" />
             <Text className="text-xs font-black text-[#B91C1C] mt-1">
               {raffle.priceLimit} {raffle.currency}
             </Text>
@@ -174,7 +174,7 @@ export default function RaffleParticipantScreen() {
         {!myParticipant || myParticipant.status === 'invited' ? (
           <View className="py-2">
             <Text className="text-base font-bold text-gray-900 mb-1">
-              You are invited to join! 🎄
+              You are invited to join
             </Text>
             <Text className="text-xs text-gray-500 mb-4">
               Accept to be included in the Secret Santa draw.
@@ -189,7 +189,7 @@ export default function RaffleParticipantScreen() {
                 onPress={handleDeclineInvite}
               />
               <Button
-                title="Accept Invitation 🎁"
+                title="Accept Invitation"
                 variant="secondary"
                 size="md"
                 className="flex-1 ml-2"
@@ -220,13 +220,14 @@ export default function RaffleParticipantScreen() {
               <View className="flex-row items-center">
                 <Ionicons name="checkmark-circle" size={22} color="#15803D" />
                 <Text className="text-base font-bold text-[#15803D] ml-2">
-                  You're in! ✓
+                  You're in!
                 </Text>
               </View>
               {myParticipant.giftGiven ? (
-                <View className="bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
-                  <Text className="text-xs font-bold text-[#15803D]">
-                    Gift Given 🎁
+                <View className="bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex-row items-center">
+                  <Ionicons name="checkmark" size={12} color="#059669" />
+                  <Text className="text-xs font-semibold text-emerald-700 ml-1">
+                    Gift Sent
                   </Text>
                 </View>
               ) : null}
@@ -234,31 +235,34 @@ export default function RaffleParticipantScreen() {
 
             {isDrawn ? (
               <Button
-                title="View My Secret Assignment 🎁"
+                title="View My Secret Assignment"
                 variant="primary"
                 size="md"
+                leftIcon={<Ionicons name="gift-outline" size={16} color="#FFFFFF" />}
                 onPress={() => router.push(`/raffle/${raffle.id}/assignment` as any)}
               />
             ) : (
               <Text className="text-xs text-gray-500 italic">
-                Pairings will be drawn once the organizer starts the raffle!
+                Pairings will be drawn once the organizer starts the raffle.
               </Text>
             )}
           </View>
         )}
       </Card>
 
-      {/* Group Revealed Section (If manager revealed assignments after gift date) */}
+      {/* Group Revealed Section */}
       {raffle.revealed ? (
-        <Card className="mb-4 bg-purple-50/60 border border-purple-200">
+        <Card className="mb-4 bg-violet-50/60 border border-violet-200">
           <View className="flex-row items-center mb-3">
-            <Text className="text-xl mr-2">🎉</Text>
+            <View className="w-8 h-8 rounded-lg bg-violet-100 items-center justify-center mr-2 border border-violet-200">
+              <Ionicons name="sparkles" size={16} color="#7C3AED" />
+            </View>
             <View>
-              <Text className="text-base font-black text-purple-900">
-                All Assignments Revealed!
+              <Text className="text-base font-black text-violet-900">
+                All Assignments Revealed
               </Text>
-              <Text className="text-xs text-purple-700">
-                The holiday exchange is complete. Here is who gave to whom:
+              <Text className="text-xs text-violet-700">
+                The exchange is complete. Here is who gave to whom:
               </Text>
             </View>
           </View>
@@ -271,7 +275,7 @@ export default function RaffleParticipantScreen() {
                 return (
                   <View
                     key={giver.id}
-                    className="flex-row items-center justify-between bg-white p-3 rounded-xl border border-purple-100 mb-1.5"
+                    className="flex-row items-center justify-between bg-white p-3 rounded-xl border border-violet-100 mb-1.5"
                   >
                     <View className="flex-row items-center">
                       <Avatar name={giver.name} size="sm" />
@@ -293,7 +297,7 @@ export default function RaffleParticipantScreen() {
         </Card>
       ) : null}
 
-      {/* Participants List (Names and status only, no emails for privacy) */}
+      {/* Participants List */}
       <View className="mt-2">
         <View className="flex-row items-center justify-between mb-3">
           <Text className="text-base font-bold text-gray-900">
@@ -307,7 +311,7 @@ export default function RaffleParticipantScreen() {
         {participants.map((p) => (
           <View
             key={p.id}
-            className="flex-row items-center justify-between bg-white p-3 rounded-xl mb-2 border border-gray-100"
+            className="flex-row items-center justify-between bg-white p-3 rounded-xl mb-2 border border-gray-100 shadow-sm"
           >
             <View className="flex-row items-center">
               <Avatar name={p.name} size="sm" />

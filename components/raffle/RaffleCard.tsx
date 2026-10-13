@@ -37,9 +37,9 @@ export const RaffleCard: React.FC<RaffleCardProps> = ({
     <Card
       onPress={onPress}
       elevated
-      className={`overflow-hidden border border-red-100/60 p-0 mb-4 bg-white ${className}`}
+      className={`overflow-hidden border border-gray-100 p-0 mb-3 bg-white ${className}`}
     >
-      {/* Decorative festive header bar or cover image */}
+      {/* Header band */}
       {raffle.coverImageUrl ? (
         <View className="h-32 w-full relative">
           <Image
@@ -47,80 +47,70 @@ export const RaffleCard: React.FC<RaffleCardProps> = ({
             className="w-full h-full"
             resizeMode="cover"
           />
-          <View className="absolute inset-0 bg-black/20" />
+          <View className="absolute inset-0 bg-black/25" />
         </View>
       ) : (
-        <View className="h-16 w-full bg-gradient-to-r bg-[#B91C1C] flex-row items-center justify-between px-4 relative overflow-hidden">
-          <View className="flex-row items-center space-x-2">
-            <Text className="text-2xl mr-1">🎁</Text>
-            <Text className="text-white font-bold text-sm tracking-wider uppercase">
-              Secret Santa
-            </Text>
-          </View>
-          {/* Snowflake decoration */}
-          <Ionicons name="snow" size={28} color="rgba(255, 255, 255, 0.4)" />
+        <View className="h-12 w-full bg-[#B91C1C] flex-row items-center px-4">
+          <Ionicons name="gift-outline" size={16} color="rgba(255,255,255,0.7)" />
+          <Text className="text-white text-xs font-semibold tracking-widest uppercase ml-2">
+            Secret Santa
+          </Text>
         </View>
       )}
 
-      {/* Main content body */}
+      {/* Main content */}
       <View className="p-4">
-        {/* Top badges row */}
-        <View className="flex-row items-center justify-between mb-2">
+        {/* Top row: status + manager badge */}
+        <View className="flex-row items-center justify-between mb-2.5">
           <StatusBadge status={raffle.status} />
-
-          <View className="flex-row items-center space-x-1.5">
-            {isManager ? (
-              <Badge
-                label="Manager 👑"
-                variant="warning"
-                size="sm"
-                className="ml-1"
-              />
-            ) : null}
-          </View>
+          {isManager ? (
+            <Badge
+              label="Organiser"
+              variant="warning"
+              size="sm"
+            />
+          ) : null}
         </View>
 
         {/* Title */}
-        <Text className="text-lg font-bold text-gray-900 mt-1 mb-1">
+        <Text className="text-base font-bold text-gray-900 mb-0.5">
           {raffle.name}
         </Text>
 
         {/* Topic */}
         {raffle.topic ? (
-          <Text className="text-sm text-gray-600 mb-3" numberOfLines={2}>
+          <Text className="text-sm text-gray-500 mb-3" numberOfLines={1}>
             {raffle.topic}
           </Text>
         ) : null}
 
-        {/* Info Grid */}
-        <View className="flex-row items-center justify-between pt-3 border-t border-gray-100 mt-2">
-          {/* Price limit */}
+        {/* Info row */}
+        <View className="flex-row items-center justify-between pt-3 border-t border-gray-100">
           <View className="flex-row items-center">
-            <Ionicons name="pricetag-outline" size={16} color="#D97706" />
-            <Text className="text-xs font-semibold text-gray-700 ml-1.5">
-              Limit: {raffle.priceLimit} {raffle.currency}
+            <Ionicons name="pricetag-outline" size={14} color="#9CA3AF" />
+            <Text className="text-xs text-gray-500 ml-1.5">
+              {raffle.priceLimit} {raffle.currency}
             </Text>
           </View>
 
-          {/* Gift date / Countdown */}
           <View className="flex-row items-center">
-            <Ionicons name="calendar-outline" size={16} color="#15803D" />
-            <Text className="text-xs font-semibold text-gray-700 ml-1.5">
+            <Ionicons name="calendar-outline" size={14} color="#9CA3AF" />
+            <Text className="text-xs text-gray-500 ml-1.5">
               {formattedGiftDate}
             </Text>
           </View>
         </View>
 
-        {/* Countdown preview badge if upcoming */}
+        {/* Countdown strip */}
         {diffDays > 0 ? (
-          <View className="mt-3 bg-red-50 py-1.5 px-3 rounded-lg flex-row items-center justify-between">
+          <View className="mt-3 bg-red-50 py-2 px-3 rounded-lg flex-row items-center justify-between">
             <View className="flex-row items-center">
-              <Text className="text-xs mr-1">⏳</Text>
-              <Text className="text-xs font-medium text-[#B91C1C]">
-                {diffDays === 1 ? '1 day left' : `${diffDays} days left until gift exchange`}
+              <Ionicons name="time-outline" size={13} color="#B91C1C" />
+              <Text className="text-xs font-medium text-[#B91C1C] ml-1.5">
+                {diffDays === 1 ? '1 day until gift exchange' : `${diffDays} days until gift exchange`}
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={14} color="#B91C1C" />
+            <Ionicons name="chevron-forward" size={13} color="#B91C1C" />
           </View>
         ) : null}
       </View>

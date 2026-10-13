@@ -260,7 +260,7 @@ export default function CreateRaffleScreen() {
 
         {/* Submit */}
         <Button
-          title="Create Secret Santa 🎄"
+          title="Create Secret Santa"
           onPress={handleCreate}
           variant="primary"
           size="lg"

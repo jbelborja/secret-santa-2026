@@ -39,30 +39,26 @@ export const Input: React.FC<InputProps> = ({
   };
 
   const getBorderColor = () => {
-    if (error) {
-      return 'border-red-500 bg-red-50/20';
-    }
-    if (isFocused) {
-      return 'border-[#B91C1C] bg-white';
-    }
-    return 'border-gray-200 bg-gray-50/50';
+    if (error) return 'border-red-400 bg-red-50/30';
+    if (isFocused) return 'border-[#B91C1C] bg-white';
+    return 'border-gray-200 bg-gray-50';
   };
 
   return (
     <View className={`w-full mb-3 ${className}`}>
       {label ? (
-        <Text className="text-sm font-semibold text-gray-700 mb-1.5 ml-0.5">
+        <Text className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
           {label}
         </Text>
       ) : null}
 
       <View
-        className={`flex-row items-center border rounded-xl px-3 py-2.5 transition-colors ${getBorderColor()}`}
+        className={`flex-row items-center border rounded-xl px-3.5 py-3 ${getBorderColor()}`}
       >
         {leftIcon ? <View className="mr-2.5">{leftIcon}</View> : null}
 
         <TextInput
-          className="flex-1 text-gray-900 text-base p-0"
+          className="flex-1 text-gray-900 text-sm p-0"
           placeholderTextColor="#9CA3AF"
           onFocus={handleFocus}
           onBlur={handleBlur}
@@ -73,7 +69,7 @@ export const Input: React.FC<InputProps> = ({
       </View>
 
       {error ? (
-        <Text className="text-xs text-red-600 mt-1 ml-1 font-medium">
+        <Text className="text-xs text-red-600 mt-1 ml-0.5 font-medium">
           {error}
         </Text>
       ) : null}

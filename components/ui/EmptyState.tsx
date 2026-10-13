@@ -20,17 +20,17 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   return (
     <View
-      className={`items-center justify-center p-8 bg-white/60 rounded-3xl border border-dashed border-gray-200 my-4 ${className}`}
+      className={`items-center justify-center p-8 bg-gray-50 rounded-2xl border border-gray-200 my-2 ${className}`}
     >
-      <View className="w-16 h-16 rounded-full bg-red-50 items-center justify-center mb-4 border border-red-100">
+      <View className="w-14 h-14 rounded-2xl bg-white items-center justify-center mb-4 border border-gray-200 shadow-sm">
         <Ionicons
           name={icon as keyof typeof Ionicons.glyphMap}
-          size={32}
-          color="#B91C1C"
+          size={26}
+          color="#9CA3AF"
         />
       </View>
 
-      <Text className="text-lg font-bold text-gray-900 text-center mb-1">
+      <Text className="text-base font-semibold text-gray-800 text-center mb-1">
         {title}
       </Text>
 

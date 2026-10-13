@@ -72,14 +72,14 @@ export default function RootLayout() {
     return (
       <SafeAreaProvider>
         <View className="flex-1 bg-white items-center justify-center p-6">
-          <View className="w-20 h-20 rounded-full bg-red-50 border border-red-100 items-center justify-center mb-4 shadow-sm">
-            <Text className="text-4xl">🎅</Text>
+          <View className="w-16 h-16 rounded-2xl bg-red-50 border border-red-100 items-center justify-center mb-4 shadow-sm">
+            <Ionicons name="gift-outline" size={32} color="#B91C1C" />
           </View>
-          <Text className="text-xl font-bold text-[#B91C1C] mb-2 tracking-wide">
+          <Text className="text-xl font-bold text-gray-900 mb-1 tracking-tight">
             Secret Santa
           </Text>
           <Text className="text-xs text-gray-500 mb-6">
-            Spreading holiday joy...
+            Loading...
           </Text>
           <ActivityIndicator size="small" color="#B91C1C" />
         </View>
@@ -120,7 +120,7 @@ export default function RootLayout() {
         <Stack.Screen
           name="invite/[code]"
           options={{
-            headerTitle: 'Join Raffle 🎄',
+            headerTitle: 'Join Raffle',
             presentation: 'modal',
           }}
         />

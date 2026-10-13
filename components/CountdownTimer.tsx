@@ -43,9 +43,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     const timer = setInterval(() => {
       const remaining = calculateTimeRemaining(target);
       setTimeLeft(remaining);
-      if (remaining.isPast) {
-        clearInterval(timer);
-      }
+      if (remaining.isPast) clearInterval(timer);
     }, 1000);
 
     return () => clearInterval(timer);
@@ -53,75 +51,46 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
 
   const padNumber = (num: number) => num.toString().padStart(2, '0');
 
+  const Segment = ({ value, unit }: { value: number; unit: string }) => (
+    <View className="items-center mx-1.5">
+      <View className="w-14 h-14 bg-gray-900 rounded-xl items-center justify-center">
+        <Text className="text-xl font-bold text-white tabular-nums">
+          {padNumber(value)}
+        </Text>
+      </View>
+      <Text className="text-[10px] font-medium text-gray-400 uppercase tracking-wider mt-1.5">
+        {unit}
+      </Text>
+    </View>
+  );
+
+  const Separator = () => (
+    <Text className="text-lg font-light text-gray-300 mb-5">:</Text>
+  );
+
   return (
-    <View className={`items-center justify-center p-4 bg-red-50/70 border border-red-100 rounded-2xl ${className}`}>
+    <View className={`items-center p-4 bg-gray-50 border border-gray-200 rounded-2xl ${className}`}>
       {label ? (
-        <Text className="text-xs font-bold uppercase tracking-wider text-[#B91C1C] mb-3">
-          🎄 {label}
+        <Text className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">
+          {label}
         </Text>
       ) : null}
 
       {timeLeft.isPast ? (
         <View className="py-2 px-4 bg-emerald-50 rounded-xl border border-emerald-200">
-          <Text className="text-sm font-semibold text-[#15803D] text-center">
-            🎁 Happened already!
+          <Text className="text-sm font-semibold text-emerald-700 text-center">
+            This date has passed
           </Text>
         </View>
       ) : (
-        <View className="flex-row items-center justify-center space-x-2">
-          {/* Days */}
-          <View className="items-center mx-1">
-            <View className="w-14 h-14 bg-[#B91C1C] rounded-xl items-center justify-center shadow-sm">
-              <Text className="text-xl font-extrabold text-white">
-                {padNumber(timeLeft.days)}
-              </Text>
-            </View>
-            <Text className="text-[10px] font-semibold text-gray-500 uppercase mt-1">
-              Days
-            </Text>
-          </View>
-
-          <Text className="text-lg font-bold text-gray-400 mb-4">:</Text>
-
-          {/* Hours */}
-          <View className="items-center mx-1">
-            <View className="w-14 h-14 bg-[#15803D] rounded-xl items-center justify-center shadow-sm">
-              <Text className="text-xl font-extrabold text-white">
-                {padNumber(timeLeft.hours)}
-              </Text>
-            </View>
-            <Text className="text-[10px] font-semibold text-gray-500 uppercase mt-1">
-              Hours
-            </Text>
-          </View>
-
-          <Text className="text-lg font-bold text-gray-400 mb-4">:</Text>
-
-          {/* Minutes */}
-          <View className="items-center mx-1">
-            <View className="w-14 h-14 bg-[#D97706] rounded-xl items-center justify-center shadow-sm">
-              <Text className="text-xl font-extrabold text-white">
-                {padNumber(timeLeft.minutes)}
-              </Text>
-            </View>
-            <Text className="text-[10px] font-semibold text-gray-500 uppercase mt-1">
-              Mins
-            </Text>
-          </View>
-
-          <Text className="text-lg font-bold text-gray-400 mb-4">:</Text>
-
-          {/* Seconds */}
-          <View className="items-center mx-1">
-            <View className="w-14 h-14 bg-gray-900 rounded-xl items-center justify-center shadow-sm">
-              <Text className="text-xl font-extrabold text-white">
-                {padNumber(timeLeft.seconds)}
-              </Text>
-            </View>
-            <Text className="text-[10px] font-semibold text-gray-500 uppercase mt-1">
-              Secs
-            </Text>
-          </View>
+        <View className="flex-row items-center justify-center">
+          <Segment value={timeLeft.days} unit="Days" />
+          <Separator />
+          <Segment value={timeLeft.hours} unit="Hrs" />
+          <Separator />
+          <Segment value={timeLeft.minutes} unit="Min" />
+          <Separator />
+          <Segment value={timeLeft.seconds} unit="Sec" />
         </View>
       )}
     </View>

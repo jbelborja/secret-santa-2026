@@ -17,37 +17,37 @@ const STATUS_MAP: Record<RaffleStatus | ParticipantStatus, StatusConfig> = {
   draft: {
     label: 'Draft',
     containerClass: 'bg-gray-100 border-gray-200',
-    textClass: 'text-gray-700',
+    textClass: 'text-gray-600',
   },
   inviting: {
-    label: 'Inviting',
-    containerClass: 'bg-blue-100 border-blue-200',
-    textClass: 'text-blue-700',
+    label: 'Open',
+    containerClass: 'bg-sky-50 border-sky-200',
+    textClass: 'text-sky-700',
   },
   drawn: {
-    label: 'Drawn 🎲',
-    containerClass: 'bg-purple-100 border-purple-200',
-    textClass: 'text-purple-700',
+    label: 'Drawn',
+    containerClass: 'bg-violet-50 border-violet-200',
+    textClass: 'text-violet-700',
   },
   completed: {
-    label: 'Completed ✅',
-    containerClass: 'bg-green-100 border-green-200',
-    textClass: 'text-[#15803D]',
+    label: 'Completed',
+    containerClass: 'bg-emerald-50 border-emerald-200',
+    textClass: 'text-emerald-700',
   },
   invited: {
     label: 'Invited',
-    containerClass: 'bg-blue-100 border-blue-200',
-    textClass: 'text-blue-700',
+    containerClass: 'bg-sky-50 border-sky-200',
+    textClass: 'text-sky-700',
   },
   accepted: {
-    label: 'Accepted ✓',
-    containerClass: 'bg-green-100 border-green-200',
-    textClass: 'text-[#15803D]',
+    label: 'Accepted',
+    containerClass: 'bg-emerald-50 border-emerald-200',
+    textClass: 'text-emerald-700',
   },
   declined: {
     label: 'Declined',
-    containerClass: 'bg-red-100 border-red-200',
-    textClass: 'text-red-700',
+    containerClass: 'bg-red-50 border-red-200',
+    textClass: 'text-red-600',
   },
 };
 
@@ -55,7 +55,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className = ''
   const config = STATUS_MAP[status] || {
     label: String(status),
     containerClass: 'bg-gray-100 border-gray-200',
-    textClass: 'text-gray-700',
+    textClass: 'text-gray-600',
   };
 
   return (

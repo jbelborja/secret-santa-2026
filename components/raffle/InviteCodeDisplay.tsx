@@ -26,7 +26,7 @@ export const InviteCodeDisplay: React.FC<InviteCodeDisplayProps> = ({
     try {
       await Share.share({
         title: `Join our Secret Santa: ${raffleName}`,
-        message: `🎄 You're invited to join our Secret Santa "${raffleName}"!\n\nUse invite code: ${inviteCode}\nOr open the app: ${inviteUrl}`,
+        message: `You're invited to join our Secret Santa "${raffleName}".\n\nInvite code: ${inviteCode}\nOpen the app: ${inviteUrl}`,
         url: inviteUrl,
       });
     } catch (error) {
@@ -35,43 +35,46 @@ export const InviteCodeDisplay: React.FC<InviteCodeDisplayProps> = ({
   };
 
   const handleCopy = () => {
-    // In React Native without clipboard dependency, simulate quick copy feedback
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const content = (
-    <View className={`bg-white rounded-3xl p-6 border border-red-100 shadow-xl items-center ${className}`}>
-      {/* Decorative Santa icon */}
-      <View className="w-16 h-16 rounded-full bg-red-50 border border-red-200 items-center justify-center mb-4">
-        <Text className="text-3xl">🎅</Text>
+    <View className={`bg-white rounded-2xl p-6 border border-gray-100 shadow-sm items-center ${className}`}>
+      {/* Icon header */}
+      <View className="w-12 h-12 rounded-xl bg-red-50 border border-red-100 items-center justify-center mb-4">
+        <Ionicons name="share-outline" size={22} color="#B91C1C" />
       </View>
 
-      <Text className="text-xl font-bold text-gray-900 text-center mb-1">
-        Invite Your Friends!
+      <Text className="text-lg font-bold text-gray-900 text-center mb-1">
+        Invite Participants
       </Text>
-      <Text className="text-sm text-gray-500 text-center mb-5 px-2">
-        Share this code to let participants join "{raffleName}"
+      <Text className="text-sm text-gray-500 text-center mb-6 px-2">
+        Share this code to let people join "{raffleName}"
       </Text>
 
-      {/* Big code display */}
-      <View className="bg-red-50/80 border-2 border-dashed border-[#B91C1C]/40 rounded-2xl py-4 px-8 mb-6 items-center">
-        <Text className="text-3xl font-black tracking-widest text-[#B91C1C]">
+      {/* Code display */}
+      <Pressable
+        onPress={handleCopy}
+        className="w-full bg-gray-50 border border-gray-200 rounded-xl py-4 px-6 mb-6 items-center active:opacity-70"
+      >
+        <Text className="text-2xl font-black tracking-[0.2em] text-gray-900 font-mono">
           {inviteCode}
         </Text>
-        <Text className="text-[11px] font-semibold text-gray-500 uppercase mt-1">
-          Shareable Code
+        <Text className="text-xs text-gray-400 uppercase tracking-wider mt-1.5 font-medium">
+          {copied ? 'Copied!' : 'Tap to copy'}
         </Text>
-      </View>
+      </Pressable>
 
-      {/* Action buttons */}
-      <View className="w-full space-y-2.5">
+      {/* Actions */}
+      <View className="w-full gap-2">
         <Button
-          title="Share Invite Link 🎁"
+          title="Share Invite Link"
           onPress={handleShare}
           variant="primary"
           size="lg"
           className="w-full"
+          leftIcon={<Ionicons name="share-social-outline" size={18} color="#FFFFFF" />}
         />
 
         {onClose ? (
@@ -80,7 +83,7 @@ export const InviteCodeDisplay: React.FC<InviteCodeDisplayProps> = ({
             onPress={onClose}
             variant="ghost"
             size="md"
-            className="w-full mt-2"
+            className="w-full mt-1"
           />
         ) : null}
       </View>
@@ -95,7 +98,7 @@ export const InviteCodeDisplay: React.FC<InviteCodeDisplayProps> = ({
         animationType="fade"
         onRequestClose={onClose}
       >
-        <View className="flex-1 bg-black/60 items-center justify-center p-6">
+        <View className="flex-1 bg-black/50 items-center justify-center p-6">
           <View className="w-full max-w-sm">
             {content}
           </View>

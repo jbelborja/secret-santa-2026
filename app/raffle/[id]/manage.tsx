@@ -59,7 +59,9 @@ export default function ManageRaffleScreen() {
   if (user && raffle.managerId !== user.uid) {
     return (
       <View className="flex-1 items-center justify-center p-6 bg-white">
-        <Text className="text-4xl mb-3">⛔</Text>
+        <View className="w-16 h-16 rounded-2xl bg-red-50 items-center justify-center mb-4 border border-red-100">
+          <Ionicons name="ban-outline" size={32} color="#DC2626" />
+        </View>
         <Text className="text-lg font-bold text-gray-800 text-center">
           Only the organizer can access this page.
         </Text>
@@ -127,12 +129,12 @@ export default function ManageRaffleScreen() {
     }
 
     Alert.alert(
-      'Ready to draw? 🎲',
+      'Confirm Draw',
       `${acceptedCount} accepted participants will be secretly matched. This cannot be undone.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Draw Names! 🎁',
+          text: 'Draw Names',
           style: 'default',
           onPress: async () => {
             setDrawing(true);
@@ -168,13 +170,13 @@ export default function ManageRaffleScreen() {
 
               if (tokens.length > 0) {
                 sendBatchPushNotifications(tokens, {
-                  title: `Secret Santa: Names Drawn! 🎁`,
+                  title: `Secret Santa: Names Drawn`,
                   body: `Your secret match for "${raffle.name}" has been chosen! Tap to reveal.`,
                   data: { raffleId: raffle.id },
                 });
               }
 
-              Alert.alert('Success! 🎉', 'Pairings have been generated! Everyone can now view their secret match.');
+              Alert.alert('Success', 'Pairings have been generated! Everyone can now view their secret match.');
             } catch (err: unknown) {
               console.error('Error committing draw results:', err);
               setDrawError(err instanceof Error ? err.message : 'Error committing draw');
@@ -189,7 +191,7 @@ export default function ManageRaffleScreen() {
 
   const handleRevealAssignments = async () => {
     Alert.alert(
-      'Reveal All Assignments? 🎊',
+      'Reveal All Assignments',
       'This will make all giver -> recipient pairings visible to all participants.',
       [
         { text: 'Cancel', style: 'cancel' },
@@ -198,7 +200,7 @@ export default function ManageRaffleScreen() {
           onPress: async () => {
             try {
               await updateRaffle({ revealed: true, status: 'completed' });
-              Alert.alert('Assignments Revealed! 🎁', 'Everyone can now see all matches.');
+              Alert.alert('Assignments Revealed', 'Everyone can now see all matches.');
             } catch (err) {
               Alert.alert('Error', 'Failed to reveal assignments');
             }
@@ -347,7 +349,7 @@ export default function ManageRaffleScreen() {
               Open the raffle for invitations so participants can join and confirm.
             </Text>
             <Button
-              title="Open for Invitations 🎄"
+              title="Open for Invitations"
               variant="primary"
               size="lg"
               onPress={handleOpenForInvitations}
@@ -362,7 +364,7 @@ export default function ManageRaffleScreen() {
               When all expected participants have accepted (at least 2 required), run the Secret Santa draw!
             </Text>
             <Button
-              title="Run Draw Now 🎲"
+              title="Run Draw Now"
               variant="secondary"
               size="lg"
               disabled={acceptedCount < 2}
@@ -379,8 +381,8 @@ export default function ManageRaffleScreen() {
           <View>
             <View className="flex-row items-center justify-between mb-3">
               <View>
-                <Text className="text-base font-bold text-purple-900">
-                  Draw Complete! 🎲
+                <Text className="text-base font-bold text-violet-900">
+                  Draw Complete
                 </Text>
                 <Text className="text-xs text-gray-500">
                   Track who has delivered their gifts below.
@@ -417,16 +419,18 @@ export default function ManageRaffleScreen() {
 
             {/* Reveal Button */}
             <Button
-              title="Reveal All Assignments to Everyone 🎊"
+              title="Reveal All Assignments to Everyone"
               variant="outline"
               size="md"
-              className="mt-3 border-purple-600"
+              className="mt-3 border-violet-600"
               onPress={handleRevealAssignments}
             />
           </View>
         ) : (
           <View className="items-center py-3">
-            <Text className="text-3xl mb-1">🎉</Text>
+            <View className="w-12 h-12 rounded-xl bg-violet-100 items-center justify-center mb-2 border border-violet-200">
+              <Ionicons name="sparkles" size={24} color="#7C3AED" />
+            </View>
             <Text className="text-base font-bold text-gray-900">
               Raffle Completed
             </Text>

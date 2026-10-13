@@ -15,15 +15,13 @@ export const Card: React.FC<CardProps> = ({
   elevated = true,
 }) => {
   const baseStyles = 'bg-white rounded-2xl p-4 border border-gray-100';
-  const elevationStyles = elevated
-    ? 'shadow-md shadow-black/10'
-    : 'shadow-none';
+  const elevationStyles = elevated ? 'shadow-sm' : '';
 
   if (onPress) {
     return (
       <Pressable
         onPress={onPress}
-        className={`${baseStyles} ${elevationStyles} active:opacity-95 ${className}`}
+        className={`${baseStyles} ${elevationStyles} active:opacity-90 ${className}`}
       >
         {children}
       </Pressable>

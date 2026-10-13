@@ -18,7 +18,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     <View className={`flex-1 items-center justify-center p-6 ${className}`}>
       <ActivityIndicator size={size} color={color} />
       {message ? (
-        <Text className="mt-3 text-sm font-medium text-gray-600 text-center">
+        <Text className="mt-3 text-sm text-gray-500 text-center">
           {message}
         </Text>
       ) : null}

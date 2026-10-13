@@ -184,17 +184,17 @@ export default function InviteScreen() {
   if (!user) {
     return (
       <View className="flex-1 items-center justify-center p-6 bg-white">
-        <View className="w-20 h-20 rounded-full bg-red-50 items-center justify-center mb-4 border border-red-100">
-          <Text className="text-4xl">🎅</Text>
+        <View className="w-20 h-20 rounded-2xl bg-red-50 items-center justify-center mb-4 border border-red-100">
+          <Ionicons name="gift-outline" size={36} color="#B91C1C" />
         </View>
-        <Text className="text-2xl font-black text-[#B91C1C] text-center mb-1">
+        <Text className="text-2xl font-black text-gray-900 text-center mb-1">
           Secret Santa Invitation
         </Text>
         <Text className="text-sm text-gray-600 text-center mb-6">
           You've been invited to join <Text className="font-bold">{raffle.name}</Text>. Please sign in or create an account to join the raffle!
         </Text>
         <Button
-          title="Sign In to Join 🎁"
+          title="Sign In to Join"
           variant="primary"
           size="lg"
           onPress={() => router.replace('/(auth)/login')}
@@ -210,11 +210,11 @@ export default function InviteScreen() {
       contentContainerStyle={{ padding: 20, paddingBottom: 60 }}
     >
       <View className="items-center mb-6">
-        <View className="w-20 h-20 rounded-full bg-red-50 border border-red-200 items-center justify-center mb-3">
-          <Text className="text-4xl">🎄</Text>
+        <View className="w-16 h-16 rounded-2xl bg-red-50 border border-red-100 items-center justify-center mb-3">
+          <Ionicons name="mail-open-outline" size={30} color="#B91C1C" />
         </View>
         <Text className="text-xs font-bold uppercase tracking-wider text-[#B91C1C]">
-          You're Invited!
+          You're Invited
         </Text>
         <Text className="text-2xl font-black text-gray-900 text-center mt-1">
           {raffle.name}
@@ -294,8 +294,8 @@ export default function InviteScreen() {
         <Button
           title={
             existingParticipant?.status === 'accepted'
-              ? 'Go to Raffle 🎄'
-              : 'Accept Invitation 🎁'
+              ? 'Go to Raffle'
+              : 'Accept Invitation'
           }
           variant="secondary"
           size="lg"

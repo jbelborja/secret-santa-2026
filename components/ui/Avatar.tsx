@@ -8,23 +8,19 @@ export interface AvatarProps {
   className?: string;
 }
 
-const FESTIVE_COLORS = [
-  '#B91C1C', // Christmas Red
-  '#15803D', // Christmas Green
-  '#D97706', // Gold / Amber
-  '#0369A1', // Frost Blue
-  '#7C3AED', // Royal Purple
-  '#991B1B', // Deep Red
-  '#166534', // Forest Green
+const AVATAR_COLORS = [
+  '#B91C1C', // Crimson
+  '#0369A1', // Steel blue
+  '#6D28D9', // Violet
+  '#0F766E', // Teal
+  '#B45309', // Amber
 ];
 
 function getInitials(name: string): string {
   const trimmed = name.trim();
   if (!trimmed) return '?';
   const parts = trimmed.split(/\s+/).filter(Boolean);
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
@@ -33,8 +29,7 @@ function getAvatarColor(name: string): string {
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const index = Math.abs(hash) % FESTIVE_COLORS.length;
-  return FESTIVE_COLORS[index];
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
 export const Avatar: React.FC<AvatarProps> = ({
@@ -48,24 +43,12 @@ export const Avatar: React.FC<AvatarProps> = ({
   const getSizeSpecs = () => {
     switch (size) {
       case 'sm':
-        return {
-          containerClass: 'w-8 h-8 rounded-full',
-          textClass: 'text-xs font-semibold',
-          dimensions: 32,
-        };
+        return { containerClass: 'w-8 h-8 rounded-full', textClass: 'text-xs font-semibold', dimensions: 32 };
       case 'lg':
-        return {
-          containerClass: 'w-14 h-14 rounded-full',
-          textClass: 'text-xl font-bold',
-          dimensions: 56,
-        };
+        return { containerClass: 'w-14 h-14 rounded-full', textClass: 'text-xl font-semibold', dimensions: 56 };
       case 'md':
       default:
-        return {
-          containerClass: 'w-10 h-10 rounded-full',
-          textClass: 'text-sm font-semibold',
-          dimensions: 40,
-        };
+        return { containerClass: 'w-10 h-10 rounded-full', textClass: 'text-sm font-semibold', dimensions: 40 };
     }
   };
 
@@ -91,7 +74,7 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   return (
     <View
-      className={`items-center justify-center shadow-xs ${containerClass} ${className}`}
+      className={`items-center justify-center ${containerClass} ${className}`}
       style={{ backgroundColor: bgColor, width: dimensions, height: dimensions }}
     >
       <Text className={`text-white tracking-wide ${textClass}`}>

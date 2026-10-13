@@ -18,7 +18,7 @@ export default function MyRafflesScreen() {
   const { managedRaffles, participatingRaffles, loading, error, refetch } = useMyRaffles();
 
   if (loading && managedRaffles.length === 0 && participatingRaffles.length === 0) {
-    return <LoadingSpinner message="Checking your holiday raffles..." />;
+    return <LoadingSpinner message="Loading your raffles..." />;
   }
 
   return (
@@ -38,10 +38,10 @@ export default function MyRafflesScreen() {
       <View className="flex-row items-center justify-between mb-6">
         <View>
           <Text className="text-2xl font-black text-gray-900 tracking-tight">
-            My Raffles 🎄
+            My Raffles
           </Text>
           <Text className="text-xs text-gray-500 mt-0.5">
-            Organize & exchange secret gifts
+            Organize and exchange secret gifts
           </Text>
         </View>
 
@@ -80,9 +80,9 @@ export default function MyRafflesScreen() {
           <EmptyState
             icon="gift-outline"
             title="No managed raffles yet"
-            subtitle="Be Santa this year! Create a raffle and invite your friends, family, or colleagues."
+            subtitle="Create a raffle and invite your friends, family, or colleagues."
             action={{
-              label: 'Create First Raffle 🎁',
+              label: 'Create First Raffle',
               onPress: () => router.push('/raffle/create'),
             }}
           />
@@ -105,8 +105,8 @@ export default function MyRafflesScreen() {
             <Text className="text-base font-bold text-gray-900">
               Raffles I Participate In
             </Text>
-            <View className="ml-2 bg-green-100 px-2 py-0.5 rounded-full">
-              <Text className="text-xs font-bold text-[#15803D]">
+            <View className="ml-2 bg-emerald-100 px-2 py-0.5 rounded-full">
+              <Text className="text-xs font-bold text-emerald-800">
                 {participatingRaffles.length}
               </Text>
             </View>

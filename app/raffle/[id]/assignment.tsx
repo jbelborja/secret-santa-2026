@@ -81,7 +81,9 @@ export default function AssignmentRevealScreen() {
   if (raffle.status !== 'drawn' && raffle.status !== 'completed') {
     return (
       <View className="flex-1 items-center justify-center p-6 bg-white">
-        <Text className="text-4xl mb-3">⏳</Text>
+        <View className="w-16 h-16 rounded-2xl bg-amber-50 items-center justify-center mb-4 border border-amber-100">
+          <Ionicons name="time-outline" size={32} color="#D97706" />
+        </View>
         <Text className="text-lg font-bold text-gray-800 text-center">
           The Secret Santa draw has not taken place yet!
         </Text>
@@ -116,9 +118,9 @@ export default function AssignmentRevealScreen() {
     try {
       await markGiftGiven(myParticipant.id, !myParticipant.giftGiven);
       Alert.alert(
-        !myParticipant.giftGiven ? 'Marked as Delivered! 🎁' : 'Status Updated',
+        !myParticipant.giftGiven ? 'Marked as Delivered' : 'Status Updated',
         !myParticipant.giftGiven
-          ? 'Great job spreading holiday cheer!'
+          ? 'Great job completing your gift delivery!'
           : 'Gift status marked as pending.'
       );
     } catch (err) {
@@ -138,7 +140,7 @@ export default function AssignmentRevealScreen() {
       className="flex-1 bg-[#FAFAFA]"
       contentContainerStyle={{ padding: 20, paddingBottom: 60 }}
     >
-      {/* Decorative Confetti Header */}
+      {/* Decorative Header */}
       <Animated.View
         style={{
           transform: [{ translateY: confettiTranslate }],
@@ -146,7 +148,9 @@ export default function AssignmentRevealScreen() {
           marginBottom: 16,
         }}
       >
-        <Text className="text-5xl">🎁 ✨ 🎄</Text>
+        <View className="w-14 h-14 rounded-2xl bg-red-50 border border-red-100 items-center justify-center">
+          <Ionicons name="gift-outline" size={28} color="#B91C1C" />
+        </View>
       </Animated.View>
 
       {/* Secret Card */}
@@ -209,7 +213,7 @@ export default function AssignmentRevealScreen() {
             <View className="flex-row items-center justify-between">
               <Text className="text-xs text-gray-500 font-medium">Exchange Countdown:</Text>
               <Text className="text-xs font-bold text-[#15803D]">
-                {daysLeft === 0 ? 'Gift day is today! 🎅' : `Gift day in ${daysLeft} days`}
+                {daysLeft === 0 ? 'Gift day is today!' : `Gift day in ${daysLeft} days`}
               </Text>
             </View>
           </View>
@@ -220,7 +224,7 @@ export default function AssignmentRevealScreen() {
               title={
                 myParticipant.giftGiven
                   ? 'Mark as Not Given'
-                  : 'Mark Gift as Given ✓'
+                  : 'Mark Gift as Given'
               }
               variant={myParticipant.giftGiven ? 'outline' : 'secondary'}
               size="lg"
@@ -234,14 +238,16 @@ export default function AssignmentRevealScreen() {
 
       {/* Group Reveal Section (If Manager has set revealed=true) */}
       {raffle.revealed ? (
-        <Card className="p-5 bg-purple-50/70 border border-purple-200 rounded-2xl">
+        <Card className="p-5 bg-violet-50/70 border border-violet-200 rounded-2xl">
           <View className="flex-row items-center mb-3">
-            <Text className="text-xl mr-2">🎊</Text>
+            <View className="w-8 h-8 rounded-lg bg-violet-100 items-center justify-center mr-2 border border-violet-200">
+              <Ionicons name="sparkles" size={16} color="#7C3AED" />
+            </View>
             <View>
-              <Text className="text-base font-bold text-purple-900">
-                Everyone's Matches Revealed!
+              <Text className="text-base font-bold text-violet-900">
+                Everyone's Matches Revealed
               </Text>
-              <Text className="text-xs text-purple-700">
+              <Text className="text-xs text-violet-700">
                 The exchange has completed!
               </Text>
             </View>

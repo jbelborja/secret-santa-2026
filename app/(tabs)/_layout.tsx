@@ -26,8 +26,10 @@ export default function TabsLayout() {
         headerShadowVisible: false,
         headerTitle: () => (
           <View className="flex-row items-center">
-            <Text className="text-xl mr-2">🎅</Text>
-            <Text className="text-lg font-black text-[#B91C1C] tracking-wide">
+            <View className="w-7 h-7 rounded-lg bg-red-50 items-center justify-center mr-2 border border-red-100">
+              <Ionicons name="gift-outline" size={16} color="#B91C1C" />
+            </View>
+            <Text className="text-lg font-black text-gray-900 tracking-tight">
               Secret Santa
             </Text>
           </View>

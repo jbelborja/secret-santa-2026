@@ -34,16 +34,16 @@ export const Button: React.FC<ButtonProps> = ({
   const getVariantContainerStyles = () => {
     switch (variant) {
       case 'secondary':
-        return 'bg-[#15803D] active:bg-[#166534]';
+        return 'bg-[#15803D] active:opacity-80';
       case 'outline':
-        return 'bg-transparent border-2 border-[#B91C1C] active:bg-red-50';
+        return 'bg-transparent border border-[#B91C1C] active:opacity-70';
       case 'ghost':
-        return 'bg-transparent active:bg-red-50/50';
+        return 'bg-transparent active:opacity-60';
       case 'danger':
-        return 'bg-red-600 active:bg-red-700';
+        return 'bg-red-600 active:opacity-80';
       case 'primary':
       default:
-        return 'bg-[#B91C1C] active:bg-[#991B1B]';
+        return 'bg-[#B91C1C] active:opacity-80';
     }
   };
 
@@ -63,24 +63,24 @@ export const Button: React.FC<ButtonProps> = ({
   const getSizeContainerStyles = () => {
     switch (size) {
       case 'sm':
-        return 'px-3 py-1.5 rounded-lg';
+        return 'px-3.5 py-2 rounded-lg';
       case 'lg':
-        return 'px-6 py-4 rounded-2xl';
+        return 'px-6 py-3.5 rounded-xl';
       case 'md':
       default:
-        return 'px-4 py-3 rounded-xl';
+        return 'px-4 py-2.5 rounded-xl';
     }
   };
 
   const getSizeTextStyles = () => {
     switch (size) {
       case 'sm':
-        return 'text-xs';
+        return 'text-sm';
       case 'lg':
-        return 'text-lg';
+        return 'text-base';
       case 'md':
       default:
-        return 'text-base';
+        return 'text-sm';
     }
   };
 
@@ -95,17 +95,12 @@ export const Button: React.FC<ButtonProps> = ({
     <Pressable
       onPress={onPress}
       disabled={isDisabled}
-      className={`flex-row items-center justify-center shadow-sm ${getVariantContainerStyles()} ${getSizeContainerStyles()} ${
-        isDisabled ? 'opacity-50' : 'opacity-100'
+      className={`flex-row items-center justify-center ${getVariantContainerStyles()} ${getSizeContainerStyles()} ${
+        isDisabled ? 'opacity-40' : 'opacity-100'
       } ${className}`}
     >
       {loading ? (
-        <View className="flex-row items-center justify-center py-0.5">
-          <ActivityIndicator size={size === 'lg' ? 'small' : 'small'} color={getSpinnerColor()} />
-          <Text className={`ml-2 ${getVariantTextStyles()} ${getSizeTextStyles()}`}>
-            Loading...
-          </Text>
-        </View>
+        <ActivityIndicator size="small" color={getSpinnerColor()} />
       ) : (
         <View className="flex-row items-center justify-center">
           {leftIcon ? <View className="mr-2">{leftIcon}</View> : null}

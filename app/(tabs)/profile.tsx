@@ -39,7 +39,7 @@ export default function ProfileScreen() {
         return;
       }
       const { status } = await Notifications.getPermissionsAsync();
-      setNotificationStatus(status === 'granted' ? 'Enabled 🔔' : 'Disabled 🔕');
+      setNotificationStatus(status === 'granted' ? 'Enabled' : 'Disabled');
     }
     checkPerms();
   }, []);
@@ -63,9 +63,9 @@ export default function ProfileScreen() {
     const token = await registerForPushNotificationsAsync();
     if (token && user?.uid) {
       await updateDoc(userDoc(user.uid), { expoPushToken: token });
-      setNotificationStatus('Enabled 🔔');
+      setNotificationStatus('Enabled');
     } else {
-      setNotificationStatus('Disabled 🔕');
+      setNotificationStatus('Disabled');
     }
   };
 
@@ -107,20 +107,17 @@ export default function ProfileScreen() {
       <View className="items-center mb-6">
         <View className="relative">
           <Avatar
-            name={user?.displayName || user?.email || 'Santa Fan'}
+            name={user?.displayName || user?.email || 'User'}
             imageUrl={user?.photoURL}
             size="lg"
             className="w-24 h-24 rounded-full border-4 border-white shadow-md"
           />
-          <View className="absolute bottom-0 right-0 bg-red-100 p-1.5 rounded-full border-2 border-white">
-            <Text className="text-sm">🎅</Text>
-          </View>
         </View>
 
         {!isEditing ? (
           <View className="items-center mt-3">
             <Text className="text-xl font-bold text-gray-900">
-              {user?.displayName || 'Holiday Gifter'}
+              {user?.displayName || 'Participant'}
             </Text>
             <Text className="text-sm text-gray-500 mt-0.5">{user?.email}</Text>
             <Pressable
@@ -182,7 +179,7 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {notificationStatus.includes('Disabled') ? (
+          {notificationStatus === 'Disabled' ? (
             <Button
               title="Enable"
               size="sm"

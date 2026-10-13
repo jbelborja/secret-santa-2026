@@ -28,19 +28,19 @@ export default function RaffleLayout() {
       <Stack.Screen
         name="manage"
         options={{
-          headerTitle: 'Manage Raffle 👑',
+          headerTitle: 'Manage Raffle',
         }}
       />
       <Stack.Screen
         name="participants"
         options={{
-          headerTitle: 'Participants 👥',
+          headerTitle: 'Participants',
         }}
       />
       <Stack.Screen
         name="assignment"
         options={{
-          headerTitle: 'My Assignment 🎁',
+          headerTitle: 'My Assignment',
         }}
       />
     </Stack>
