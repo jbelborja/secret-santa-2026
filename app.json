@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "scheme": "secretsanta",
+    "scheme": ["secretsanta", "com.googleusercontent.apps.553006398541-1g7111k3cg3ldsth2pi756bi9p9lpqsu"],
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {

@@ -147,8 +147,23 @@ export function useGoogleAuth() {
   const [error, setError] = useState<string | null>(null);
 
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+  const androidClientId = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
   const isWeb = Platform.OS === 'web';
-  const isConfigured = isWeb || Boolean(webClientId);
+  const isAndroid = Platform.OS === 'android';
+
+  // Android OAuth clients use the reverse of their client ID as the redirect URI scheme.
+  // This avoids registering custom schemes in Google Cloud Console (Android clients
+  // are verified by package name + SHA-1 fingerprint instead).
+  const androidReverseScheme = androidClientId
+    ? `com.googleusercontent.apps.${androidClientId.replace('.apps.googleusercontent.com', '')}`
+    : undefined;
+
+  const nativeClientId = isAndroid ? (androidClientId ?? webClientId) : webClientId;
+  const isConfigured = isWeb || Boolean(nativeClientId);
+
+  const redirectUri = AuthSession.makeRedirectUri({
+    scheme: isAndroid && androidReverseScheme ? androidReverseScheme : 'secretsanta',
+  });
 
   const discovery = {
     authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
@@ -157,23 +172,41 @@ export function useGoogleAuth() {
 
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
     {
-      clientId: webClientId || 'dummy-client-id',
+      clientId: nativeClientId || 'dummy-client-id',
       scopes: ['openid', 'profile', 'email'],
-      responseType: AuthSession.ResponseType.IdToken,
-      redirectUri: AuthSession.makeRedirectUri({
-        scheme: 'secretsanta',
-      }),
+      // Use Code + PKCE (recommended for native apps — IdToken/implicit is deprecated by Google)
+      responseType: AuthSession.ResponseType.Code,
+      usePKCE: true,
+      redirectUri,
     },
     discovery
   );
 
   useEffect(() => {
     async function handleResponse() {
-      if (response?.type === 'success' && response.params.id_token) {
+      if (response?.type === 'success' && response.params.code) {
         setLoading(true);
         setError(null);
         try {
-          const credential = GoogleAuthProvider.credential(response.params.id_token);
+          // Exchange the authorization code for tokens
+          const tokenResult = await AuthSession.exchangeCodeAsync(
+            {
+              clientId: nativeClientId!,
+              code: response.params.code,
+              redirectUri,
+              extraParams: request?.codeVerifier
+                ? { code_verifier: request.codeVerifier }
+                : undefined,
+            },
+            discovery
+          );
+
+          const idToken = (tokenResult as any).idToken ?? tokenResult.additionalParameters?.id_token;
+          if (!idToken) {
+            throw new Error('Google did not return an id_token. Check that your OAuth client has the openid scope enabled.');
+          }
+
+          const credential = GoogleAuthProvider.credential(idToken);
           const result = await signInWithCredential(auth, credential);
           await syncUserDocument(result.user);
         } catch (err: unknown) {
