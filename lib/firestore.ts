@@ -269,34 +269,39 @@ export async function getMyRaffles(userId: string): Promise<Raffle[]> {
 export async function getRafflesIParticipateIn(
   userId: string
 ): Promise<Raffle[]> {
-  const participantGroupQuery = query(
-    collectionGroup(db, 'participants').withConverter(participantConverter),
-    where('userId', '==', userId)
-  );
+  try {
+    const participantGroupQuery = query(
+      collectionGroup(db, 'participants').withConverter(participantConverter),
+      where('userId', '==', userId)
+    );
 
-  const participantSnapshots = await getDocs(participantGroupQuery);
-  const raffleIds = new Set<string>();
+    const participantSnapshots = await getDocs(participantGroupQuery);
+    const raffleIds = new Set<string>();
 
-  participantSnapshots.forEach((docSnap) => {
-    const participant = docSnap.data();
-    if (participant.raffleId) {
-      raffleIds.add(participant.raffleId);
-    } else if (docSnap.ref.parent.parent?.id) {
-      raffleIds.add(docSnap.ref.parent.parent.id);
+    participantSnapshots.forEach((docSnap) => {
+      const participant = docSnap.data();
+      if (participant.raffleId) {
+        raffleIds.add(participant.raffleId);
+      } else if (docSnap.ref.parent.parent?.id) {
+        raffleIds.add(docSnap.ref.parent.parent.id);
+      }
+    });
+
+    if (raffleIds.size === 0) {
+      return [];
     }
-  });
 
-  if (raffleIds.size === 0) {
+    const rafflePromises = Array.from(raffleIds).map(async (id) => {
+      const raffleSnap = await getDoc(raffleDoc(id));
+      return raffleSnap.exists() ? raffleSnap.data() : null;
+    });
+
+    const raffles = await Promise.all(rafflePromises);
+    return raffles
+      .filter((r): r is Raffle => r !== null)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  } catch (err) {
+    console.warn('getRafflesIParticipateIn index building or notice:', err);
     return [];
   }
-
-  const rafflePromises = Array.from(raffleIds).map(async (id) => {
-    const raffleSnap = await getDoc(raffleDoc(id));
-    return raffleSnap.exists() ? raffleSnap.data() : null;
-  });
-
-  const raffles = await Promise.all(rafflePromises);
-  return raffles
-    .filter((r): r is Raffle => r !== null)
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 }
