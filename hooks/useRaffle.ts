@@ -19,9 +19,20 @@ export function useRaffle(raffleId?: string) {
     setError(null);
 
     const docRef = raffleDoc(raffleId);
+    const timer = setTimeout(() => {
+      setLoading((current) => {
+        if (current) {
+          setError('Loading timed out. Please check your internet connection or Firestore rules.');
+          return false;
+        }
+        return current;
+      });
+    }, 12000);
+
     const unsubscribe = onSnapshot(
       docRef,
       (snapshot) => {
+        clearTimeout(timer);
         if (snapshot.exists()) {
           setRaffle(snapshot.data());
         } else {
@@ -31,13 +42,17 @@ export function useRaffle(raffleId?: string) {
         setLoading(false);
       },
       (err) => {
+        clearTimeout(timer);
         console.error('Error listening to raffle:', err);
         setError(err.message);
         setLoading(false);
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(timer);
+      unsubscribe();
+    };
   }, [raffleId]);
 
   const updateRaffle = useCallback(

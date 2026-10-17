@@ -1,8 +1,6 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 // @ts-ignore - getReactNativePersistence is provided by React Native bundle of firebase/auth
 import { initializeAuth, getReactNativePersistence, getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
-import { getStorage, FirebaseStorage } from 'firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
@@ -57,6 +55,21 @@ if (Platform.OS === 'web') {
   }
 }
 
-export { app, auth };
-export const db: Firestore = getFirestore(app);
+import { getFirestore, initializeFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
+
+let db: Firestore;
+try {
+  if (Platform.OS === 'web') {
+    db = initializeFirestore(app, {
+      experimentalAutoDetectLongPolling: true,
+    });
+  } else {
+    db = getFirestore(app);
+  }
+} catch {
+  db = getFirestore(app);
+}
+
+export { app, auth, db };
 export const storage: FirebaseStorage = getStorage(app);

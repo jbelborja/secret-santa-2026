@@ -192,15 +192,13 @@ export default function LoginScreen() {
         </Pressable>
 
         {/* Social Logins Divider */}
-        {(Platform.OS === 'ios' || isGoogleConfigured) ? (
-          <View className="flex-row items-center my-4">
-            <View className="flex-1 h-px bg-gray-200" />
-            <Text className="mx-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Or continue with
-            </Text>
-            <View className="flex-1 h-px bg-gray-200" />
-          </View>
-        ) : null}
+        <View className="flex-row items-center my-4">
+          <View className="flex-1 h-px bg-gray-200" />
+          <Text className="mx-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            Or continue with
+          </Text>
+          <View className="flex-1 h-px bg-gray-200" />
+        </View>
 
         {/* Apple Sign In (iOS only) */}
         {Platform.OS === 'ios' ? (
@@ -215,17 +213,15 @@ export default function LoginScreen() {
         ) : null}
 
         {/* Google Sign In */}
-        {isGoogleConfigured ? (
-          <Button
-            title="Sign in with Google"
-            onPress={handleGoogleAuth}
-            variant="outline"
-            size="md"
-            loading={googleLoading}
-            className="border-gray-300"
-            leftIcon={<Ionicons name="logo-google" size={18} color="#EA4335" />}
-          />
-        ) : null}
+        <Button
+          title="Sign in with Google"
+          onPress={handleGoogleAuth}
+          variant="outline"
+          size="md"
+          loading={googleLoading}
+          className="border-gray-300"
+          leftIcon={<Ionicons name="logo-google" size={18} color="#EA4335" />}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );

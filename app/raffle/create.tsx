@@ -39,6 +39,7 @@ export default function CreateRaffleScreen() {
   const [giftDateStr, setGiftDateStr] = useState(format(nextMonth, 'yyyy-MM-dd'));
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
 
+  const scrollViewRef = React.useRef<ScrollView>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,17 +63,20 @@ export default function CreateRaffleScreen() {
   const handleCreate = async () => {
     if (!user) {
       setError('You must be signed in to create a raffle.');
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
 
     if (!name.trim()) {
       setError('Please provide a raffle name.');
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
 
     const price = parseFloat(priceLimit);
     if (isNaN(price) || price < 0) {
       setError('Please enter a valid price limit.');
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
 
@@ -81,54 +85,74 @@ export default function CreateRaffleScreen() {
 
     if (!isValid(raffleDate) || !isValid(giftDate)) {
       setError('Please enter valid dates formatted as YYYY-MM-DD.');
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
 
     if (giftDate.getTime() <= raffleDate.getTime()) {
       setError('Gift exchange date must be after the draw date.');
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
 
     setLoading(true);
     setError(null);
 
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(
+        () =>
+          reject(
+            new Error(
+              'Raffle creation timed out. Please check your internet connection or Firestore rules.'
+            )
+          ),
+        15000
+      )
+    );
+
     try {
-      const inviteCode = generateInviteCode(6);
+      await Promise.race([
+        (async () => {
+          const inviteCode = generateInviteCode(6);
 
-      const docRef = await addDoc(rafflesCollection(), {
-        id: '',
-        name: name.trim(),
-        topic: topic.trim() || 'General Holiday Gifts',
-        priceLimit: price,
-        currency,
-        raffleDate,
-        giftDate,
-        status: 'draft',
-        managerId: user.uid,
-        createdAt: new Date(),
-        inviteCode,
-        coverImageUrl: coverImageUrl || undefined,
-        revealed: false,
-      });
+          const docRef = await addDoc(rafflesCollection(), {
+            id: '',
+            name: name.trim(),
+            topic: topic.trim() || 'General Holiday Gifts',
+            priceLimit: price,
+            currency,
+            raffleDate,
+            giftDate,
+            status: 'draft',
+            managerId: user.uid,
+            createdAt: new Date(),
+            inviteCode,
+            coverImageUrl: coverImageUrl || undefined,
+            revealed: false,
+          });
 
-      // Also add manager as the first participant
-      await addDoc(participantsCollection(docRef.id), {
-        id: '',
-        raffleId: docRef.id,
-        userId: user.uid,
-        name: user.displayName || 'Manager',
-        email: user.email || '',
-        status: 'accepted',
-        exclusions: [],
-        giftGiven: false,
-        expoPushToken: user.expoPushToken,
-        joinedAt: new Date(),
-      });
+          // Also add manager as the first participant
+          await addDoc(participantsCollection(docRef.id), {
+            id: '',
+            raffleId: docRef.id,
+            userId: user.uid,
+            name: user.displayName || 'Manager',
+            email: user.email || '',
+            status: 'accepted',
+            exclusions: [],
+            giftGiven: false,
+            expoPushToken: user.expoPushToken,
+            joinedAt: new Date(),
+          });
 
-      router.replace(`/raffle/${docRef.id}/manage` as any);
+          router.replace(`/raffle/${docRef.id}/manage` as any);
+        })(),
+        timeoutPromise,
+      ]);
     } catch (err: unknown) {
       console.error('Error creating raffle:', err);
       setError(err instanceof Error ? err.message : 'Failed to create raffle.');
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
     } finally {
       setLoading(false);
     }
@@ -140,6 +164,7 @@ export default function CreateRaffleScreen() {
       className="flex-1 bg-white"
     >
       <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={{ padding: 20, paddingBottom: 60 }}
         keyboardShouldPersistTaps="handled"
       >

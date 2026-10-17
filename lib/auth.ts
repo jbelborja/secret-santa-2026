@@ -213,7 +213,9 @@ export function useGoogleAuth() {
     }
 
     if (!isConfigured) {
-      throw new Error('Google Web Client ID is not configured in environment variables for mobile');
+      throw new Error(
+        'Google Sign-In requires EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID. Please configure it in .env or GitHub Secrets (from Firebase Console > Authentication > Sign-in method > Google > Web SDK configuration).'
+      );
     }
     return promptAsync();
   };

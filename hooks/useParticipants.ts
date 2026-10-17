@@ -30,9 +30,20 @@ export function useParticipants(raffleId?: string) {
     const coll = participantsCollection(raffleId);
     const q = query(coll, orderBy('joinedAt', 'asc'));
 
+    const timer = setTimeout(() => {
+      setLoading((current) => {
+        if (current) {
+          setError('Loading participants timed out.');
+          return false;
+        }
+        return current;
+      });
+    }, 12000);
+
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
+        clearTimeout(timer);
         const list: Participant[] = [];
         snapshot.forEach((docSnap) => {
           list.push(docSnap.data());
@@ -41,13 +52,17 @@ export function useParticipants(raffleId?: string) {
         setLoading(false);
       },
       (err) => {
+        clearTimeout(timer);
         console.error('Error fetching participants:', err);
         setError(err.message);
         setLoading(false);
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(timer);
+      unsubscribe();
+    };
   }, [raffleId]);
 
   const addParticipant = useCallback(
