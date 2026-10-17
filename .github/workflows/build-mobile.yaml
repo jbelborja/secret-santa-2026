@@ -39,20 +39,32 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Create .env
+        run: |
+          cat << 'EOF' > .env
+          EXPO_PUBLIC_FIREBASE_API_KEY=${{ secrets.EXPO_PUBLIC_FIREBASE_API_KEY }}
+          EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=${{ secrets.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          EXPO_PUBLIC_FIREBASE_PROJECT_ID=${{ secrets.EXPO_PUBLIC_FIREBASE_PROJECT_ID }}
+          EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=${{ secrets.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+          EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+          EXPO_PUBLIC_FIREBASE_APP_ID=${{ secrets.EXPO_PUBLIC_FIREBASE_APP_ID }}
+          EXPO_PUBLIC_FIREBASE_HOSTING_URL=${{ secrets.EXPO_PUBLIC_FIREBASE_HOSTING_URL }}
+          EOF
+
       - name: Create google-services.json
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
           DUMMY_JSON='{
             "project_info": {
-              "project_number": "123456789012",
-              "project_id": "secret-santa-2026-4f5f6",
-              "storage_bucket": "secret-santa-2026-4f5f6.firebasestorage.app"
+              "project_number": "000000000000",
+              "project_id": "dummy-project",
+              "storage_bucket": "dummy-project.appspot.com"
             },
             "client": [
               {
                 "client_info": {
-                  "mobilesdk_app_id": "1:123456789012:android:dummy",
+                  "mobilesdk_app_id": "1:000000000000:android:dummy",
                   "android_client_info": {
                     "package_name": "com.jbelborja.secretsanta"
                   }
@@ -60,7 +72,7 @@ jobs:
                 "oauth_client": [],
                 "api_key": [
                   {
-                    "current_key": "AIzaSyDummyKey"
+                    "current_key": "dummy-api-key"
                   }
                 ],
                 "services": {
@@ -116,6 +128,14 @@ jobs:
 
       - name: Build APK (Release)
         working-directory: ./android
+        env:
+          EXPO_PUBLIC_FIREBASE_API_KEY: ${{ secrets.EXPO_PUBLIC_FIREBASE_API_KEY }}
+          EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          EXPO_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.EXPO_PUBLIC_FIREBASE_PROJECT_ID }}
+          EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+          EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+          EXPO_PUBLIC_FIREBASE_APP_ID: ${{ secrets.EXPO_PUBLIC_FIREBASE_APP_ID }}
+          EXPO_PUBLIC_FIREBASE_HOSTING_URL: ${{ secrets.EXPO_PUBLIC_FIREBASE_HOSTING_URL }}
         run: ./gradlew assembleRelease -PkotlinVersion=1.9.25
 
       - name: Upload APK
@@ -146,6 +166,18 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Create .env
+        run: |
+          cat << 'EOF' > .env
+          EXPO_PUBLIC_FIREBASE_API_KEY=${{ secrets.EXPO_PUBLIC_FIREBASE_API_KEY }}
+          EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=${{ secrets.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          EXPO_PUBLIC_FIREBASE_PROJECT_ID=${{ secrets.EXPO_PUBLIC_FIREBASE_PROJECT_ID }}
+          EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=${{ secrets.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+          EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+          EXPO_PUBLIC_FIREBASE_APP_ID=${{ secrets.EXPO_PUBLIC_FIREBASE_APP_ID }}
+          EXPO_PUBLIC_FIREBASE_HOSTING_URL=${{ secrets.EXPO_PUBLIC_FIREBASE_HOSTING_URL }}
+          EOF
+
       - name: Create GoogleService-Info.plist
         env:
           GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
@@ -155,21 +187,21 @@ jobs:
           <plist version="1.0">
           <dict>
             <key>CLIENT_ID</key>
-            <string>dummy.apps.googleusercontent.com</string>
+            <string>000000000000-dummy.apps.googleusercontent.com</string>
             <key>REVERSED_CLIENT_ID</key>
-            <string>com.googleusercontent.apps.dummy</string>
+            <string>com.googleusercontent.apps.000000000000-dummy</string>
             <key>API_KEY</key>
-            <string>AIzaSyDummy</string>
+            <string>dummy-api-key</string>
             <key>GCM_SENDER_ID</key>
-            <string>123456789012</string>
+            <string>000000000000</string>
             <key>PLIST_VERSION</key>
             <string>1</string>
             <key>BUNDLE_ID</key>
             <string>com.jbelborja.secretsanta</string>
             <key>PROJECT_ID</key>
-            <string>secret-santa-2026-4f5f6</string>
+            <string>dummy-project</string>
             <key>STORAGE_BUCKET</key>
-            <string>secret-santa-2026-4f5f6.firebasestorage.app</string>
+            <string>dummy-project.appspot.com</string>
             <key>IS_ADS_ENABLED</key>
             <false/>
             <key>IS_ANALYTICS_ENABLED</key>
@@ -181,7 +213,7 @@ jobs:
             <key>IS_SIGNIN_ENABLED</key>
             <true/>
             <key>GOOGLE_APP_ID</key>
-            <string>1:123456789012:ios:dummy</string>
+            <string>1:000000000000:ios:dummy</string>
           </dict>
           </plist>'
 
@@ -284,6 +316,14 @@ jobs:
 
       - name: Build iOS App (.app / .ipa)
         working-directory: ./ios
+        env:
+          EXPO_PUBLIC_FIREBASE_API_KEY: ${{ secrets.EXPO_PUBLIC_FIREBASE_API_KEY }}
+          EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          EXPO_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.EXPO_PUBLIC_FIREBASE_PROJECT_ID }}
+          EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+          EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+          EXPO_PUBLIC_FIREBASE_APP_ID: ${{ secrets.EXPO_PUBLIC_FIREBASE_APP_ID }}
+          EXPO_PUBLIC_FIREBASE_HOSTING_URL: ${{ secrets.EXPO_PUBLIC_FIREBASE_HOSTING_URL }}
         run: |
           WORKSPACE_NAME=$(basename *.xcworkspace .xcworkspace)
           echo "Building workspace and scheme: $WORKSPACE_NAME"
@@ -323,7 +363,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release view latest-build || gh release create latest-build --title "Latest Secret Santa App" --notes "Automated native build of Secret Santa app" || true
-          gh release upload latest-build "secret-santa-ios.ipa#secret-santa.apk" --clobber
+          gh release upload latest-build "secret-santa-ios.ipa#secret-santa.ipa" --clobber
 
   prune-artifacts:
     runs-on: ubuntu-latest

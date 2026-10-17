@@ -12,48 +12,67 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let unsubscribeAuth: (() => void) | undefined;
     let unsubscribeUserDoc: (() => void) | undefined;
 
-    const unsubscribeAuth = onAuthStateChanged(auth, async (fbUser) => {
-      setFirebaseUser(fbUser);
+    try {
+      if (auth && (auth as any).app) {
+        unsubscribeAuth = onAuthStateChanged(
+          auth,
+          async (fbUser) => {
+            setFirebaseUser(fbUser);
 
-      if (fbUser) {
-        try {
-          // Listen to real-time updates on the user's Firestore profile
-          const docRef = userDoc(fbUser.uid);
-          unsubscribeUserDoc = onSnapshot(
-            docRef,
-            (snap) => {
-              if (snap.exists()) {
-                setUser(snap.data());
-              } else {
-                // If doc doesn't exist yet, sync it
-                syncUserDocument(fbUser).then((createdUser) => {
-                  setUser(createdUser);
-                });
+            if (fbUser) {
+              try {
+                // Listen to real-time updates on the user's Firestore profile
+                const docRef = userDoc(fbUser.uid);
+                unsubscribeUserDoc = onSnapshot(
+                  docRef,
+                  (snap) => {
+                    if (snap.exists()) {
+                      setUser(snap.data());
+                    } else {
+                      // If doc doesn't exist yet, sync it
+                      syncUserDocument(fbUser).then((createdUser) => {
+                        setUser(createdUser);
+                      });
+                    }
+                    setLoading(false);
+                  },
+                  (error) => {
+                    console.warn('Error listening to user document:', error);
+                    setLoading(false);
+                  }
+                );
+              } catch (err) {
+                console.warn('Error initializing user doc listener:', err);
+                setLoading(false);
               }
-              setLoading(false);
-            },
-            (error) => {
-              console.warn('Error listening to user document:', error);
+            } else {
+              if (unsubscribeUserDoc) {
+                unsubscribeUserDoc();
+              }
+              setUser(null);
               setLoading(false);
             }
-          );
-        } catch (err) {
-          console.warn('Error initializing user doc listener:', err);
-          setLoading(false);
-        }
+          },
+          (error) => {
+            console.warn('Auth state error:', error);
+            setLoading(false);
+          }
+        );
       } else {
-        if (unsubscribeUserDoc) {
-          unsubscribeUserDoc();
-        }
-        setUser(null);
         setLoading(false);
       }
-    });
+    } catch (err) {
+      console.warn('Error setting up auth state listener:', err);
+      setLoading(false);
+    }
 
     return () => {
-      unsubscribeAuth();
+      if (unsubscribeAuth) {
+        unsubscribeAuth();
+      }
       if (unsubscribeUserDoc) {
         unsubscribeUserDoc();
       }

@@ -1,7 +1,7 @@
 import '../global.css';
 
 import React, { useEffect } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -69,70 +69,102 @@ export default function RootLayout() {
     }
   }, [user, loading, segments, router]);
 
-  if (loading) {
-    return (
-      <SafeAreaProvider>
-        <View className="flex-1 bg-white items-center justify-center p-6">
-          <View className="w-16 h-16 rounded-2xl bg-red-50 border border-red-100 items-center justify-center mb-4 shadow-sm">
+  return (
+    <SafeAreaProvider style={styles.container}>
+      <StatusBar style="dark" />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <View style={styles.iconBox}>
             <Ionicons name="gift-outline" size={32} color="#B91C1C" />
           </View>
-          <Text className="text-xl font-bold text-gray-900 mb-1 tracking-tight">
+          <Text style={styles.title}>
             Secret Santa
           </Text>
-          <Text className="text-xs text-gray-500 mb-6">
+          <Text style={styles.subtitle}>
             Loading...
           </Text>
           <ActivityIndicator size="small" color="#B91C1C" />
         </View>
-      </SafeAreaProvider>
-    );
-  }
-
-  return (
-    <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <Stack
-        screenOptions={{
-          headerTintColor: '#B91C1C',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-          contentStyle: {
-            backgroundColor: '#FAFAFA',
-          },
-        }}
-      >
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="raffle/create"
-          options={{
-            headerTitle: 'Create Secret Santa',
-            presentation: 'modal',
-            headerStyle: { backgroundColor: '#FFFFFF' },
+      ) : (
+        <Stack
+          screenOptions={{
+            headerTintColor: '#B91C1C',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+            contentStyle: {
+              backgroundColor: '#FAFAFA',
+            },
           }}
-        />
-        <Stack.Screen
-          name="raffle/[id]"
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="invite/[code]"
-          options={{
-            headerTitle: 'Join Raffle',
-            presentation: 'modal',
-          }}
-        />
-        <Stack.Screen
-          name="+not-found"
-          options={{
-            title: 'Oops!',
-            headerShown: false,
-          }}
-        />
-      </Stack>
+        >
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="raffle/create"
+            options={{
+              headerTitle: 'Create Secret Santa',
+              presentation: 'modal',
+              headerStyle: { backgroundColor: '#FFFFFF' },
+            }}
+          />
+          <Stack.Screen
+            name="raffle/[id]"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="invite/[code]"
+            options={{
+              headerTitle: 'Join Raffle',
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name="+not-found"
+            options={{
+              title: 'Oops!',
+              headerShown: false,
+            }}
+          />
+        </Stack>
+      )}
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  iconBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FEE2E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 24,
+  },
+});

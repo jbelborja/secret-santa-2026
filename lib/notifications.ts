@@ -1,20 +1,24 @@
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-constants';
+import Constants from 'expo-constants';
 import { NotificationPayload } from '../types';
 
 /**
  * Configure foreground notification behavior
  */
 export function setupNotificationHandler() {
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-    }),
-  });
+  try {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
+  } catch (err) {
+    console.warn('Failed to configure notification handler:', err);
+  }
 }
 
 /**
@@ -41,8 +45,8 @@ export async function registerForPushNotificationsAsync(): Promise<string | unde
 
   try {
     const projectId =
-      Device.default.expoConfig?.extra?.eas?.projectId ??
-      Device.default.easConfig?.projectId;
+      Constants.expoConfig?.extra?.eas?.projectId ??
+      Constants.easConfig?.projectId;
 
     const tokenResponse = await Notifications.getExpoPushTokenAsync(
       projectId ? { projectId } : undefined

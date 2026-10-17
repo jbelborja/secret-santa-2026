@@ -23,6 +23,7 @@ export default function MyRafflesScreen() {
 
   return (
     <ScrollView
+      style={{ flex: 1, backgroundColor: '#FAFAFA' }}
       className="flex-1 bg-[#FAFAFA]"
       contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
       refreshControl={

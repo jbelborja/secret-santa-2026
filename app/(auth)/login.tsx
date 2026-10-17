@@ -100,10 +100,12 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1, backgroundColor: '#FFFFFF' }}
       className="flex-1 bg-white"
     >
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
+        style={{ flex: 1 }}
         keyboardShouldPersistTaps="handled"
         className="px-6 py-12 justify-center"
       >
