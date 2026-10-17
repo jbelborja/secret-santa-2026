@@ -34,9 +34,14 @@ jobs:
           channelId: live
 
       - name: Deploy Firestore Rules and Indexes
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > sa.json
-          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/sa.json
-          npx firebase-tools deploy --only firestore:rules,firestore:indexes,storage --project secret-santa-2026-4f5f6 --non-interactive || echo "Firestore rules deployment notice: Verify service account permissions"
-          rm -f sa.json
+          if [ -n "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "$FIREBASE_SERVICE_ACCOUNT" > sa.json
+            export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/sa.json
+            npx firebase-tools deploy --only firestore:rules,firestore:indexes,storage --project secret-santa-2026-4f5f6 --non-interactive || echo "Firestore rules deployment notice: Verify service account permissions"
+            rm -f sa.json
+          else
+            echo "Aviso: FIREBASE_SERVICE_ACCOUNT no configurado en secrets, omitiendo deploy de reglas"
+          fi
