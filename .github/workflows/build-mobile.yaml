@@ -198,7 +198,7 @@ jobs:
         id: pods-cache
         with:
           path: ~/Library/Caches/CocoaPods
-          key: pods-cache-${{ hashFiles('package.json') }}
+          key: pods-cache-${{ hashFiles('package.json') }}-v2
           restore-keys: pods-cache-
 
       - name: Prebuild iOS
@@ -213,14 +213,14 @@ jobs:
           with open('Podfile', 'r') as f:
               content = f.read()
 
-          # Fix 1: Modular headers for Firebase and Google pods inside the target
+          # Fix 1: Modular headers for Firebase and Google pods inside the target (pinned to 10.29.0 for Xcode 15 / Swift 5 compatibility)
           modular_pods = (
               "\n"
               "  # Modular headers for Firebase and Google\n"
-              "  pod 'FirebaseCore', :modular_headers => true\n"
-              "  pod 'FirebaseCoreInternal', :modular_headers => true\n"
-              "  pod 'FirebaseInstallations', :modular_headers => true\n"
-              "  pod 'FirebaseMessaging', :modular_headers => true\n"
+              "  pod 'FirebaseCore', '~> 10.29.0', :modular_headers => true\n"
+              "  pod 'FirebaseCoreInternal', '~> 10.29.0', :modular_headers => true\n"
+              "  pod 'FirebaseInstallations', '~> 10.29.0', :modular_headers => true\n"
+              "  pod 'FirebaseMessaging', '~> 10.29.0', :modular_headers => true\n"
               "  pod 'GoogleDataTransport', :modular_headers => true\n"
               "  pod 'GoogleUtilities', :modular_headers => true\n"
               "  pod 'PromisesObjC', :modular_headers => true\n"
@@ -248,6 +248,7 @@ jobs:
               "        if target.name.start_with?('Firebase') || target.name.start_with?('Google') || ['nanopb', 'PromisesObjC'].include?(target.name)\n"
               "          config.build_settings['DEFINES_MODULE'] = 'YES'\n"
               "          config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'\n"
+              "          config.build_settings['SWIFT_VERSION'] = '5.0'\n"
               "        end\n"
               "      end\n"
               "    end\n"
