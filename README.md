@@ -1,6 +1,6 @@
 # Secret Santa 🎅
 
-A festive, cross-platform Secret Santa mobile and web application built with **React Native**, **Expo SDK 57**, **Expo Router v4**, **NativeWind v4**, and **Firebase v11**.
+A festive, cross-platform Secret Santa mobile and web application built with **React Native**, **Expo SDK 52**, **Expo Router v4**, **NativeWind v4**, and **Firebase v11**.
 
 ---
 
@@ -23,8 +23,8 @@ A festive, cross-platform Secret Santa mobile and web application built with **R
 
 ## 🛠️ Tech Stack Summary
 
-- **Framework**: [Expo SDK 57](https://expo.dev) with New Architecture enabled
-- **Core**: React Native 0.76.9 / React 19
+- **Framework**: [Expo SDK 52](https://expo.dev) with New Architecture enabled
+- **Core**: React Native 0.76.9 / React 18.3
 - **Routing**: [Expo Router v4](https://docs.expo.dev/router/introduction/) (File-based routing)
 - **Styling**: [NativeWind v4.2](https://www.nativewind.dev/) & [Tailwind CSS v3.4](https://tailwindcss.com/)
 - **Backend / Database**: [Firebase JS SDK v11](https://firebase.google.com/docs/web/setup) (Modular Firestore, Auth, Storage, Hosting)
