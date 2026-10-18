@@ -50,3 +50,10 @@ coverage/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Firebase Functions
+functions/lib/
+functions/node_modules/
+functions/.env
+functions/.env.*
+!functions/.env.example

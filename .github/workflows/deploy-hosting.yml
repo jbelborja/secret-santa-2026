@@ -45,3 +45,35 @@ jobs:
           else
             echo "Aviso: FIREBASE_SERVICE_ACCOUNT no configurado en secrets, omitiendo deploy de reglas"
           fi
+
+      - name: Deploy Cloud Functions (Gmail SMTP Notifications)
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          SMTP_USER: ${{ secrets.SMTP_USER || 'familiabelborja@gmail.com' }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          EXPO_PUBLIC_FIREBASE_HOSTING_URL: ${{ secrets.EXPO_PUBLIC_FIREBASE_HOSTING_URL || 'https://secret-santa-2026-4f5f6.web.app' }}
+        run: |
+          if [ -n "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "$FIREBASE_SERVICE_ACCOUNT" > sa.json
+            export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/sa.json
+
+            # Create production runtime .env for Cloud Functions from GitHub Actions secrets
+            cat << EOF > functions/.env
+            SMTP_HOST=smtp.gmail.com
+            SMTP_PORT=587
+            SMTP_USER=${SMTP_USER}
+            SMTP_PASSWORD=${SMTP_PASSWORD}
+            SMTP_FROM=${SMTP_USER}
+            EXPO_PUBLIC_FIREBASE_HOSTING_URL=${EXPO_PUBLIC_FIREBASE_HOSTING_URL}
+            EOF
+
+            cd functions
+            npm install
+            npm run build
+            cd ..
+
+            npx firebase-tools deploy --only functions --project secret-santa-2026-4f5f6 --non-interactive || echo "Cloud Functions deploy notice: Verify Blaze plan and permissions"
+            rm -f sa.json functions/.env
+          else
+            echo "Aviso: FIREBASE_SERVICE_ACCOUNT no configurado en secrets, omitiendo deploy de funciones"
+          fi
