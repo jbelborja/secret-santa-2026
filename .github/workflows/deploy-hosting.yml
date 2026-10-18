@@ -58,14 +58,12 @@ jobs:
             export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/sa.json
 
             # Create production runtime .env for Cloud Functions from GitHub Actions secrets
-            cat << EOF > functions/.env
-            SMTP_HOST=smtp.gmail.com
-            SMTP_PORT=587
-            SMTP_USER=${SMTP_USER}
-            SMTP_PASSWORD=${SMTP_PASSWORD}
-            SMTP_FROM=${SMTP_USER}
-            EXPO_PUBLIC_FIREBASE_HOSTING_URL=${EXPO_PUBLIC_FIREBASE_HOSTING_URL}
-            EOF
+            echo "SMTP_HOST=smtp.gmail.com" > functions/.env
+            echo "SMTP_PORT=587" >> functions/.env
+            echo "SMTP_USER=${SMTP_USER}" >> functions/.env
+            echo "SMTP_PASSWORD=${SMTP_PASSWORD}" >> functions/.env
+            echo "SMTP_FROM=${SMTP_USER}" >> functions/.env
+            echo "EXPO_PUBLIC_FIREBASE_HOSTING_URL=${EXPO_PUBLIC_FIREBASE_HOSTING_URL}" >> functions/.env
 
             cd functions
             npm install
