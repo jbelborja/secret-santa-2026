@@ -1,9 +1,13 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
+import { useTranslation } from '@/lib/i18n';
+
 export default function TabsLayout() {
+  const { t } = useTranslation();
+
   return (
     <Tabs
       screenOptions={{
@@ -26,11 +30,15 @@ export default function TabsLayout() {
         headerShadowVisible: false,
         headerTitle: () => (
           <View className="flex-row items-center">
-            <View className="w-7 h-7 rounded-lg bg-red-50 items-center justify-center mr-2 border border-red-100">
-              <Ionicons name="gift-outline" size={16} color="#B91C1C" />
+            <View className="w-8 h-8 rounded-lg overflow-hidden mr-2.5 border border-red-100 bg-red-50 items-center justify-center shadow-xs">
+              <Image
+                source={require('../../assets/icon.png')}
+                style={{ width: 32, height: 32, borderRadius: 8 }}
+                resizeMode="cover"
+              />
             </View>
             <Text className="text-lg font-black text-gray-900 tracking-tight">
-              Secret Santa
+              {t('auth.appName')}
             </Text>
           </View>
         ),
@@ -39,8 +47,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'My Raffles',
-          tabBarLabel: 'My Raffles',
+          title: t('tabs.myRaffles'),
+          tabBarLabel: t('tabs.myRaffles'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? 'gift' : 'gift-outline'}
@@ -53,8 +61,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
-          tabBarLabel: 'Profile',
+          title: t('tabs.profile'),
+          tabBarLabel: t('tabs.profile'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? 'person-circle' : 'person-circle-outline'}

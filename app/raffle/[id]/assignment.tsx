@@ -11,6 +11,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { differenceInDays } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from '@/lib/i18n';
 import { useRaffle } from '@/hooks/useRaffle';
 import { useParticipants } from '@/hooks/useParticipants';
 import { participantDoc, updateDoc } from '@/lib/firestore';
@@ -23,6 +24,7 @@ export default function AssignmentRevealScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { raffle, loading: raffleLoading } = useRaffle(id);
   const { participants, loading: partsLoading, markGiftGiven } = useParticipants(id);
 
@@ -66,13 +68,13 @@ export default function AssignmentRevealScreen() {
   }, []);
 
   if (raffleLoading || partsLoading) {
-    return <LoadingSpinner message="Opening your secret envelope... ✉️" />;
+    return <LoadingSpinner message={t('assignment.openingEnvelope')} />;
   }
 
   if (!raffle) {
     return (
       <View className="flex-1 items-center justify-center p-6 bg-white">
-        <Text className="text-lg font-bold text-gray-800">Raffle not found</Text>
+        <Text className="text-lg font-bold text-gray-800">{t('assignment.notFound')}</Text>
       </View>
     );
   }
@@ -85,13 +87,13 @@ export default function AssignmentRevealScreen() {
           <Ionicons name="time-outline" size={32} color="#D97706" />
         </View>
         <Text className="text-lg font-bold text-gray-800 text-center">
-          The Secret Santa draw has not taken place yet!
+          {t('assignment.notDrawnTitle')}
         </Text>
         <Text className="text-xs text-gray-500 text-center mt-1 mb-4">
-          Wait for your organizer to draw names.
+          {t('assignment.notDrawnDesc')}
         </Text>
         <Button
-          title="Back to Raffle"
+          title={t('assignment.backToRaffle')}
           onPress={() => router.back()}
           variant="primary"
         />
@@ -118,13 +120,13 @@ export default function AssignmentRevealScreen() {
     try {
       await markGiftGiven(myParticipant.id, !myParticipant.giftGiven);
       Alert.alert(
-        !myParticipant.giftGiven ? 'Marked as Delivered' : 'Status Updated',
+        !myParticipant.giftGiven ? t('assignment.deliveredTitle') : t('assignment.statusUpdatedTitle'),
         !myParticipant.giftGiven
-          ? 'Great job completing your gift delivery!'
-          : 'Gift status marked as pending.'
+          ? t('assignment.deliveredDesc')
+          : t('assignment.statusUpdatedDesc')
       );
     } catch (err) {
-      Alert.alert('Error', 'Failed to update gift status');
+      Alert.alert(t('common.error'), t('common.error'));
     } finally {
       setMarking(false);
     }
@@ -166,11 +168,11 @@ export default function AssignmentRevealScreen() {
         >
           <View className="bg-red-50 px-3 py-1 rounded-full mb-3">
             <Text className="text-xs font-bold text-[#B91C1C] uppercase tracking-wider">
-              Secret Assignment
+              {t('assignment.secretHeader')}
             </Text>
           </View>
 
-          <Text className="text-sm text-gray-500 font-medium">You are gifting to:</Text>
+          <Text className="text-sm text-gray-500 font-medium">{t('assignment.giftingTo')}</Text>
 
           {recipientParticipant ? (
             <View className="items-center my-4">
@@ -186,10 +188,10 @@ export default function AssignmentRevealScreen() {
           ) : (
             <View className="my-4 items-center">
               <Text className="text-2xl font-bold text-gray-400">
-                Unassigned
+                {t('assignment.unassigned')}
               </Text>
               <Text className="text-xs text-gray-400 mt-1">
-                Contact your raffle organizer
+                {t('assignment.contactOrganizer')}
               </Text>
             </View>
           )}
@@ -197,23 +199,27 @@ export default function AssignmentRevealScreen() {
           {/* Details Pill Box */}
           <View className="w-full bg-gray-50 rounded-2xl p-4 border border-gray-100 my-2 space-y-2">
             <View className="flex-row items-center justify-between">
-              <Text className="text-xs text-gray-500 font-medium">Theme:</Text>
+              <Text className="text-xs text-gray-500 font-medium">{t('assignment.themeLabel')}</Text>
               <Text className="text-xs font-bold text-gray-800">
-                {raffle.topic || 'General gifts'}
+                {raffle.topic || t('assignment.generalGifts')}
               </Text>
             </View>
 
             <View className="flex-row items-center justify-between">
-              <Text className="text-xs text-gray-500 font-medium">Budget Limit:</Text>
+              <Text className="text-xs text-gray-500 font-medium">{t('assignment.budgetLabel')}</Text>
               <Text className="text-xs font-bold text-[#D97706]">
                 {raffle.priceLimit} {raffle.currency}
               </Text>
             </View>
 
             <View className="flex-row items-center justify-between">
-              <Text className="text-xs text-gray-500 font-medium">Exchange Countdown:</Text>
+              <Text className="text-xs text-gray-500 font-medium">{t('assignment.exchangeCountdown')}</Text>
               <Text className="text-xs font-bold text-[#15803D]">
-                {daysLeft === 0 ? 'Gift day is today!' : `Gift day in ${daysLeft} days`}
+                {daysLeft === 0
+                  ? t('assignment.giftDayToday')
+                  : daysLeft === 1
+                  ? t('assignment.giftDayInOneDay')
+                  : t('assignment.giftDayInDays', { count: daysLeft })}
               </Text>
             </View>
           </View>
@@ -223,8 +229,8 @@ export default function AssignmentRevealScreen() {
             <Button
               title={
                 myParticipant.giftGiven
-                  ? 'Mark as Not Given'
-                  : 'Mark Gift as Given'
+                  ? t('assignment.markAsNotGiven')
+                  : t('assignment.markAsGiven')
               }
               variant={myParticipant.giftGiven ? 'outline' : 'secondary'}
               size="lg"
@@ -245,10 +251,10 @@ export default function AssignmentRevealScreen() {
             </View>
             <View>
               <Text className="text-base font-bold text-violet-900">
-                Everyone's Matches Revealed
+                {t('assignment.matchesRevealedTitle')}
               </Text>
               <Text className="text-xs text-violet-700">
-                The exchange has completed!
+                {t('assignment.matchesRevealedDesc')}
               </Text>
             </View>
           </View>
@@ -272,7 +278,7 @@ export default function AssignmentRevealScreen() {
                     <Ionicons name="arrow-forward" size={14} color="#8B5CF6" />
                     <View className="flex-row items-center">
                       <Text className="text-xs font-bold text-[#B91C1C] mr-2">
-                        {recipient?.name || 'Someone'}
+                        {recipient?.name || t('assignment.someone')}
                       </Text>
                       <Avatar name={recipient?.name || '?'} size="sm" />
                     </View>

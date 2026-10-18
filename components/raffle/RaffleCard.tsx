@@ -6,6 +6,8 @@ import { Card } from '../ui/Card';
 import { StatusBadge } from './StatusBadge';
 import { Badge } from '../ui/Badge';
 
+import { useTranslation } from '../../lib/i18n';
+
 export interface RaffleCardProps {
   raffle: Raffle;
   onPress: () => void;
@@ -19,6 +21,7 @@ export const RaffleCard: React.FC<RaffleCardProps> = ({
   isManager = false,
   className = '',
 }) => {
+  const { t, formatDate } = useTranslation();
   const giftDate =
     raffle.giftDate instanceof Date ? raffle.giftDate : new Date(raffle.giftDate);
 
@@ -27,11 +30,7 @@ export const RaffleCard: React.FC<RaffleCardProps> = ({
     (giftDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
   );
 
-  const formattedGiftDate = giftDate.toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const formattedGiftDate = formatDate(giftDate, 'MMM d, yyyy');
 
   return (
     <Card
@@ -53,7 +52,7 @@ export const RaffleCard: React.FC<RaffleCardProps> = ({
         <View className="h-12 w-full bg-[#B91C1C] flex-row items-center px-4">
           <Ionicons name="gift-outline" size={16} color="rgba(255,255,255,0.7)" />
           <Text className="text-white text-xs font-semibold tracking-widest uppercase ml-2">
-            Secret Santa
+            {t('raffleCard.secretSanta')}
           </Text>
         </View>
       )}
@@ -65,7 +64,7 @@ export const RaffleCard: React.FC<RaffleCardProps> = ({
           <StatusBadge status={raffle.status} />
           {isManager ? (
             <Badge
-              label="Organiser"
+              label={t('raffleCard.organizer')}
               variant="warning"
               size="sm"
             />
@@ -107,7 +106,9 @@ export const RaffleCard: React.FC<RaffleCardProps> = ({
             <View className="flex-row items-center">
               <Ionicons name="time-outline" size={13} color="#B91C1C" />
               <Text className="text-xs font-medium text-[#B91C1C] ml-1.5">
-                {diffDays === 1 ? '1 day until gift exchange' : `${diffDays} days until gift exchange`}
+                {diffDays === 1
+                  ? t('raffleCard.oneDayUntil')
+                  : t('raffleCard.daysUntil', { count: diffDays })}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={13} color="#B91C1C" />

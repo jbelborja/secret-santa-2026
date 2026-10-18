@@ -15,5 +15,9 @@
     "nativewind-env.d.ts",
     "app/**/*",
     "components/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "__tests__"
   ]
 }

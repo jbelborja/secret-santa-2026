@@ -29,11 +29,14 @@ function calculateTimeRemaining(target: Date): TimeRemaining {
   return { days, hours, minutes, seconds, isPast: false };
 }
 
+import { useTranslation } from '../lib/i18n';
+
 export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   targetDate,
   label,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const target = targetDate instanceof Date ? targetDate : new Date(targetDate);
   const [timeLeft, setTimeLeft] = useState<TimeRemaining>(() =>
     calculateTimeRemaining(target)
@@ -79,18 +82,18 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
       {timeLeft.isPast ? (
         <View className="py-2 px-4 bg-emerald-50 rounded-xl border border-emerald-200">
           <Text className="text-sm font-semibold text-emerald-700 text-center">
-            This date has passed
+            {t('timer.past')}
           </Text>
         </View>
       ) : (
         <View className="flex-row items-center justify-center">
-          <Segment value={timeLeft.days} unit="Days" />
+          <Segment value={timeLeft.days} unit={t('timer.days')} />
           <Separator />
-          <Segment value={timeLeft.hours} unit="Hrs" />
+          <Segment value={timeLeft.hours} unit={t('timer.hrs')} />
           <Separator />
-          <Segment value={timeLeft.minutes} unit="Min" />
+          <Segment value={timeLeft.minutes} unit={t('timer.min')} />
           <Separator />
-          <Segment value={timeLeft.seconds} unit="Sec" />
+          <Segment value={timeLeft.seconds} unit={t('timer.sec')} />
         </View>
       )}
     </View>

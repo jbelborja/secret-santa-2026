@@ -146,14 +146,17 @@ export function useGoogleAuth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-  const androidClientId = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
+  const webClientId =
+    process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
+    '553006398541-k0n27c85h262eqmn7kjrdtqq67boofir.apps.googleusercontent.com';
+  const androidClientId =
+    process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ||
+    '553006398541-1g7111k3cg3ldsth2pi756bi9p9lpqsu.apps.googleusercontent.com';
   const isWeb = Platform.OS === 'web';
   const isAndroid = Platform.OS === 'android';
 
   // Android OAuth clients use the reverse of their client ID as the redirect URI scheme.
-  // This avoids registering custom schemes in Google Cloud Console (Android clients
-  // are verified by package name + SHA-1 fingerprint instead).
+  // RFC 8252 specifies that native apps must use the path /oauth2redirect.
   const androidReverseScheme = androidClientId
     ? `com.googleusercontent.apps.${androidClientId.replace('.apps.googleusercontent.com', '')}`
     : undefined;
@@ -161,9 +164,13 @@ export function useGoogleAuth() {
   const nativeClientId = isAndroid ? (androidClientId ?? webClientId) : webClientId;
   const isConfigured = isWeb || Boolean(nativeClientId);
 
-  const redirectUri = AuthSession.makeRedirectUri({
-    scheme: isAndroid && androidReverseScheme ? androidReverseScheme : 'secretsanta',
-  });
+  const redirectUri =
+    isAndroid && androidReverseScheme
+      ? `${androidReverseScheme}:/oauth2redirect`
+      : AuthSession.makeRedirectUri({
+          scheme: 'secretsanta',
+          path: 'oauth2redirect',
+        });
 
   const discovery = {
     authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
@@ -201,7 +208,7 @@ export function useGoogleAuth() {
             discovery
           );
 
-          const idToken = (tokenResult as any).idToken ?? tokenResult.additionalParameters?.id_token;
+          const idToken = (tokenResult as any).idToken ?? (tokenResult as any).additionalParameters?.id_token;
           if (!idToken) {
             throw new Error('Google did not return an id_token. Check that your OAuth client has the openid scope enabled.');
           }

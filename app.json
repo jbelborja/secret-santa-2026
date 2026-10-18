@@ -43,6 +43,19 @@
             "BROWSABLE",
             "DEFAULT"
           ]
+        },
+        {
+          "action": "VIEW",
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ],
+          "data": [
+            {
+              "scheme": "com.googleusercontent.apps.553006398541-1g7111k3cg3ldsth2pi756bi9p9lpqsu",
+              "pathPrefix": "/oauth2redirect"
+            }
+          ]
         }
       ]
     },

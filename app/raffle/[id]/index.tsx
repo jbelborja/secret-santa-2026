@@ -8,6 +8,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from '@/lib/i18n';
 import { useRaffle } from '@/hooks/useRaffle';
 import { useParticipants } from '@/hooks/useParticipants';
 import { updateDoc, participantDoc, addDoc, participantsCollection } from '@/lib/firestore';
@@ -23,13 +24,14 @@ export default function RaffleParticipantScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { raffle, loading: raffleLoading, error: raffleError } = useRaffle(id);
   const { participants, loading: partsLoading, error: partsError } = useParticipants(id);
 
   const [actionLoading, setActionLoading] = useState(false);
 
   if (raffleLoading || partsLoading) {
-    return <LoadingSpinner message="Loading raffle details..." />;
+    return <LoadingSpinner message={t('raffleDetail.loading')} />;
   }
 
   if (raffleError || !raffle) {
@@ -39,10 +41,10 @@ export default function RaffleParticipantScreen() {
           <Ionicons name="alert-circle-outline" size={32} color="#DC2626" />
         </View>
         <Text className="text-lg font-bold text-gray-800 text-center">
-          {raffleError || 'Raffle not found'}
+          {raffleError || t('raffleDetail.notFound')}
         </Text>
         <Button
-          title="Go to My Raffles"
+          title={t('raffleDetail.goToRaffles')}
           onPress={() => router.replace('/(tabs)')}
           variant="primary"
           className="mt-4"
@@ -58,7 +60,7 @@ export default function RaffleParticipantScreen() {
 
   const isDrawn = raffle.status === 'drawn' || raffle.status === 'completed';
   const targetDateForTimer = isDrawn ? raffle.giftDate : raffle.raffleDate;
-  const timerLabel = isDrawn ? 'Gift Exchange In' : 'Pairings Drawn In';
+  const timerLabel = isDrawn ? t('raffleDetail.giftExchangeIn') : t('raffleDetail.pairingsDrawnIn');
 
   const handleAcceptInvite = async () => {
     if (!user || !id) return;
@@ -119,7 +121,7 @@ export default function RaffleParticipantScreen() {
               <StatusBadge status={raffle.status} />
               {isManager ? (
                 <View className="ml-2">
-                  <Badge label="Organiser" variant="warning" size="sm" />
+                  <Badge label={t('raffleDetail.organizer')} variant="warning" size="sm" />
                 </View>
               ) : null}
             </View>
@@ -128,7 +130,7 @@ export default function RaffleParticipantScreen() {
             </Text>
             {raffle.topic ? (
               <Text className="text-sm text-gray-600 mt-1">
-                Theme: <Text className="font-semibold">{raffle.topic}</Text>
+                {t('raffleDetail.themePrefix')}<Text className="font-semibold">{raffle.topic}</Text>
               </Text>
             ) : null}
           </View>
@@ -150,7 +152,7 @@ export default function RaffleParticipantScreen() {
             <View className="flex-row items-center">
               <Ionicons name="settings-outline" size={16} color="#B91C1C" />
               <Text className="text-xs font-bold text-[#B91C1C] ml-1.5">
-                Manager Dashboard & Draw Controls
+                {t('raffleDetail.managerDashboard')}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color="#B91C1C" />
@@ -168,20 +170,20 @@ export default function RaffleParticipantScreen() {
       {/* Participation Status Card */}
       <Card className="mb-4 bg-white border border-gray-100">
         <Text className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-          Your Status
+          {t('raffleDetail.yourStatus')}
         </Text>
 
         {!myParticipant || myParticipant.status === 'invited' ? (
           <View className="py-2">
             <Text className="text-base font-bold text-gray-900 mb-1">
-              You are invited to join
+              {t('raffleDetail.invitedTitle')}
             </Text>
             <Text className="text-xs text-gray-500 mb-4">
-              Accept to be included in the Secret Santa draw.
+              {t('raffleDetail.invitedSubtitle')}
             </Text>
             <View className="flex-row space-x-3">
               <Button
-                title="Decline"
+                title={t('raffleDetail.decline')}
                 variant="outline"
                 size="md"
                 className="flex-1 mr-2"
@@ -189,7 +191,7 @@ export default function RaffleParticipantScreen() {
                 onPress={handleDeclineInvite}
               />
               <Button
-                title="Accept Invitation"
+                title={t('raffleDetail.accept')}
                 variant="secondary"
                 size="md"
                 className="flex-1 ml-2"
@@ -203,11 +205,11 @@ export default function RaffleParticipantScreen() {
             <View className="flex-row items-center">
               <Ionicons name="close-circle" size={24} color="#DC2626" />
               <Text className="text-sm font-semibold text-red-600 ml-2">
-                You declined this raffle.
+                {t('raffleDetail.declinedNotice')}
               </Text>
             </View>
             <Button
-              title="Rejoin"
+              title={t('raffleDetail.rejoin')}
               size="sm"
               variant="outline"
               loading={actionLoading}
@@ -220,14 +222,14 @@ export default function RaffleParticipantScreen() {
               <View className="flex-row items-center">
                 <Ionicons name="checkmark-circle" size={22} color="#15803D" />
                 <Text className="text-base font-bold text-[#15803D] ml-2">
-                  You're in!
+                  {t('raffleDetail.inNotice')}
                 </Text>
               </View>
               {myParticipant.giftGiven ? (
                 <View className="bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex-row items-center">
                   <Ionicons name="checkmark" size={12} color="#059669" />
                   <Text className="text-xs font-semibold text-emerald-700 ml-1">
-                    Gift Sent
+                    {t('raffleDetail.giftSentBadge')}
                   </Text>
                 </View>
               ) : null}
@@ -235,7 +237,7 @@ export default function RaffleParticipantScreen() {
 
             {isDrawn ? (
               <Button
-                title="View My Secret Assignment"
+                title={t('raffleDetail.viewAssignment')}
                 variant="primary"
                 size="md"
                 leftIcon={<Ionicons name="gift-outline" size={16} color="#FFFFFF" />}
@@ -243,7 +245,7 @@ export default function RaffleParticipantScreen() {
               />
             ) : (
               <Text className="text-xs text-gray-500 italic">
-                Pairings will be drawn once the organizer starts the raffle.
+                {t('raffleDetail.waitingDrawNotice')}
               </Text>
             )}
           </View>
@@ -259,10 +261,10 @@ export default function RaffleParticipantScreen() {
             </View>
             <View>
               <Text className="text-base font-black text-violet-900">
-                All Assignments Revealed
+                {t('raffleDetail.allRevealedTitle')}
               </Text>
               <Text className="text-xs text-violet-700">
-                The exchange is complete. Here is who gave to whom:
+                {t('raffleDetail.allRevealedSubtitle')}
               </Text>
             </View>
           </View>
@@ -286,7 +288,7 @@ export default function RaffleParticipantScreen() {
                     <Ionicons name="arrow-forward" size={16} color="#8B5CF6" />
                     <View className="flex-row items-center">
                       <Text className="text-sm font-bold text-[#B91C1C] mr-2">
-                        {recipient?.name || 'Someone'}
+                        {recipient?.name || t('raffleDetail.someone')}
                       </Text>
                       <Avatar name={recipient?.name || '?'} size="sm" />
                     </View>
@@ -301,10 +303,12 @@ export default function RaffleParticipantScreen() {
       <View className="mt-2">
         <View className="flex-row items-center justify-between mb-3">
           <Text className="text-base font-bold text-gray-900">
-            Participants ({participants.length})
+            {t('raffleDetail.participantsTitle', { count: participants.length })}
           </Text>
           <Text className="text-xs text-gray-400">
-            {participants.filter((p) => p.status === 'accepted').length} confirmed
+            {t('raffleDetail.confirmedCount', {
+              count: participants.filter((p) => p.status === 'accepted').length,
+            })}
           </Text>
         </View>
 
@@ -316,7 +320,7 @@ export default function RaffleParticipantScreen() {
             <View className="flex-row items-center">
               <Avatar name={p.name} size="sm" />
               <Text className="text-sm font-semibold text-gray-900 ml-3">
-                {p.name} {p.userId === user?.uid ? '(You)' : ''}
+                {p.name} {p.userId === user?.uid ? t('raffleDetail.you') : ''}
               </Text>
             </View>
             <StatusBadge status={p.status} />

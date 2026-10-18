@@ -13,6 +13,7 @@ import { writeBatch } from 'firebase/firestore';
 import { format, parse, isValid } from 'date-fns';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from '@/lib/i18n';
 import { useRaffle } from '@/hooks/useRaffle';
 import { useParticipants } from '@/hooks/useParticipants';
 import { raffleDoc, participantDoc } from '@/lib/firestore';
@@ -30,6 +31,7 @@ export default function ManageRaffleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
+  const { t, formatDate } = useTranslation();
   const { raffle, loading: raffleLoading, updateRaffle } = useRaffle(id);
   const { participants, loading: partsLoading, markGiftGiven } = useParticipants(id);
 
@@ -44,13 +46,13 @@ export default function ManageRaffleScreen() {
   const [drawError, setDrawError] = useState<string | null>(null);
 
   if (raffleLoading || partsLoading) {
-    return <LoadingSpinner message="Loading management console..." />;
+    return <LoadingSpinner message={t('manageRaffle.loading')} />;
   }
 
   if (!raffle) {
     return (
       <View className="flex-1 items-center justify-center p-6 bg-white">
-        <Text className="text-lg font-bold text-gray-800">Raffle not found</Text>
+        <Text className="text-lg font-bold text-gray-800">{t('manageRaffle.notFound')}</Text>
       </View>
     );
   }
@@ -63,10 +65,10 @@ export default function ManageRaffleScreen() {
           <Ionicons name="ban-outline" size={32} color="#DC2626" />
         </View>
         <Text className="text-lg font-bold text-gray-800 text-center">
-          Only the organizer can access this page.
+          {t('manageRaffle.onlyOrganizer')}
         </Text>
         <Button
-          title="Back to Raffle"
+          title={t('manageRaffle.backToRaffle')}
           onPress={() => router.replace(`/raffle/${raffle.id}` as any)}
           variant="primary"
           className="mt-4"
@@ -93,7 +95,7 @@ export default function ManageRaffleScreen() {
     const parsedGiftDate = parse(editGiftDate, 'yyyy-MM-dd', new Date());
 
     if (!editName.trim() || isNaN(price) || !isValid(parsedGiftDate)) {
-      Alert.alert('Error', 'Please verify your inputs');
+      Alert.alert(t('common.error'), t('manageRaffle.inputValidation'));
       return;
     }
 
@@ -107,7 +109,7 @@ export default function ManageRaffleScreen() {
       });
       setEditing(false);
     } catch (err) {
-      Alert.alert('Error', 'Failed to update raffle');
+      Alert.alert(t('common.error'), t('common.error'));
     } finally {
       setSavingEdit(false);
     }
@@ -118,23 +120,23 @@ export default function ManageRaffleScreen() {
       await updateRaffle({ status: 'inviting' });
       setInviteModalVisible(true);
     } catch (err) {
-      Alert.alert('Error', 'Could not open raffle for invitations');
+      Alert.alert(t('common.error'), t('common.error'));
     }
   };
 
   const handleExecuteDraw = async () => {
     if (acceptedCount < 2) {
-      Alert.alert('Not enough participants', 'At least 2 accepted participants are needed to draw.');
+      Alert.alert(t('manageRaffle.drawIssue'), t('manageRaffle.needTwoParticipants'));
       return;
     }
 
     Alert.alert(
-      'Confirm Draw',
-      `${acceptedCount} accepted participants will be secretly matched. This cannot be undone.`,
+      t('manageRaffle.confirmDrawTitle'),
+      t('manageRaffle.confirmDrawDesc', { count: acceptedCount }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Draw Names',
+          text: t('manageRaffle.drawNamesBtn'),
           style: 'default',
           onPress: async () => {
             setDrawing(true);
@@ -143,7 +145,7 @@ export default function ManageRaffleScreen() {
             const result = runDraw(participants);
 
             if (!result.success || !result.assignments) {
-              setDrawError(result.error || 'Failed to draw pairings. Please adjust exclusions.');
+              setDrawError(result.error || t('manageRaffle.drawIssue'));
               setDrawing(false);
               return;
             }
@@ -170,16 +172,16 @@ export default function ManageRaffleScreen() {
 
               if (tokens.length > 0) {
                 sendBatchPushNotifications(tokens, {
-                  title: `Secret Santa: Names Drawn`,
-                  body: `Your secret match for "${raffle.name}" has been chosen! Tap to reveal.`,
+                  title: t('manageRaffle.notificationTitle'),
+                  body: t('manageRaffle.notificationBody', { name: raffle.name }),
                   data: { raffleId: raffle.id },
                 });
               }
 
-              Alert.alert('Success', 'Pairings have been generated! Everyone can now view their secret match.');
+              Alert.alert(t('manageRaffle.drawSuccessTitle'), t('manageRaffle.drawSuccessDesc'));
             } catch (err: unknown) {
               console.error('Error committing draw results:', err);
-              setDrawError(err instanceof Error ? err.message : 'Error committing draw');
+              setDrawError(err instanceof Error ? err.message : t('common.error'));
             } finally {
               setDrawing(false);
             }
@@ -191,18 +193,18 @@ export default function ManageRaffleScreen() {
 
   const handleRevealAssignments = async () => {
     Alert.alert(
-      'Reveal All Assignments',
-      'This will make all giver -> recipient pairings visible to all participants.',
+      t('manageRaffle.revealConfirmTitle'),
+      t('manageRaffle.revealConfirmDesc'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Reveal to Everyone',
+          text: t('manageRaffle.revealConfirmBtn'),
           onPress: async () => {
             try {
               await updateRaffle({ revealed: true, status: 'completed' });
-              Alert.alert('Assignments Revealed', 'Everyone can now see all matches.');
+              Alert.alert(t('manageRaffle.revealedAlertTitle'), t('manageRaffle.revealedAlertDesc'));
             } catch (err) {
-              Alert.alert('Error', 'Failed to reveal assignments');
+              Alert.alert(t('common.error'), t('common.error'));
             }
           },
         },
@@ -225,7 +227,7 @@ export default function ManageRaffleScreen() {
               className="flex-row items-center bg-gray-100 px-3 py-1.5 rounded-lg active:bg-gray-200"
             >
               <Ionicons name="create-outline" size={14} color="#374151" />
-              <Text className="text-xs font-semibold text-gray-700 ml-1">Edit</Text>
+              <Text className="text-xs font-semibold text-gray-700 ml-1">{t('manageRaffle.edit')}</Text>
             </Pressable>
           ) : null}
         </View>
@@ -233,41 +235,43 @@ export default function ManageRaffleScreen() {
         {!editing ? (
           <View>
             <Text className="text-2xl font-black text-gray-900 mt-1">{raffle.name}</Text>
-            <Text className="text-sm text-gray-600 mt-1">Theme: {raffle.topic || 'General'}</Text>
+            <Text className="text-sm text-gray-600 mt-1">
+              {t('raffleDetail.themePrefix')}{raffle.topic || t('manageRaffle.generalTopic')}
+            </Text>
             <View className="flex-row items-center justify-between mt-3 pt-3 border-t border-gray-100">
               <Text className="text-xs font-semibold text-gray-700">
-                Budget: {raffle.priceLimit} {raffle.currency}
+                {t('manageRaffle.budgetPrefix')}{raffle.priceLimit} {raffle.currency}
               </Text>
               <Text className="text-xs font-semibold text-gray-700">
-                Gift Date: {format(raffle.giftDate, 'MMM d, yyyy')}
+                {t('manageRaffle.giftDatePrefix')}{formatDate(raffle.giftDate, 'MMM d, yyyy')}
               </Text>
             </View>
           </View>
         ) : (
           <View className="mt-2 space-y-1">
-            <Input label="Raffle Name" value={editName} onChangeText={setEditName} />
-            <Input label="Theme / Topic" value={editTopic} onChangeText={setEditTopic} />
+            <Input label={t('createRaffle.nameLabel')} value={editName} onChangeText={setEditName} />
+            <Input label={t('createRaffle.themeLabel')} value={editTopic} onChangeText={setEditTopic} />
             <Input
-              label="Budget Limit"
+              label={t('createRaffle.budgetLabel')}
               value={editPriceLimit}
               onChangeText={setEditPriceLimit}
               keyboardType="numeric"
             />
             <Input
-              label="Gift Date (YYYY-MM-DD)"
+              label={t('createRaffle.giftDateLabel')}
               value={editGiftDate}
               onChangeText={setEditGiftDate}
             />
             <View className="flex-row space-x-2 mt-2">
               <Button
-                title="Cancel"
+                title={t('common.cancel')}
                 variant="ghost"
                 size="sm"
                 className="flex-1"
                 onPress={() => setEditing(false)}
               />
               <Button
-                title="Save Changes"
+                title={t('manageRaffle.saveChanges')}
                 variant="primary"
                 size="sm"
                 className="flex-1 ml-2"
@@ -282,30 +286,30 @@ export default function ManageRaffleScreen() {
       {/* Participants Summary Metric */}
       <Card className="mb-4 bg-white border border-gray-100">
         <Text className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
-          Participants Overview
+          {t('manageRaffle.overviewTitle')}
         </Text>
 
         <View className="flex-row items-center justify-between mb-4">
           <View className="items-center flex-1">
             <Text className="text-2xl font-extrabold text-blue-600">{invitedCount}</Text>
-            <Text className="text-xs text-gray-500 font-medium mt-0.5">Invited</Text>
+            <Text className="text-xs text-gray-500 font-medium mt-0.5">{t('manageRaffle.invited')}</Text>
           </View>
           <View className="w-px h-8 bg-gray-200" />
           <View className="items-center flex-1">
             <Text className="text-2xl font-extrabold text-[#15803D]">{acceptedCount}</Text>
-            <Text className="text-xs text-gray-500 font-medium mt-0.5">Accepted</Text>
+            <Text className="text-xs text-gray-500 font-medium mt-0.5">{t('manageRaffle.accepted')}</Text>
           </View>
           <View className="w-px h-8 bg-gray-200" />
           <View className="items-center flex-1">
             <Text className="text-2xl font-extrabold text-red-600">{declinedCount}</Text>
-            <Text className="text-xs text-gray-500 font-medium mt-0.5">Declined</Text>
+            <Text className="text-xs text-gray-500 font-medium mt-0.5">{t('manageRaffle.declined')}</Text>
           </View>
         </View>
 
         {/* Quick action navigation buttons */}
         <View className="flex-row space-x-2 pt-2 border-t border-gray-100">
           <Button
-            title="Manage Participants"
+            title={t('manageRaffle.manageParticipantsBtn')}
             variant="outline"
             size="md"
             className="flex-1 mr-2"
@@ -313,7 +317,7 @@ export default function ManageRaffleScreen() {
             leftIcon={<Ionicons name="people-outline" size={16} color="#B91C1C" />}
           />
           <Button
-            title="Invite Code"
+            title={t('manageRaffle.inviteCodeBtn')}
             variant="outline"
             size="md"
             className="flex-1 ml-2"
@@ -328,7 +332,7 @@ export default function ManageRaffleScreen() {
         <View className="bg-red-50 border border-red-200 rounded-xl p-3.5 mb-4">
           <View className="flex-row items-center mb-1">
             <Ionicons name="alert-circle" size={18} color="#DC2626" />
-            <Text className="text-xs font-bold text-red-700 ml-1.5">Draw Issue</Text>
+            <Text className="text-xs font-bold text-red-700 ml-1.5">{t('manageRaffle.drawIssue')}</Text>
           </View>
           <Text className="text-xs text-red-600 leading-4">{drawError}</Text>
         </View>
@@ -337,19 +341,19 @@ export default function ManageRaffleScreen() {
       {/* Status Action Card */}
       <Card elevated className="mb-4 border-2 border-red-100 bg-white">
         <Text className="text-xs font-bold uppercase tracking-wider text-[#B91C1C] mb-2">
-          Raffle Progression
+          {t('manageRaffle.progressionTitle')}
         </Text>
 
         {raffle.status === 'draft' ? (
           <View>
             <Text className="text-base font-bold text-gray-900 mb-1">
-              Raffle is currently a Draft
+              {t('manageRaffle.draftTitle')}
             </Text>
             <Text className="text-xs text-gray-500 mb-4">
-              Open the raffle for invitations so participants can join and confirm.
+              {t('manageRaffle.draftDesc')}
             </Text>
             <Button
-              title="Open for Invitations"
+              title={t('manageRaffle.openForInvitations')}
               variant="primary"
               size="lg"
               onPress={handleOpenForInvitations}
@@ -358,13 +362,13 @@ export default function ManageRaffleScreen() {
         ) : raffle.status === 'inviting' ? (
           <View>
             <Text className="text-base font-bold text-gray-900 mb-1">
-              Invitations Open ({acceptedCount} Ready)
+              {t('manageRaffle.invitingTitle', { count: acceptedCount })}
             </Text>
             <Text className="text-xs text-gray-500 mb-4">
-              When all expected participants have accepted (at least 2 required), run the Secret Santa draw!
+              {t('manageRaffle.invitingDesc')}
             </Text>
             <Button
-              title="Run Draw Now"
+              title={t('manageRaffle.runDrawNow')}
               variant="secondary"
               size="lg"
               disabled={acceptedCount < 2}
@@ -373,7 +377,7 @@ export default function ManageRaffleScreen() {
             />
             {acceptedCount < 2 ? (
               <Text className="text-[11px] text-amber-600 mt-2 text-center">
-                Need at least 2 accepted participants to draw
+                {t('manageRaffle.needTwoParticipants')}
               </Text>
             ) : null}
           </View>
@@ -382,10 +386,10 @@ export default function ManageRaffleScreen() {
             <View className="flex-row items-center justify-between mb-3">
               <View>
                 <Text className="text-base font-bold text-violet-900">
-                  Draw Complete
+                  {t('manageRaffle.drawCompleteTitle')}
                 </Text>
                 <Text className="text-xs text-gray-500">
-                  Track who has delivered their gifts below.
+                  {t('manageRaffle.drawCompleteDesc')}
                 </Text>
               </View>
             </View>
@@ -405,7 +409,7 @@ export default function ManageRaffleScreen() {
                   </View>
                   <View className="flex-row items-center">
                     <Text className="text-[11px] text-gray-500 mr-2">
-                      {p.giftGiven ? 'Delivered' : 'Pending'}
+                      {p.giftGiven ? t('manageRaffle.delivered') : t('manageRaffle.pending')}
                     </Text>
                     <Switch
                       value={p.giftGiven}
@@ -419,7 +423,7 @@ export default function ManageRaffleScreen() {
 
             {/* Reveal Button */}
             <Button
-              title="Reveal All Assignments to Everyone"
+              title={t('manageRaffle.revealAllBtn')}
               variant="outline"
               size="md"
               className="mt-3 border-violet-600"
@@ -432,10 +436,10 @@ export default function ManageRaffleScreen() {
               <Ionicons name="sparkles" size={24} color="#7C3AED" />
             </View>
             <Text className="text-base font-bold text-gray-900">
-              Raffle Completed
+              {t('manageRaffle.completedTitle')}
             </Text>
             <Text className="text-xs text-gray-500 text-center mt-1">
-              All assignments have been revealed and the holiday event is concluded!
+              {t('manageRaffle.completedDesc')}
             </Text>
           </View>
         )}

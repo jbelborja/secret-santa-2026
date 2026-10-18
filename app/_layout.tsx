@@ -1,7 +1,7 @@
 import '../global.css';
 
 import React, { useEffect } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, Image, ActivityIndicator, StyleSheet } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -14,12 +14,15 @@ import {
   useNotificationListener,
 } from '@/lib/notifications';
 
+import { LanguageProvider, useTranslation } from '@/lib/i18n';
+
 setupNotificationHandler();
 
-export default function RootLayout() {
+function RootNavigation() {
   const { user, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const { t } = useTranslation();
 
   // Setup notification listeners
   useNotificationListener(
@@ -70,18 +73,20 @@ export default function RootLayout() {
   }, [user, loading, segments, router]);
 
   return (
-    <SafeAreaProvider style={styles.container}>
+    <>
       <StatusBar style="dark" />
       {loading ? (
         <View style={styles.loadingContainer}>
-          <View style={styles.iconBox}>
-            <Ionicons name="gift-outline" size={32} color="#B91C1C" />
-          </View>
+          <Image
+            source={require('../assets/icon.png')}
+            style={styles.logoImage}
+            resizeMode="cover"
+          />
           <Text style={styles.title}>
-            Secret Santa
+            {t('auth.appName')}
           </Text>
           <Text style={styles.subtitle}>
-            Loading...
+            {t('common.loading')}
           </Text>
           <ActivityIndicator size="small" color="#B91C1C" />
         </View>
@@ -102,7 +107,7 @@ export default function RootLayout() {
           <Stack.Screen
             name="raffle/create"
             options={{
-              headerTitle: 'Create Secret Santa',
+              headerTitle: t('createRaffle.headerTitle'),
               presentation: 'modal',
               headerStyle: { backgroundColor: '#FFFFFF' },
             }}
@@ -116,19 +121,29 @@ export default function RootLayout() {
           <Stack.Screen
             name="invite/[code]"
             options={{
-              headerTitle: 'Join Raffle',
+              headerTitle: t('invite.youAreInvited'),
               presentation: 'modal',
             }}
           />
           <Stack.Screen
             name="+not-found"
             options={{
-              title: 'Oops!',
+              title: t('notFound.title'),
               headerShown: false,
             }}
           />
         </Stack>
       )}
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <SafeAreaProvider style={styles.container}>
+      <LanguageProvider>
+        <RootNavigation />
+      </LanguageProvider>
     </SafeAreaProvider>
   );
 }
@@ -145,15 +160,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
-  iconBox: {
+  logoImage: {
     width: 64,
     height: 64,
     borderRadius: 16,
-    backgroundColor: '#FEF2F2',
-    borderWidth: 1,
-    borderColor: '#FEE2E2',
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 16,
   },
   title: {

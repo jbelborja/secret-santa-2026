@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
+  Image,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -18,9 +19,11 @@ import {
   useGoogleAuth,
   formatAuthError,
 } from '@/lib/auth';
+import { useTranslation } from '@/lib/i18n';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { t, language, setLanguage } = useTranslation();
   const [isSignUp, setIsSignUp] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -37,12 +40,12 @@ export default function LoginScreen() {
 
   const handleEmailAuth = async () => {
     if (!email.trim() || !password) {
-      setError('Please fill in both email and password.');
+      setError(t('auth.fillEmailPassword'));
       return;
     }
 
     if (isSignUp && !displayName.trim()) {
-      setError('Please provide your name.');
+      setError(t('auth.provideName'));
       return;
     }
 
@@ -59,7 +62,7 @@ export default function LoginScreen() {
     } catch (err: unknown) {
       console.error('Auth error:', err);
       const message =
-        err instanceof Error ? err.message : 'An error occurred during authentication.';
+        err instanceof Error ? err.message : t('auth.genericError');
       setError(message.replace('Firebase: ', ''));
     } finally {
       setLoading(false);
@@ -75,7 +78,7 @@ export default function LoginScreen() {
     } catch (err: unknown) {
       console.error('Apple Sign In error:', err);
       if ((err as any)?.code !== 'ERR_REQUEST_CANCELED') {
-        setError(err instanceof Error ? err.message : 'Apple Sign In failed');
+        setError(err instanceof Error ? err.message : t('auth.appleError'));
       }
     } finally {
       setLoading(false);
@@ -109,16 +112,55 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         className="px-6 py-12 justify-center"
       >
+        {/* Language Quick Switcher */}
+        <View className="items-end mb-2">
+          <View className="flex-row items-center bg-gray-100 rounded-full p-1 border border-gray-200">
+            <Pressable
+              onPress={() => setLanguage('es')}
+              className={`px-2.5 py-1 rounded-full flex-row items-center ${
+                language === 'es' ? 'bg-white shadow-xs' : ''
+              }`}
+            >
+              <Text className="text-xs mr-1">🇪🇸</Text>
+              <Text
+                className={`text-xs font-bold ${
+                  language === 'es' ? 'text-[#B91C1C]' : 'text-gray-500'
+                }`}
+              >
+                ES
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setLanguage('en')}
+              className={`px-2.5 py-1 rounded-full flex-row items-center ${
+                language === 'en' ? 'bg-white shadow-xs' : ''
+              }`}
+            >
+              <Text className="text-xs mr-1">🇬🇧</Text>
+              <Text
+                className={`text-xs font-bold ${
+                  language === 'en' ? 'text-[#B91C1C]' : 'text-gray-500'
+                }`}
+              >
+                EN
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+
         {/* Header */}
         <View className="items-center mb-8">
-          <View className="w-20 h-20 rounded-2xl bg-red-50 border border-red-100 items-center justify-center mb-4 shadow-sm">
-            <Ionicons name="gift-outline" size={36} color="#B91C1C" />
-          </View>
+          <Image
+            source={require('../../assets/icon.png')}
+            style={{ width: 80, height: 80, borderRadius: 20 }}
+            className="mb-4 shadow-sm"
+            resizeMode="cover"
+          />
           <Text className="text-3xl font-black text-gray-900 tracking-tight">
-            Secret Santa
+            {t('auth.appName')}
           </Text>
           <Text className="text-sm text-gray-500 mt-1.5 text-center">
-            Organize and participate in gift exchange raffles
+            {t('auth.subtitle')}
           </Text>
         </View>
 
@@ -136,8 +178,8 @@ export default function LoginScreen() {
         <View className="space-y-1 mb-4">
           {isSignUp ? (
             <Input
-              label="Full Name"
-              placeholder="e.g. Jane Doe"
+              label={t('auth.fullName')}
+              placeholder={t('auth.fullNamePlaceholder')}
               value={displayName}
               onChangeText={setDisplayName}
               autoCapitalize="words"
@@ -146,8 +188,8 @@ export default function LoginScreen() {
           ) : null}
 
           <Input
-            label="Email Address"
-            placeholder="name@example.com"
+            label={t('auth.email')}
+            placeholder={t('auth.emailPlaceholder')}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -156,8 +198,8 @@ export default function LoginScreen() {
           />
 
           <Input
-            label="Password"
-            placeholder="••••••••"
+            label={t('auth.password')}
+            placeholder={t('auth.passwordPlaceholder')}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -167,7 +209,7 @@ export default function LoginScreen() {
 
         {/* Primary Action Button */}
         <Button
-          title={isSignUp ? 'Create Account' : 'Sign In'}
+          title={isSignUp ? t('auth.createAccount') : t('auth.signIn')}
           onPress={handleEmailAuth}
           variant="primary"
           size="lg"
@@ -184,9 +226,9 @@ export default function LoginScreen() {
           className="py-2 items-center mb-6"
         >
           <Text className="text-sm text-gray-600">
-            {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+            {isSignUp ? t('auth.alreadyHaveAccount') : t('auth.dontHaveAccount')}
             <Text className="font-bold text-[#B91C1C]">
-              {isSignUp ? 'Sign In' : 'Create Account'}
+              {isSignUp ? t('auth.signIn') : t('auth.createAccount')}
             </Text>
           </Text>
         </Pressable>
@@ -195,7 +237,7 @@ export default function LoginScreen() {
         <View className="flex-row items-center my-4">
           <View className="flex-1 h-px bg-gray-200" />
           <Text className="mx-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Or continue with
+            {t('auth.orContinueWith')}
           </Text>
           <View className="flex-1 h-px bg-gray-200" />
         </View>
@@ -203,7 +245,7 @@ export default function LoginScreen() {
         {/* Apple Sign In (iOS only) */}
         {Platform.OS === 'ios' ? (
           <Button
-            title="Sign in with Apple"
+            title={t('auth.signInApple')}
             onPress={handleAppleAuth}
             variant="outline"
             size="md"
@@ -214,7 +256,7 @@ export default function LoginScreen() {
 
         {/* Google Sign In */}
         <Button
-          title="Sign in with Google"
+          title={t('auth.signInGoogle')}
           onPress={handleGoogleAuth}
           variant="outline"
           size="md"

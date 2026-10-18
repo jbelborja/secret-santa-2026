@@ -21,6 +21,7 @@ import {
   getDoc,
   userDoc,
 } from '@/lib/firestore';
+import { useTranslation } from '@/lib/i18n';
 import { Raffle, Participant } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -32,9 +33,10 @@ export default function InviteScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { t, formatDate } = useTranslation();
 
   const [raffle, setRaffle] = useState<Raffle | null>(null);
-  const [managerName, setManagerName] = useState<string>('The Organizer');
+  const [managerName, setManagerName] = useState<string>(t('invite.theOrganizer'));
   const [existingParticipant, setExistingParticipant] = useState<Participant | null>(null);
   const [joinName, setJoinName] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ export default function InviteScreen() {
   useEffect(() => {
     async function loadInvite() {
       if (!code) {
-        setError('No invite code provided.');
+        setError(t('invite.noCode'));
         setLoading(false);
         return;
       }
@@ -52,7 +54,7 @@ export default function InviteScreen() {
       try {
         const foundRaffle = await getRaffleByInviteCode(code);
         if (!foundRaffle) {
-          setError('Invalid or expired invite link. Please check the code.');
+          setError(t('invite.invalidCode'));
           setLoading(false);
           return;
         }
@@ -63,7 +65,7 @@ export default function InviteScreen() {
         try {
           const mSnap = await getDoc(userDoc(foundRaffle.managerId));
           if (mSnap.exists()) {
-            setManagerName(mSnap.data().displayName || 'The Organizer');
+            setManagerName(mSnap.data().displayName || t('invite.theOrganizer'));
           }
         } catch {}
 
@@ -89,7 +91,7 @@ export default function InviteScreen() {
         }
       } catch (err: unknown) {
         console.error('Error fetching invite:', err);
-        setError('Could not verify invite link.');
+        setError(t('invite.verifyError'));
       } finally {
         setLoading(false);
       }
@@ -98,7 +100,7 @@ export default function InviteScreen() {
     if (!authLoading) {
       loadInvite();
     }
-  }, [code, user, authLoading]);
+  }, [code, user, authLoading, t]);
 
   const handleAccept = async () => {
     if (!raffle || !user) return;
@@ -122,7 +124,7 @@ export default function InviteScreen() {
           id: '',
           raffleId: raffle.id,
           userId: user.uid,
-          name: joinName.trim() || user.displayName || 'Santa Fan',
+          name: joinName.trim() || user.displayName || t('invite.santaFan'),
           email: user.email || '',
           status: 'accepted',
           exclusions: [],
@@ -135,7 +137,7 @@ export default function InviteScreen() {
       router.replace(`/raffle/${raffle.id}` as any);
     } catch (err) {
       console.error('Error accepting invitation:', err);
-      Alert.alert('Error', 'Failed to accept invitation. Please try again.');
+      Alert.alert(t('common.error'), t('common.error'));
     } finally {
       setSubmitting(false);
     }
@@ -156,7 +158,7 @@ export default function InviteScreen() {
   };
 
   if (loading || authLoading) {
-    return <LoadingSpinner message="Checking invitation code..." />;
+    return <LoadingSpinner message={t('invite.loading')} />;
   }
 
   if (error || !raffle) {
@@ -166,13 +168,13 @@ export default function InviteScreen() {
           <Text className="text-4xl">❌</Text>
         </View>
         <Text className="text-xl font-bold text-gray-900 text-center mb-2">
-          {error || 'Invalid invite link'}
+          {error || t('invite.invalidTitle')}
         </Text>
         <Text className="text-xs text-gray-500 text-center max-w-xs mb-6">
-          This invite code may be incorrect or the raffle may have ended.
+          {t('invite.invalidDesc')}
         </Text>
         <Button
-          title="Go to Home"
+          title={t('invite.goToHome')}
           variant="primary"
           onPress={() => router.replace('/(tabs)')}
         />
@@ -184,17 +186,17 @@ export default function InviteScreen() {
   if (!user) {
     return (
       <View className="flex-1 items-center justify-center p-6 bg-white">
-        <View className="w-20 h-20 rounded-2xl bg-red-50 items-center justify-center mb-4 border border-red-100">
+        <View className="w-20 h-20 rounded-2xl bg-red-50 border border-red-100 items-center justify-center mb-4 border border-red-100">
           <Ionicons name="gift-outline" size={36} color="#B91C1C" />
         </View>
         <Text className="text-2xl font-black text-gray-900 text-center mb-1">
-          Secret Santa Invitation
+          {t('invite.signInRequiredTitle')}
         </Text>
         <Text className="text-sm text-gray-600 text-center mb-6">
-          You've been invited to join <Text className="font-bold">{raffle.name}</Text>. Please sign in or create an account to join the raffle!
+          {t('invite.signInRequiredDesc', { name: raffle.name })}
         </Text>
         <Button
-          title="Sign In to Join"
+          title={t('invite.signInToJoin')}
           variant="primary"
           size="lg"
           onPress={() => router.replace('/(auth)/login')}
@@ -214,13 +216,13 @@ export default function InviteScreen() {
           <Ionicons name="mail-open-outline" size={30} color="#B91C1C" />
         </View>
         <Text className="text-xs font-bold uppercase tracking-wider text-[#B91C1C]">
-          You're Invited
+          {t('invite.youAreInvited')}
         </Text>
         <Text className="text-2xl font-black text-gray-900 text-center mt-1">
           {raffle.name}
         </Text>
         <Text className="text-xs text-gray-500 mt-1">
-          Organized by <Text className="font-semibold text-gray-700">{managerName}</Text>
+          {t('invite.organizedBy', { name: managerName })}
         </Text>
       </View>
 
@@ -230,7 +232,7 @@ export default function InviteScreen() {
           <View className="flex-row items-center justify-between pb-2.5 border-b border-gray-100">
             <View className="flex-row items-center">
               <Ionicons name="pricetag-outline" size={16} color="#D97706" />
-              <Text className="text-xs text-gray-600 ml-2">Budget Limit</Text>
+              <Text className="text-xs text-gray-600 ml-2">{t('invite.budgetLimit')}</Text>
             </View>
             <Text className="text-xs font-bold text-gray-900">
               {raffle.priceLimit} {raffle.currency}
@@ -240,20 +242,20 @@ export default function InviteScreen() {
           <View className="flex-row items-center justify-between pb-2.5 border-b border-gray-100">
             <View className="flex-row items-center">
               <Ionicons name="gift-outline" size={16} color="#15803D" />
-              <Text className="text-xs text-gray-600 ml-2">Exchange Day</Text>
+              <Text className="text-xs text-gray-600 ml-2">{t('invite.exchangeDay')}</Text>
             </View>
             <Text className="text-xs font-bold text-gray-900">
-              {format(raffle.giftDate, 'MMMM d, yyyy')}
+              {formatDate(raffle.giftDate, 'MMMM d, yyyy')}
             </Text>
           </View>
 
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center">
               <Ionicons name="sparkles-outline" size={16} color="#B91C1C" />
-              <Text className="text-xs text-gray-600 ml-2">Theme</Text>
+              <Text className="text-xs text-gray-600 ml-2">{t('invite.theme')}</Text>
             </View>
             <Text className="text-xs font-bold text-gray-900">
-              {raffle.topic || 'General gifts'}
+              {raffle.topic || t('invite.generalGifts')}
             </Text>
           </View>
         </View>
@@ -265,10 +267,10 @@ export default function InviteScreen() {
           <View className="flex-row items-center justify-between">
             <View>
               <Text className="text-xs font-bold text-[#15803D]">
-                Your Current Status
+                {t('invite.currentStatus')}
               </Text>
               <Text className="text-xs text-gray-600 mt-0.5">
-                Already registered in this raffle
+                {t('invite.alreadyRegistered')}
               </Text>
             </View>
             <StatusBadge status={existingParticipant.status} />
@@ -279,13 +281,13 @@ export default function InviteScreen() {
       {/* Join As Name Input */}
       <View className="mb-6">
         <Input
-          label="Join As"
-          placeholder="Your name for Secret Santa"
+          label={t('invite.joinAs')}
+          placeholder={t('invite.joinAsPlaceholder')}
           value={joinName}
           onChangeText={setJoinName}
         />
         <Text className="text-[11px] text-gray-400 ml-1">
-          This is the name your Secret Santa and other participants will see.
+          {t('invite.joinAsHint')}
         </Text>
       </View>
 
@@ -294,8 +296,8 @@ export default function InviteScreen() {
         <Button
           title={
             existingParticipant?.status === 'accepted'
-              ? 'Go to Raffle'
-              : 'Accept Invitation'
+              ? t('invite.goToRaffle')
+              : t('invite.acceptInvitation')
           }
           variant="secondary"
           size="lg"
@@ -306,7 +308,7 @@ export default function InviteScreen() {
 
         {existingParticipant?.status !== 'accepted' ? (
           <Button
-            title="Decline"
+            title={t('invite.decline')}
             variant="ghost"
             size="md"
             onPress={handleDecline}

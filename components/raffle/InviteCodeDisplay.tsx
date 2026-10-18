@@ -3,6 +3,8 @@ import { View, Text, Pressable, Share, Modal } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button } from '../ui/Button';
 
+import { useTranslation } from '../../lib/i18n';
+
 export interface InviteCodeDisplayProps {
   inviteCode: string;
   raffleName: string;
@@ -18,6 +20,7 @@ export const InviteCodeDisplay: React.FC<InviteCodeDisplayProps> = ({
   onClose,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const inviteUrl = `secretsanta://invite/${inviteCode}`;
@@ -25,8 +28,12 @@ export const InviteCodeDisplay: React.FC<InviteCodeDisplayProps> = ({
   const handleShare = async () => {
     try {
       await Share.share({
-        title: `Join our Secret Santa: ${raffleName}`,
-        message: `You're invited to join our Secret Santa "${raffleName}".\n\nInvite code: ${inviteCode}\nOpen the app: ${inviteUrl}`,
+        title: t('inviteModal.shareTitle', { name: raffleName }),
+        message: t('inviteModal.shareMessage', {
+          name: raffleName,
+          code: inviteCode,
+          url: inviteUrl,
+        }),
         url: inviteUrl,
       });
     } catch (error) {
@@ -47,10 +54,10 @@ export const InviteCodeDisplay: React.FC<InviteCodeDisplayProps> = ({
       </View>
 
       <Text className="text-lg font-bold text-gray-900 text-center mb-1">
-        Invite Participants
+        {t('inviteModal.title')}
       </Text>
       <Text className="text-sm text-gray-500 text-center mb-6 px-2">
-        Share this code to let people join "{raffleName}"
+        {t('inviteModal.subtitle', { name: raffleName })}
       </Text>
 
       {/* Code display */}
@@ -62,14 +69,14 @@ export const InviteCodeDisplay: React.FC<InviteCodeDisplayProps> = ({
           {inviteCode}
         </Text>
         <Text className="text-xs text-gray-400 uppercase tracking-wider mt-1.5 font-medium">
-          {copied ? 'Copied!' : 'Tap to copy'}
+          {copied ? t('inviteModal.copied') : t('inviteModal.tapToCopy')}
         </Text>
       </Pressable>
 
       {/* Actions */}
       <View className="w-full gap-2">
         <Button
-          title="Share Invite Link"
+          title={t('inviteModal.shareBtn')}
           onPress={handleShare}
           variant="primary"
           size="lg"
@@ -79,7 +86,7 @@ export const InviteCodeDisplay: React.FC<InviteCodeDisplayProps> = ({
 
         {onClose ? (
           <Button
-            title="Done"
+            title={t('inviteModal.doneBtn')}
             onPress={onClose}
             variant="ghost"
             size="md"

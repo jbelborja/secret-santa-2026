@@ -11,6 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from '@/lib/i18n';
 import { useRaffle } from '@/hooks/useRaffle';
 import { useParticipants } from '@/hooks/useParticipants';
 import { ParticipantRow } from '@/components/raffle/ParticipantRow';
@@ -24,6 +25,7 @@ export default function ParticipantsManagementScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { raffle, loading: raffleLoading } = useRaffle(id);
   const {
     participants,
@@ -39,13 +41,13 @@ export default function ParticipantsManagementScreen() {
   const [expandedParticipantId, setExpandedParticipantId] = useState<string | null>(null);
 
   if (raffleLoading || partsLoading) {
-    return <LoadingSpinner message="Loading participants..." />;
+    return <LoadingSpinner message={t('participantsScreen.loading')} />;
   }
 
   if (!raffle) {
     return (
       <View className="flex-1 items-center justify-center p-6 bg-white">
-        <Text className="text-lg font-bold text-gray-800">Raffle not found</Text>
+        <Text className="text-lg font-bold text-gray-800">{t('participantsScreen.notFound')}</Text>
       </View>
     );
   }
@@ -57,14 +59,14 @@ export default function ParticipantsManagementScreen() {
         <View className="w-16 h-16 rounded-2xl bg-red-50 items-center justify-center mb-4 border border-red-100">
           <Ionicons name="ban-outline" size={32} color="#DC2626" />
         </View>
-        <Text className="text-lg font-bold text-gray-800">Manager access only</Text>
+        <Text className="text-lg font-bold text-gray-800">{t('participantsScreen.managerAccessOnly')}</Text>
       </View>
     );
   }
 
   const handleAdd = async () => {
     if (!newName.trim() || !newEmail.trim()) {
-      Alert.alert('Missing info', 'Please provide both a name and an email address.');
+      Alert.alert(t('participantsScreen.missingInfoTitle'), t('participantsScreen.missingInfoDesc'));
       return;
     }
 
@@ -75,7 +77,7 @@ export default function ParticipantsManagementScreen() {
       setNewEmail('');
     } catch (err: unknown) {
       console.error('Error adding participant:', err);
-      Alert.alert('Error', 'Failed to add participant');
+      Alert.alert(t('common.error'), t('common.error'));
     } finally {
       setAdding(false);
     }
@@ -83,18 +85,18 @@ export default function ParticipantsManagementScreen() {
 
   const handleRemove = (participantId: string, name: string) => {
     Alert.alert(
-      'Remove Participant',
-      `Are you sure you want to remove ${name} from this Secret Santa?`,
+      t('participantsScreen.removeTitle'),
+      t('participantsScreen.removeDesc', { name }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Remove',
+          text: t('common.remove'),
           style: 'destructive',
           onPress: async () => {
             try {
               await removeParticipant(participantId);
             } catch (err) {
-              Alert.alert('Error', 'Failed to remove participant');
+              Alert.alert(t('common.error'), t('common.error'));
             }
           },
         },
@@ -124,18 +126,18 @@ export default function ParticipantsManagementScreen() {
                   <Ionicons name="person-add" size={16} color="#B91C1C" />
                 </View>
                 <Text className="text-base font-bold text-gray-900">
-                  Add Participant
+                  {t('participantsScreen.addTitle')}
                 </Text>
               </View>
 
               <View className="space-y-1">
                 <Input
-                  placeholder="Participant name (e.g. John Doe)"
+                  placeholder={t('participantsScreen.namePlaceholder')}
                   value={newName}
                   onChangeText={setNewName}
                 />
                 <Input
-                  placeholder="Email (for record keeping only, no emails sent)"
+                  placeholder={t('participantsScreen.emailPlaceholder')}
                   value={newEmail}
                   onChangeText={setNewEmail}
                   keyboardType="email-address"
@@ -144,7 +146,7 @@ export default function ParticipantsManagementScreen() {
               </View>
 
               <Button
-                title="Add to Raffle"
+                title={t('participantsScreen.addButton')}
                 onPress={handleAdd}
                 variant="primary"
                 size="md"
@@ -155,10 +157,10 @@ export default function ParticipantsManagementScreen() {
 
             <View className="flex-row items-center justify-between mb-2">
               <Text className="text-sm font-bold uppercase tracking-wider text-gray-500">
-                Current Participants ({participants.length})
+                {t('participantsScreen.currentTitle', { count: participants.length })}
               </Text>
               <Text className="text-xs text-gray-400">
-                Tap row to configure exclusions
+                {t('participantsScreen.tapToExcludeHint')}
               </Text>
             </View>
           </View>
@@ -194,7 +196,7 @@ export default function ParticipantsManagementScreen() {
           <View className="mt-6 p-4 bg-amber-50/70 rounded-2xl border border-amber-200/60 items-center">
             <Ionicons name="information-circle-outline" size={20} color="#D97706" />
             <Text className="text-xs text-amber-800 text-center mt-1 leading-5">
-              After adding participants, go back and share the invite code or link so they can accept their invitation.
+              {t('participantsScreen.footerHint')}
             </Text>
           </View>
         }

@@ -13,6 +13,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { format, parse, isValid, addDays } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from '@/lib/i18n';
 import {
   addDoc,
   rafflesCollection,
@@ -27,6 +28,7 @@ const CURRENCIES = ['EUR', 'USD', 'GBP', 'CAD', 'AUD'];
 export default function CreateRaffleScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const tomorrow = addDays(new Date(), 7);
   const nextMonth = addDays(new Date(), 21);
@@ -62,20 +64,20 @@ export default function CreateRaffleScreen() {
 
   const handleCreate = async () => {
     if (!user) {
-      setError('You must be signed in to create a raffle.');
+      setError(t('createRaffle.errors.authRequired'));
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
 
     if (!name.trim()) {
-      setError('Please provide a raffle name.');
+      setError(t('createRaffle.errors.nameRequired'));
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
 
     const price = parseFloat(priceLimit);
     if (isNaN(price) || price < 0) {
-      setError('Please enter a valid price limit.');
+      setError(t('createRaffle.errors.priceInvalid'));
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
@@ -84,13 +86,13 @@ export default function CreateRaffleScreen() {
     const giftDate = parse(giftDateStr, 'yyyy-MM-dd', new Date());
 
     if (!isValid(raffleDate) || !isValid(giftDate)) {
-      setError('Please enter valid dates formatted as YYYY-MM-DD.');
+      setError(t('createRaffle.errors.datesInvalid'));
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
 
     if (giftDate.getTime() <= raffleDate.getTime()) {
-      setError('Gift exchange date must be after the draw date.');
+      setError(t('createRaffle.errors.giftAfterDraw'));
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
@@ -103,7 +105,7 @@ export default function CreateRaffleScreen() {
         () =>
           reject(
             new Error(
-              'Raffle creation timed out. Please check your internet connection or Firestore rules.'
+              t('createRaffle.errors.timeout')
             )
           ),
         15000
@@ -118,7 +120,7 @@ export default function CreateRaffleScreen() {
           const docRef = await addDoc(rafflesCollection(), {
             id: '',
             name: name.trim(),
-            topic: topic.trim() || 'General Holiday Gifts',
+            topic: topic.trim() || 'General',
             priceLimit: price,
             currency,
             raffleDate,
@@ -151,7 +153,7 @@ export default function CreateRaffleScreen() {
       ]);
     } catch (err: unknown) {
       console.error('Error creating raffle:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create raffle.');
+      setError(err instanceof Error ? err.message : t('createRaffle.errors.generic'));
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
     } finally {
       setLoading(false);
@@ -185,10 +187,10 @@ export default function CreateRaffleScreen() {
                 <Ionicons name="image-outline" size={24} color="#B91C1C" />
               </View>
               <Text className="text-sm font-semibold text-[#B91C1C]">
-                Add Cover Photo (Optional)
+                {t('createRaffle.coverPhoto')}
               </Text>
               <Text className="text-xs text-gray-400 mt-0.5">
-                Tap to pick from camera roll
+                {t('createRaffle.coverPhotoHint')}
               </Text>
             </View>
           )}
@@ -207,15 +209,15 @@ export default function CreateRaffleScreen() {
         {/* Form Fields */}
         <View className="space-y-1">
           <Input
-            label="Raffle Name *"
-            placeholder="e.g. Office Secret Santa 2026"
+            label={t('createRaffle.nameLabel')}
+            placeholder={t('createRaffle.namePlaceholder')}
             value={name}
             onChangeText={setName}
           />
 
           <Input
-            label="Theme or Topic"
-            placeholder="e.g. Books, Board Games, Funny Mugs"
+            label={t('createRaffle.themeLabel')}
+            placeholder={t('createRaffle.themePlaceholder')}
             value={topic}
             onChangeText={setTopic}
           />
@@ -223,8 +225,8 @@ export default function CreateRaffleScreen() {
           <View className="flex-row space-x-3 mb-3">
             <View className="flex-1">
               <Input
-                label="Budget Limit *"
-                placeholder="25"
+                label={t('createRaffle.budgetLabel')}
+                placeholder={t('createRaffle.budgetPlaceholder')}
                 value={priceLimit}
                 onChangeText={setPriceLimit}
                 keyboardType="numeric"
@@ -233,7 +235,7 @@ export default function CreateRaffleScreen() {
 
             <View className="w-32 ml-3">
               <Text className="text-sm font-semibold text-gray-700 mb-1.5 ml-0.5">
-                Currency
+                {t('createRaffle.currencyLabel')}
               </Text>
               <View className="flex-row border border-gray-200 rounded-xl p-1 bg-gray-50/50 justify-around">
                 {CURRENCIES.slice(0, 3).map((curr) => (
@@ -261,7 +263,7 @@ export default function CreateRaffleScreen() {
           <View className="flex-row space-x-3 mb-2">
             <View className="flex-1">
               <Input
-                label="Draw Date (YYYY-MM-DD) *"
+                label={t('createRaffle.drawDateLabel')}
                 placeholder="2026-12-15"
                 value={raffleDateStr}
                 onChangeText={setRaffleDateStr}
@@ -270,7 +272,7 @@ export default function CreateRaffleScreen() {
             </View>
             <View className="flex-1 ml-3">
               <Input
-                label="Gift Day (YYYY-MM-DD) *"
+                label={t('createRaffle.giftDateLabel')}
                 placeholder="2026-12-25"
                 value={giftDateStr}
                 onChangeText={setGiftDateStr}
@@ -279,13 +281,13 @@ export default function CreateRaffleScreen() {
             </View>
           </View>
           <Text className="text-xs text-gray-400 mb-6 ml-1">
-            Draw date is when pairings are made. Gift day is when gifts are given.
+            {t('createRaffle.dateHint')}
           </Text>
         </View>
 
         {/* Submit */}
         <Button
-          title="Create Secret Santa"
+          title={t('createRaffle.submit')}
           onPress={handleCreate}
           variant="primary"
           size="lg"

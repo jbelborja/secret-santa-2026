@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useTranslation } from '../../lib/i18n';
 import { Participant } from '../../types';
 import { Avatar } from '../ui/Avatar';
 import { StatusBadge } from './StatusBadge';
@@ -24,6 +25,7 @@ export const ParticipantRow: React.FC<ParticipantRowProps> = ({
   onRemove,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const recipient = showAssignment && participant.assignedTo
     ? allParticipants.find((p) => p.id === participant.assignedTo)
     : null;
@@ -49,7 +51,7 @@ export const ParticipantRow: React.FC<ParticipantRowProps> = ({
                 <View className="ml-2 flex-row items-center bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                   <Ionicons name="checkmark-circle" size={12} color="#059669" />
                   <Text className="text-[10px] font-semibold text-emerald-700 ml-0.5">
-                    Gift sent
+                    {t('participantRow.giftSent')}
                   </Text>
                 </View>
               ) : null}
@@ -83,7 +85,7 @@ export const ParticipantRow: React.FC<ParticipantRowProps> = ({
       {/* Assignment row */}
       {showAssignment ? (
         <View className="mt-2.5 pt-2.5 border-t border-gray-100 flex-row items-center">
-          <Text className="text-xs text-gray-400 mr-1.5">Gives gift to</Text>
+          <Text className="text-xs text-gray-400 mr-1.5">{t('participantRow.givesGiftTo')}</Text>
           {recipient ? (
             <View className="flex-row items-center bg-red-50 px-2 py-0.5 rounded-md">
               <Ionicons name="arrow-forward" size={11} color="#B91C1C" />
@@ -92,9 +94,9 @@ export const ParticipantRow: React.FC<ParticipantRowProps> = ({
               </Text>
             </View>
           ) : participant.assignedTo ? (
-            <Text className="text-xs font-semibold text-gray-600">Assigned</Text>
+            <Text className="text-xs font-semibold text-gray-600">{t('participantRow.assigned')}</Text>
           ) : (
-            <Text className="text-xs text-gray-400 italic">Pending draw</Text>
+            <Text className="text-xs text-gray-400 italic">{t('participantRow.pendingDraw')}</Text>
           )}
         </View>
       ) : null}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useTranslation } from '../../lib/i18n';
 import { Participant } from '../../types';
 import { Avatar } from '../ui/Avatar';
 
@@ -17,6 +18,7 @@ export const ExclusionPicker: React.FC<ExclusionPickerProps> = ({
   onToggle,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const candidates = allParticipants.filter((p) => p.id !== participant.id);
 
   return (
@@ -25,7 +27,7 @@ export const ExclusionPicker: React.FC<ExclusionPickerProps> = ({
       <View className="flex-row items-center mb-2">
         <Ionicons name="hand-left-outline" size={18} color="#B91C1C" />
         <Text className="text-base font-bold text-gray-900 ml-2">
-          {participant.name} cannot give to:
+          {t('exclusion.cannotGiveTo', { name: participant.name })}
         </Text>
       </View>
 
@@ -33,14 +35,14 @@ export const ExclusionPicker: React.FC<ExclusionPickerProps> = ({
       <View className="flex-row items-start bg-amber-50/80 p-2.5 rounded-xl border border-amber-200/60 mb-3.5">
         <Ionicons name="information-circle-outline" size={16} color="#D97706" className="mt-0.5" />
         <Text className="text-xs text-amber-800 ml-1.5 flex-1 leading-4">
-          Exclusions are bidirectional — this person also won't receive from the excluded participants.
+          {t('exclusion.hint')}
         </Text>
       </View>
 
       {/* Chips */}
       {candidates.length === 0 ? (
         <Text className="text-sm text-gray-400 italic py-2">
-          No other participants to exclude.
+          {t('exclusion.noCandidates')}
         </Text>
       ) : (
         <View className="flex-row flex-wrap gap-2">
