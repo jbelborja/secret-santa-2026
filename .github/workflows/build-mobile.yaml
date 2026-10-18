@@ -98,6 +98,9 @@ jobs:
       - name: Prebuild Android
         run: npx expo prebuild --platform android
 
+      - name: Restore Signing Keystore
+        run: cp credentials/debug.keystore android/app/debug.keystore
+
       - name: Fix Kotlin version compatibility
         run: |
           # 1. Suprimir el check de versión de Kotlin del Compose Compiler
@@ -139,6 +142,7 @@ jobs:
           EXPO_PUBLIC_FIREBASE_APP_ID: ${{ secrets.EXPO_PUBLIC_FIREBASE_APP_ID }}
           EXPO_PUBLIC_FIREBASE_HOSTING_URL: ${{ secrets.EXPO_PUBLIC_FIREBASE_HOSTING_URL }}
           EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
+          EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID }}
         run: ./gradlew assembleRelease -PkotlinVersion=1.9.25
 
       - name: Upload APK

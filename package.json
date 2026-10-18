@@ -9,7 +9,7 @@
     "web": "expo start --web",
     "test": "jest",
     "lint": "eslint .",
-    "build:android": "npx expo prebuild --platform android && cd android && ./gradlew assembleRelease",
+    "build:android": "npx expo prebuild --platform android && cp credentials/debug.keystore android/app/debug.keystore && cd android && ./gradlew assembleRelease",
     "build:ios": "npx expo prebuild --platform ios && cd ios && xcodebuild",
     "export:web": "expo export --platform web"
   },
