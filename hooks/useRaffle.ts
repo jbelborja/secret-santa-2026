@@ -7,6 +7,9 @@ export function useRaffle(raffleId?: string) {
   const [raffle, setRaffle] = useState<Raffle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const refetch = useCallback(() => setRefreshKey((k) => k + 1), []);
 
   useEffect(() => {
     if (!raffleId) {
@@ -53,7 +56,7 @@ export function useRaffle(raffleId?: string) {
       clearTimeout(timer);
       unsubscribe();
     };
-  }, [raffleId]);
+  }, [raffleId, refreshKey]);
 
   const updateRaffle = useCallback(
     async (data: Partial<Omit<Raffle, 'id'>>) => {
@@ -68,6 +71,7 @@ export function useRaffle(raffleId?: string) {
     raffle,
     loading,
     error,
+    refetch,
     updateRaffle,
   };
 }

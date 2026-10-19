@@ -57,3 +57,10 @@ functions/node_modules/
 functions/.env
 functions/.env.*
 !functions/.env.example
+
+# Email server
+email-server/dist/
+email-server/node_modules/
+email-server/.env
+email-server/.env.*
+!email-server/.env.example
