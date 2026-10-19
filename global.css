@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Remove browser default focus outline on Pressable/Button elements (web only) */
+div[role="button"],
+button {
+  outline: none;
+}

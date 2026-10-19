@@ -149,28 +149,18 @@ export function useGoogleAuth() {
   const webClientId =
     process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
     '553006398541-k0n27c85h262eqmn7kjrdtqq67boofir.apps.googleusercontent.com';
-  const androidClientId =
-    process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ||
-    '553006398541-1g7111k3cg3ldsth2pi756bi9p9lpqsu.apps.googleusercontent.com';
   const isWeb = Platform.OS === 'web';
-  const isAndroid = Platform.OS === 'android';
 
-  // Android OAuth clients use the reverse of their client ID as the redirect URI scheme.
-  // RFC 8252 specifies that native apps must use the path /oauth2redirect.
-  const androidReverseScheme = androidClientId
-    ? `com.googleusercontent.apps.${androidClientId.replace('.apps.googleusercontent.com', '')}`
-    : undefined;
+  // Always use the web client ID for the authorization code + PKCE flow.
+  // Android-type OAuth clients (type 1, SHA-1 bound) do NOT support browser-based
+  // redirect flows and cause Error 400 "invalid_request". Only the web client (type 3)
+  // works with expo-auth-session's code exchange on all platforms.
+  const isConfigured = Boolean(webClientId);
 
-  const nativeClientId = isAndroid ? (androidClientId ?? webClientId) : webClientId;
-  const isConfigured = isWeb || Boolean(nativeClientId);
-
-  const redirectUri =
-    isAndroid && androidReverseScheme
-      ? `${androidReverseScheme}:/oauth2redirect`
-      : AuthSession.makeRedirectUri({
-          scheme: 'secretsanta',
-          path: 'oauth2redirect',
-        });
+  const redirectUri = AuthSession.makeRedirectUri({
+    scheme: 'secretsanta',
+    path: 'oauth2redirect',
+  });
 
   const discovery = {
     authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
@@ -179,7 +169,7 @@ export function useGoogleAuth() {
 
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
     {
-      clientId: nativeClientId || 'dummy-client-id',
+      clientId: webClientId,
       scopes: ['openid', 'profile', 'email'],
       // Use Code + PKCE (recommended for native apps — IdToken/implicit is deprecated by Google)
       responseType: AuthSession.ResponseType.Code,
@@ -198,7 +188,7 @@ export function useGoogleAuth() {
           // Exchange the authorization code for tokens
           const tokenResult = await AuthSession.exchangeCodeAsync(
             {
-              clientId: nativeClientId!,
+              clientId: webClientId,
               code: response.params.code,
               redirectUri,
               extraParams: request?.codeVerifier

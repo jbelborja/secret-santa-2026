@@ -83,7 +83,7 @@ export function useAuth() {
     user,
     firebaseUser,
     loading,
-    isAuthenticated: Boolean(user),
+    isAuthenticated: Boolean(firebaseUser),
   };
 }
 

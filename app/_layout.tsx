@@ -19,7 +19,7 @@ import { LanguageProvider, useTranslation } from '@/lib/i18n';
 setupNotificationHandler();
 
 function RootNavigation() {
-  const { user, loading } = useAuth();
+  const { user, firebaseUser, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
   const { t } = useTranslation();
@@ -63,14 +63,14 @@ function RootNavigation() {
 
     const inAuthGroup = segments[0] === '(auth)';
 
-    if (!user && !inAuthGroup) {
+    if (!firebaseUser && !inAuthGroup) {
       // User is logged out and trying to access app -> redirect to login
       router.replace('/(auth)/login');
-    } else if (user && inAuthGroup) {
+    } else if (firebaseUser && inAuthGroup) {
       // User is logged in and on auth screen -> redirect to main tabs
       router.replace('/(tabs)');
     }
-  }, [user, loading, segments, router]);
+  }, [firebaseUser, loading, segments, router]);
 
   return (
     <>

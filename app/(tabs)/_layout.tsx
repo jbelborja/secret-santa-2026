@@ -1,12 +1,13 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
-import { Tabs } from 'expo-router';
+import { View, Text, Image, Pressable } from 'react-native';
+import { Tabs, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { useTranslation } from '@/lib/i18n';
 
 export default function TabsLayout() {
   const { t } = useTranslation();
+  const router = useRouter();
 
   return (
     <Tabs
@@ -29,7 +30,10 @@ export default function TabsLayout() {
         },
         headerShadowVisible: false,
         headerTitle: () => (
-          <View className="flex-row items-center">
+          <Pressable
+            onPress={() => router.push('/(tabs)')}
+            className="flex-row items-center active:opacity-70"
+          >
             <View className="w-8 h-8 rounded-lg overflow-hidden mr-2.5 border border-red-100 bg-red-50 items-center justify-center shadow-xs">
               <Image
                 source={require('../../assets/icon.png')}
@@ -40,7 +44,7 @@ export default function TabsLayout() {
             <Text className="text-lg font-black text-gray-900 tracking-tight">
               {t('auth.appName')}
             </Text>
-          </View>
+          </Pressable>
         ),
       }}
     >
