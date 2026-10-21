@@ -19,6 +19,7 @@ import { useParticipants } from '@/hooks/useParticipants';
 import { raffleDoc, participantDoc } from '@/lib/firestore';
 import { runDraw } from '@/lib/draw';
 import { sendBatchPushNotifications } from '@/lib/notifications';
+import { sendDrawEmails } from '@/lib/email';
 import { StatusBadge } from '@/components/raffle/StatusBadge';
 import { InviteCodeDisplay } from '@/components/raffle/InviteCodeDisplay';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -160,12 +161,38 @@ export default function ManageRaffleScreen() {
               }
 
               // 2. Update raffle status to 'drawn'
+              //    This triggers the onRaffleDrawn Cloud Function which sends
+              //    assignment emails to all participants via Gmail SMTP.
               const rDoc = raffleDoc(raffle.id);
               batch.update(rDoc, { status: 'drawn' });
 
               await batch.commit();
 
-              // 3. Send batch push notifications
+              // 3. Send draw emails via Gmail SMTP (fire-and-forget)
+              const participantNameMap = new Map(
+                participants.map((p) => [p.id, p.name])
+              );
+              const emailParticipants = acceptedParticipants
+                .filter((p) => p.email && result.assignments![p.id])
+                .map((p) => ({
+                  name: p.name,
+                  email: p.email,
+                  recipientName: participantNameMap.get(result.assignments![p.id]) || '',
+                }));
+
+              if (emailParticipants.length > 0) {
+                sendDrawEmails({
+                  raffleId: raffle.id,
+                  raffleName: raffle.name,
+                  topic: raffle.topic,
+                  priceLimit: raffle.priceLimit,
+                  currency: raffle.currency,
+                  giftDate: raffle.giftDate ? raffle.giftDate.toISOString() : null,
+                  participants: emailParticipants,
+                }).catch((err) => console.warn('Draw emails failed (non-fatal):', err));
+              }
+
+              // 4. Send batch push notifications
               const tokens = acceptedParticipants
                 .map((p) => p.expoPushToken)
                 .filter((t): t is string => Boolean(t));

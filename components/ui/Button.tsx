@@ -95,7 +95,8 @@ export const Button: React.FC<ButtonProps> = ({
     <Pressable
       onPress={onPress}
       disabled={isDisabled}
-      className={`flex-row items-center justify-center ${getVariantContainerStyles()} ${getSizeContainerStyles()} ${
+      android_ripple={{ color: 'rgba(0,0,0,0.08)', borderless: false }}
+      className={`flex-row items-center justify-center overflow-hidden ${getVariantContainerStyles()} ${getSizeContainerStyles()} ${
         isDisabled ? 'opacity-40' : 'opacity-100'
       } ${className}`}
     >

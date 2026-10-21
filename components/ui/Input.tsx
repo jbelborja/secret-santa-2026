@@ -60,6 +60,7 @@ export const Input: React.FC<InputProps> = ({
         <TextInput
           className="flex-1 text-gray-900 text-sm p-0"
           placeholderTextColor="#9CA3AF"
+          underlineColorAndroid="transparent"
           onFocus={handleFocus}
           onBlur={handleBlur}
           {...textInputProps}

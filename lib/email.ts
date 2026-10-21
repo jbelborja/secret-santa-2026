@@ -2,7 +2,8 @@ const BASE_URL =
   process.env.EXPO_PUBLIC_EMAIL_SERVER_URL || 'http://localhost:3001';
 
 /**
- * Send an invitation email to a participant via the standalone SMTP server.
+ * Send an invitation email to a participant via the standalone email server,
+ * which relays through Gmail SMTP.
  */
 export async function sendInviteEmail(params: {
   participantEmail: string;
@@ -31,8 +32,8 @@ export async function sendInviteEmail(params: {
 }
 
 /**
- * Send the secret-assignment emails to all participants after the draw.
- * Call this from the app right after running the draw logic.
+ * Send the secret-assignment emails to all participants after the draw,
+ * which relays through Gmail SMTP.
  */
 export async function sendDrawEmails(params: {
   raffleId: string;

@@ -25,6 +25,11 @@ module.exports = {
         },
         snow: '#FAFAFA',
       },
+      // Prevent bare `border` class from inheriting currentColor on Android
+      // (which becomes red when the surrounding text color is the primary red).
+      borderColor: {
+        DEFAULT: '#E5E7EB', // gray-200
+      },
       fontSize: {
         'festive-sm': ['14px', { lineHeight: '20px', letterSpacing: '0.2px' }],
         'festive-base': ['16px', { lineHeight: '24px', letterSpacing: '0.2px' }],

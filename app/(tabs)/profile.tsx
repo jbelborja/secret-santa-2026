@@ -71,7 +71,21 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    if (Platform.OS === 'web') {
+      // Alert.alert is a no-op on web; use the native browser confirm dialog instead
+      const confirmed = window.confirm(
+        `${t('profile.signOutConfirmTitle')}\n${t('profile.signOutConfirmMessage')}`
+      );
+      if (!confirmed) return;
+      try {
+        await logOut();
+      } catch (err) {
+        console.error('Sign out error:', err);
+      }
+      return;
+    }
+
     Alert.alert(
       t('profile.signOutConfirmTitle'),
       t('profile.signOutConfirmMessage'),

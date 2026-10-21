@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Card } from '@/components/ui/Card';
+import { sendInviteEmail } from '@/lib/email';
 
 export default function ParticipantsManagementScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -75,6 +76,21 @@ export default function ParticipantsManagementScreen() {
       await addParticipant(newName.trim(), newEmail.trim());
       setNewName('');
       setNewEmail('');
+
+      // Send invite email (fire-and-forget — don't block UI on email failure)
+      if (raffle) {
+        sendInviteEmail({
+          participantEmail: newEmail.trim(),
+          participantName: newName.trim(),
+          organizerName: user?.displayName || user?.email || 'El Organizador',
+          raffleName: raffle.name,
+          inviteCode: raffle.inviteCode,
+          topic: raffle.topic,
+          priceLimit: raffle.priceLimit,
+          currency: raffle.currency,
+          giftDate: raffle.giftDate ? raffle.giftDate.toISOString() : null,
+        }).catch((err) => console.warn('Invite email failed (non-fatal):', err));
+      }
     } catch (err: unknown) {
       console.error('Error adding participant:', err);
       Alert.alert(t('common.error'), t('common.error'));

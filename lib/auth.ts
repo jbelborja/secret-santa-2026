@@ -149,6 +149,9 @@ export function useGoogleAuth() {
   const webClientId =
     process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
     '553006398541-k0n27c85h262eqmn7kjrdtqq67boofir.apps.googleusercontent.com';
+  const androidClientId =
+    process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ||
+    '553006398541-1g7111k3cg3ldsth2pi756bi9p9lpqsu.apps.googleusercontent.com';
   const isWeb = Platform.OS === 'web';
 
   // Always use the web client ID for the authorization code + PKCE flow.
@@ -157,10 +160,19 @@ export function useGoogleAuth() {
   // works with expo-auth-session's code exchange on all platforms.
   const isConfigured = Boolean(webClientId);
 
-  const redirectUri = AuthSession.makeRedirectUri({
-    scheme: 'secretsanta',
-    path: 'oauth2redirect',
-  });
+  // On Android, Google requires the redirect URI to use the reverse client ID scheme
+  // (com.googleusercontent.apps.{id}://) — using any other custom scheme triggers
+  // error 400 "Invalid request". This scheme is automatically trusted by Google for
+  // installed apps without needing it registered in Cloud Console.
+  const redirectUri = Platform.OS === 'android'
+    ? AuthSession.makeRedirectUri({
+        scheme: `com.googleusercontent.apps.${androidClientId.split('.apps.googleusercontent.com')[0]}`,
+        path: 'oauth2redirect',
+      })
+    : AuthSession.makeRedirectUri({
+        scheme: 'secretsanta',
+        path: 'oauth2redirect',
+      });
 
   const discovery = {
     authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
