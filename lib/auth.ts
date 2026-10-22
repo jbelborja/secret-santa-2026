@@ -164,15 +164,9 @@ export function useGoogleAuth() {
   // (com.googleusercontent.apps.{id}://) — using any other custom scheme triggers
   // error 400 "Invalid request". This scheme is automatically trusted by Google for
   // installed apps without needing it registered in Cloud Console.
-  const redirectUri = Platform.OS === 'android'
-    ? AuthSession.makeRedirectUri({
-        scheme: `com.googleusercontent.apps.${androidClientId.split('.apps.googleusercontent.com')[0]}`,
-        path: 'oauth2redirect',
-      })
-    : AuthSession.makeRedirectUri({
-        scheme: 'secretsanta',
-        path: 'oauth2redirect',
-      });
+  const redirectUri = AuthSession.makeRedirectUri({
+    path: 'oauth2redirect',
+  });
 
   const discovery = {
     authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
