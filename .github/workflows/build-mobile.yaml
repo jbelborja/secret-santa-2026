@@ -238,7 +238,7 @@ jobs:
         id: pods-cache
         with:
           path: ~/Library/Caches/CocoaPods
-          key: pods-cache-${{ hashFiles('package.json') }}-v2
+          key: pods-cache-${{ hashFiles('package.json') }}-v3
           restore-keys: pods-cache-
 
       - name: Prebuild iOS
@@ -253,14 +253,10 @@ jobs:
           with open('Podfile', 'r') as f:
               content = f.read()
 
-          # Fix 1: Modular headers for Firebase and Google pods inside the target (pinned to 10.29.0 for Xcode 15 / Swift 5 compatibility)
+          # Fix 1: Modular headers for Google and support pods inside the target
           modular_pods = (
               "\n"
-              "  # Modular headers for Firebase and Google\n"
-              "  pod 'FirebaseCore', '~> 10.29.0', :modular_headers => true\n"
-              "  pod 'FirebaseCoreInternal', '~> 10.29.0', :modular_headers => true\n"
-              "  pod 'FirebaseInstallations', '~> 10.29.0', :modular_headers => true\n"
-              "  pod 'FirebaseMessaging', '~> 10.29.0', :modular_headers => true\n"
+              "  # Modular headers for Google pods\n"
               "  pod 'GoogleDataTransport', :modular_headers => true\n"
               "  pod 'GoogleUtilities', :modular_headers => true\n"
               "  pod 'PromisesObjC', :modular_headers => true\n"
@@ -277,7 +273,7 @@ jobs:
           # Fix 2: Deployment target 15.1, CLANG_ALLOW_NON_MODULAR_INCLUDES, and DEFINES_MODULE in targets and bundles
           fix = (
               "\n"
-              "    # Fix for Xcode + Firebase + React Native\n"
+              "    # Fix for Xcode + GoogleSignIn + React Native\n"
               "    installer.pods_project.build_configurations.each do |config|\n"
               "      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'\n"
               "    end\n"
@@ -318,7 +314,7 @@ jobs:
           PYEOF
 
           echo "=== Verifying Podfile ==="
-          grep -n "FirebaseCore\|GoogleUtilities\|IPHONEOS\|CLANG_ALLOW_NON_MODULAR\|DEFINES_MODULE" Podfile
+          grep -n "GoogleUtilities\|IPHONEOS\|CLANG_ALLOW_NON_MODULAR\|DEFINES_MODULE" Podfile
 
           pod install --repo-update
 
