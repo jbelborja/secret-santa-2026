@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from '@/lib/i18n';
 import { useMyRaffles } from '@/hooks/useMyRaffles';
 import { RaffleCard } from '@/components/raffle/RaffleCard';
@@ -18,11 +19,24 @@ import { JoinWithCodeModal } from '@/components/raffle/JoinWithCodeModal';
 
 export default function MyRafflesScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const { t } = useTranslation();
-  const { managedRaffles, participatingRaffles, loading, error, refetch } = useMyRaffles();
+  const {
+    managedRaffles,
+    participatingRaffles,
+    pendingRaffles,
+    pastRaffles,
+    loading,
+    error,
+    refetch,
+  } = useMyRaffles();
   const [joinModalVisible, setJoinModalVisible] = useState(false);
+  const [showPastRaffles, setShowPastRaffles] = useState(false);
 
-  if (loading && managedRaffles.length === 0 && participatingRaffles.length === 0) {
+  const totalActive =
+    managedRaffles.length + participatingRaffles.length + pendingRaffles.length;
+
+  if (loading && totalActive === 0 && pastRaffles.length === 0) {
     return <LoadingSpinner message={t('home.loadingRaffles')} />;
   }
 
@@ -30,7 +44,7 @@ export default function MyRafflesScreen() {
     <ScrollView
       style={{ flex: 1, backgroundColor: '#FAFAFA' }}
       className="flex-1 bg-[#FAFAFA]"
-      contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+      contentContainerStyle={{ padding: 16, paddingBottom: 50 }}
       refreshControl={
         <RefreshControl
           refreshing={loading}
@@ -86,45 +100,40 @@ export default function MyRafflesScreen() {
         </View>
       ) : null}
 
-      {/* Section 1: Raffles I manage */}
-      <View className="mb-8">
-        <View className="flex-row items-center justify-between mb-3">
-          <View className="flex-row items-center">
-            <Text className="text-base font-bold text-gray-900">
-              {t('home.manageSection')}
-            </Text>
-            <View className="ml-2 bg-red-100 px-2 py-0.5 rounded-full">
-              <Text className="text-xs font-bold text-[#B91C1C]">
-                {managedRaffles.length}
+      {/* Section 0: Pending Invitations to Accept */}
+      {pendingRaffles.length > 0 ? (
+        <View className="mb-7 bg-amber-50/80 p-4 rounded-2xl border border-amber-200 shadow-xs">
+          <View className="flex-row items-center justify-between mb-1">
+            <View className="flex-row items-center">
+              <Ionicons name="mail-unread" size={20} color="#D97706" />
+              <Text className="text-base font-black text-amber-900 ml-2">
+                {t('home.pendingSection')}
+              </Text>
+            </View>
+            <View className="bg-amber-200/80 px-2.5 py-0.5 rounded-full border border-amber-300">
+              <Text className="text-xs font-bold text-amber-900">
+                {pendingRaffles.length}
               </Text>
             </View>
           </View>
-        </View>
+          <Text className="text-xs text-amber-800 mb-3.5 leading-4">
+            {t('home.pendingSubtitle')}
+          </Text>
 
-        {managedRaffles.length === 0 ? (
-          <EmptyState
-            icon="gift-outline"
-            title={t('home.emptyManageTitle')}
-            subtitle={t('home.emptyManageSubtitle')}
-            action={{
-              label: t('home.emptyManageAction'),
-              onPress: () => router.push('/raffle/create'),
-            }}
-          />
-        ) : (
-          managedRaffles.map((raffle) => (
+          {pendingRaffles.map((raffle) => (
             <RaffleCard
               key={raffle.id}
               raffle={raffle}
-              isManager
+              isPending
+              isManager={false}
               onPress={() => router.push(`/raffle/${raffle.id}` as any)}
             />
-          ))
-        )}
-      </View>
+          ))}
+        </View>
+      ) : null}
 
-      {/* Section 2: Raffles I participate in */}
-      <View>
+      {/* Section 1: Raffles I participate in (Active) */}
+      <View className="mb-8">
         <View className="flex-row items-center justify-between mb-3">
           <View className="flex-row items-center">
             <Text className="text-base font-bold text-gray-900">
@@ -170,6 +179,102 @@ export default function MyRafflesScreen() {
             />
           ))
         )}
+      </View>
+
+      {/* Section 2: Raffles I manage (Active) */}
+      <View className="mb-8">
+        <View className="flex-row items-center justify-between mb-3">
+          <View className="flex-row items-center">
+            <Text className="text-base font-bold text-gray-900">
+              {t('home.manageSection')}
+            </Text>
+            <View className="ml-2 bg-red-100 px-2 py-0.5 rounded-full">
+              <Text className="text-xs font-bold text-[#B91C1C]">
+                {managedRaffles.length}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {managedRaffles.length === 0 ? (
+          <EmptyState
+            icon="gift-outline"
+            title={t('home.emptyManageTitle')}
+            subtitle={t('home.emptyManageSubtitle')}
+            action={{
+              label: t('home.emptyManageAction'),
+              onPress: () => router.push('/raffle/create'),
+            }}
+          />
+        ) : (
+          managedRaffles.map((raffle) => (
+            <RaffleCard
+              key={raffle.id}
+              raffle={raffle}
+              isManager
+              onPress={() => router.push(`/raffle/${raffle.id}` as any)}
+            />
+          ))
+        )}
+      </View>
+
+      {/* Section 3: Past & Completed Raffles Link / Collapsible */}
+      <View className="mt-2 pt-4 border-t border-gray-200">
+        <Pressable
+          onPress={() => setShowPastRaffles(!showPastRaffles)}
+          className="flex-row items-center justify-between bg-white p-3.5 rounded-2xl border border-gray-200 active:bg-gray-50 shadow-xs"
+        >
+          <View className="flex-row items-center">
+            <View className="w-8 h-8 rounded-lg bg-gray-100 items-center justify-center mr-2.5">
+              <Ionicons name="archive-outline" size={17} color="#4B5563" />
+            </View>
+            <Text className="text-sm font-bold text-gray-800">
+              {t('home.pastSection')}
+            </Text>
+            <View className="ml-2 bg-gray-100 px-2 py-0.5 rounded-full">
+              <Text className="text-xs font-bold text-gray-600">
+                {pastRaffles.length}
+              </Text>
+            </View>
+          </View>
+
+          <View className="flex-row items-center">
+            <Text className="text-xs font-semibold text-gray-500 mr-1.5">
+              {showPastRaffles
+                ? t('home.hidePastRaffles')
+                : t('home.showPastRaffles', { count: pastRaffles.length })}
+            </Text>
+            <Ionicons
+              name={showPastRaffles ? 'chevron-up' : 'chevron-down'}
+              size={16}
+              color="#6B7280"
+            />
+          </View>
+        </Pressable>
+
+        {showPastRaffles ? (
+          <View className="mt-3">
+            {pastRaffles.length === 0 ? (
+              <View className="py-6 px-4 items-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                <Text className="text-xs font-semibold text-gray-600">
+                  {t('home.emptyPastTitle')}
+                </Text>
+                <Text className="text-[11px] text-gray-400 mt-0.5 text-center">
+                  {t('home.emptyPastSubtitle')}
+                </Text>
+              </View>
+            ) : (
+              pastRaffles.map((raffle) => (
+                <RaffleCard
+                  key={raffle.id}
+                  raffle={raffle}
+                  isManager={raffle.managerId === user?.uid}
+                  onPress={() => router.push(`/raffle/${raffle.id}` as any)}
+                />
+              ))
+            )}
+          </View>
+        ) : null}
       </View>
 
       <JoinWithCodeModal

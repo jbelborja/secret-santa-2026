@@ -7,6 +7,8 @@ export function useMyRaffles() {
   const { user } = useAuth();
   const [managedRaffles, setManagedRaffles] = useState<Raffle[]>([]);
   const [participatingRaffles, setParticipatingRaffles] = useState<Raffle[]>([]);
+  const [pendingRaffles, setPendingRaffles] = useState<Raffle[]>([]);
+  const [pastRaffles, setPastRaffles] = useState<Raffle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,6 +16,8 @@ export function useMyRaffles() {
     if (!user) {
       setManagedRaffles([]);
       setParticipatingRaffles([]);
+      setPendingRaffles([]);
+      setPastRaffles([]);
       setLoading(false);
       return;
     }
@@ -22,18 +26,50 @@ export function useMyRaffles() {
     setError(null);
 
     try {
-      const [managed, participating] = await Promise.all([
+      const [managed, participatingData] = await Promise.all([
         getMyRaffles(user.uid),
-        getRafflesIParticipateIn(user.uid),
+        getRafflesIParticipateIn(user.uid, user.email || undefined),
       ]);
 
-      // Filter out managed raffles from participating list if user participates in their own
-      const filteredParticipating = participating.filter(
-        (r) => r.managerId !== user.uid
-      );
+      const now = Date.now();
+      const isPast = (r: Raffle) =>
+        r.status === 'completed' ||
+        (r.status === 'drawn' && new Date(r.giftDate).getTime() < now);
 
-      setManagedRaffles(managed);
-      setParticipatingRaffles(filteredParticipating);
+      const pastMap = new Map<string, Raffle>();
+      const activeManaged: Raffle[] = [];
+      const activeParticipating: Raffle[] = [];
+      const pendingMap = new Map<string, Raffle>();
+
+      // 1. Process managed raffles
+      for (const r of managed) {
+        if (isPast(r)) {
+          pastMap.set(r.id, r);
+        } else {
+          activeManaged.push(r);
+        }
+      }
+
+      // 2. Process participating and pending raffles
+      for (const { raffle: r, participant: p } of participatingData) {
+        // If managed by current user, it was already handled above
+        if (r.managerId === user.uid) {
+          continue;
+        }
+
+        if (isPast(r)) {
+          pastMap.set(r.id, r);
+        } else if (p.status === 'invited') {
+          pendingMap.set(r.id, r);
+        } else if (p.status === 'accepted') {
+          activeParticipating.push(r);
+        }
+      }
+
+      setManagedRaffles(activeManaged);
+      setParticipatingRaffles(activeParticipating);
+      setPendingRaffles(Array.from(pendingMap.values()));
+      setPastRaffles(Array.from(pastMap.values()));
     } catch (err: unknown) {
       console.error('Error fetching my raffles:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch raffles');
@@ -49,6 +85,8 @@ export function useMyRaffles() {
   return {
     managedRaffles,
     participatingRaffles,
+    pendingRaffles,
+    pastRaffles,
     loading,
     error,
     refetch: fetchRaffles,

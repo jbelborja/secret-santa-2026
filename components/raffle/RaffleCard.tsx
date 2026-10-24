@@ -12,6 +12,7 @@ export interface RaffleCardProps {
   raffle: Raffle;
   onPress: () => void;
   isManager?: boolean;
+  isPending?: boolean;
   className?: string;
 }
 
@@ -19,6 +20,7 @@ export const RaffleCard: React.FC<RaffleCardProps> = ({
   raffle,
   onPress,
   isManager = false,
+  isPending = false,
   className = '',
 }) => {
   const { t, formatDate } = useTranslation();
@@ -61,7 +63,18 @@ export const RaffleCard: React.FC<RaffleCardProps> = ({
       <View className="p-4">
         {/* Top row: status + manager badge */}
         <View className="flex-row items-center justify-between mb-2.5">
-          <StatusBadge status={raffle.status} />
+          <View className="flex-row items-center space-x-1.5">
+            <StatusBadge status={raffle.status} />
+            {isPending ? (
+              <View className="ml-1.5">
+                <Badge
+                  label={t('home.pendingBadge')}
+                  variant="warning"
+                  size="sm"
+                />
+              </View>
+            ) : null}
+          </View>
           {isManager ? (
             <Badge
               label={t('raffleCard.organizer')}
@@ -100,8 +113,18 @@ export const RaffleCard: React.FC<RaffleCardProps> = ({
           </View>
         </View>
 
-        {/* Countdown strip */}
-        {diffDays > 0 ? (
+        {/* Pending Action Strip or Countdown strip */}
+        {isPending ? (
+          <View className="mt-3 bg-amber-50 border border-amber-200 py-2 px-3 rounded-lg flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <Ionicons name="mail-open-outline" size={14} color="#D97706" />
+              <Text className="text-xs font-bold text-amber-800 ml-1.5">
+                {t('home.reviewAndAccept')}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={13} color="#D97706" />
+          </View>
+        ) : diffDays > 0 ? (
           <View className="mt-3 bg-red-50 py-2 px-3 rounded-lg flex-row items-center justify-between">
             <View className="flex-row items-center">
               <Ionicons name="time-outline" size={13} color="#B91C1C" />
