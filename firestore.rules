@@ -20,19 +20,21 @@ service cloud.firestore {
       // Participants subcollection
       match /participants/{participantId} {
         allow read: if request.auth != null;
-        allow create: if request.auth != null && (
-          get(/databases/$(database)/documents/raffles/$(raffleId)).data.managerId == request.auth.uid ||
-          request.resource.data.userId == request.auth.uid
-        );
+        // Only the raffle manager can create participants (invitations)
+        allow create: if request.auth != null &&
+          get(/databases/$(database)/documents/raffles/$(raffleId)).data.managerId == request.auth.uid;
         allow update: if request.auth != null && (
           // The raffle manager can update any participant
           get(/databases/$(database)/documents/raffles/$(raffleId)).data.managerId == request.auth.uid ||
           // The participant themselves can update their own document
           resource.data.get('userId', null) == request.auth.uid ||
-          // An invited participant can claim an unclaimed invitation slot
-          (resource.data.get('userId', null) == null && request.resource.data.userId == request.auth.uid) ||
-          // Or matching email if pre-invited
-          (resource.data.get('email', '') != '' && request.auth.token.email != null && resource.data.get('email', '') == request.auth.token.email && request.resource.data.userId == request.auth.uid)
+          // An invited participant can only claim an invitation if their email matches
+          (
+            request.auth.token.email != null &&
+            resource.data.get('email', '') != '' &&
+            resource.data.get('email', '') == request.auth.token.email &&
+            request.resource.data.userId == request.auth.uid
+          )
         );
         allow delete: if request.auth != null && (
           get(/databases/$(database)/documents/raffles/$(raffleId)).data.managerId == request.auth.uid ||

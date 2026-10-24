@@ -56,8 +56,11 @@ export default function RaffleParticipantScreen() {
   }
 
   const isManager = user?.uid === raffle.managerId;
+  const userEmail = (user?.email || '').trim().toLowerCase();
   const myParticipant = participants.find(
-    (p) => p.userId === user?.uid || (user?.email && p.email.toLowerCase() === user.email.toLowerCase())
+    (p) =>
+      p.userId === user?.uid ||
+      (userEmail && (p.email || '').trim().toLowerCase() === userEmail)
   );
 
   const isDrawn = raffle.status === 'drawn' || raffle.status === 'completed';
@@ -65,7 +68,7 @@ export default function RaffleParticipantScreen() {
   const timerLabel = isDrawn ? t('raffleDetail.giftExchangeIn') : t('raffleDetail.pairingsDrawnIn');
 
   const handleAcceptInvite = async () => {
-    if (!user || !id) return;
+    if (!user || !id || !myParticipant) return;
     setActionLoading(true);
     try {
       const participantPayload: Record<string, any> = {
@@ -77,18 +80,7 @@ export default function RaffleParticipantScreen() {
         participantPayload.expoPushToken = user.expoPushToken;
       }
 
-      if (myParticipant) {
-        await updateDoc(participantDoc(id, myParticipant.id), participantPayload);
-      } else {
-        await addDoc(participantsCollection(id), {
-          ...participantPayload,
-          raffleId: id,
-          name: user.displayName || 'Participant',
-          email: user.email || '',
-          exclusions: [],
-          giftGiven: false,
-        } as any);
-      }
+      await updateDoc(participantDoc(id, myParticipant.id), participantPayload);
     } catch (err: unknown) {
       console.error('Error accepting invitation:', err);
       const rawMsg =
@@ -185,7 +177,17 @@ export default function RaffleParticipantScreen() {
           {t('raffleDetail.yourStatus')}
         </Text>
 
-        {!myParticipant || myParticipant.status === 'invited' ? (
+        {!myParticipant ? (
+          <View className="py-2 items-center">
+            <Ionicons name="information-circle-outline" size={24} color="#D97706" />
+            <Text className="text-sm font-bold text-gray-800 mt-1 text-center">
+              No estás en la lista de invitados
+            </Text>
+            <Text className="text-xs text-gray-500 text-center mt-1">
+              Tu correo ({user?.email || 'desconocido'}) no ha sido añadido por el organizador a este sorteo.
+            </Text>
+          </View>
+        ) : myParticipant.status === 'invited' ? (
           <View className="py-2">
             <Text className="text-base font-bold text-gray-900 mb-1">
               {t('raffleDetail.invitedTitle')}

@@ -78,11 +78,13 @@ export default function InviteScreen() {
           const pSnap = await getDocs(pColl);
 
           let foundPart: Participant | null = null;
+          const userEmail = (user.email || '').trim().toLowerCase();
           pSnap.forEach((docSnap) => {
             const p = docSnap.data();
+            const partEmail = (p.email || '').trim().toLowerCase();
             if (
               p.userId === user.uid ||
-              (user.email && p.email.toLowerCase() === user.email.toLowerCase())
+              (userEmail && partEmail && userEmail === partEmail)
             ) {
               foundPart = p;
             }
@@ -105,35 +107,33 @@ export default function InviteScreen() {
 
   const handleAccept = async () => {
     if (!raffle || !user) return;
+
+    if (!existingParticipant) {
+      const msg = `Tu correo (${user.email || 'desconocido'}) no está en la lista de invitados para este sorteo.`;
+      if (Platform.OS === 'web') {
+        window.alert(msg);
+      } else {
+        Alert.alert(t('common.error'), msg);
+      }
+      return;
+    }
+
     setSubmitting(true);
 
     try {
       const participantPayload: Record<string, any> = {
         status: 'accepted',
         userId: user.uid,
+        name: joinName.trim() || existingParticipant.name,
         joinedAt: new Date(),
       };
       if (user.expoPushToken) {
         participantPayload.expoPushToken = user.expoPushToken;
       }
 
-      if (existingParticipant) {
-        // Update existing record
-        participantPayload.name = joinName.trim() || existingParticipant.name;
-        const pRef = participantDoc(raffle.id, existingParticipant.id);
-        await updateDoc(pRef, participantPayload);
-      } else {
-        // Create new participant record
-        const pColl = participantsCollection(raffle.id);
-        await addDoc(pColl, {
-          ...participantPayload,
-          raffleId: raffle.id,
-          name: joinName.trim() || user.displayName || t('invite.santaFan'),
-          email: user.email || '',
-          exclusions: [],
-          giftGiven: false,
-        } as any);
-      }
+      // Update existing invited record
+      const pRef = participantDoc(raffle.id, existingParticipant.id);
+      await updateDoc(pRef, participantPayload);
 
       router.replace(`/raffle/${raffle.id}` as any);
     } catch (err: unknown) {
@@ -234,6 +234,43 @@ export default function InviteScreen() {
           title={t('invite.goToHome')}
           variant="primary"
           onPress={() => router.replace('/(tabs)')}
+        />
+      </View>
+    );
+  }
+
+  // Guard: User is logged in, but their email was not invited to this raffle by the organizer
+  if (!existingParticipant) {
+    return (
+      <View className="flex-1 items-center justify-center p-6 bg-white">
+        <View className="w-20 h-20 rounded-2xl bg-amber-50 border border-amber-100 items-center justify-center mb-4">
+          <Ionicons name="mail-unread-outline" size={36} color="#D97706" />
+        </View>
+        <Text className="text-xl font-bold text-gray-900 text-center mb-2">
+          Correo no invitado
+        </Text>
+        <Text className="text-xs text-gray-500 text-center mb-1">
+          Has iniciado sesión como:
+        </Text>
+        <Text className="text-sm font-bold text-gray-900 text-center mb-4">
+          {user.email || 'Sin correo asociado'}
+        </Text>
+        <Text className="text-xs text-gray-600 text-center max-w-xs mb-6 leading-5">
+          Este correo no está en la lista de invitados para el sorteo <Text className="font-bold text-gray-900">&quot;{raffle.name}&quot;</Text>. Pídele al organizador ({managerName}) que añada tu correo o inicia sesión con la cuenta invitada.
+        </Text>
+        <Button
+          title="Iniciar sesión con otra cuenta"
+          variant="primary"
+          size="lg"
+          onPress={() => router.replace(`/(auth)/login?redirect=/invite/${code}` as any)}
+          className="w-full mb-3"
+        />
+        <Button
+          title={t('invite.goToHome')}
+          variant="ghost"
+          size="md"
+          onPress={() => router.replace('/(tabs)')}
+          className="w-full"
         />
       </View>
     );
