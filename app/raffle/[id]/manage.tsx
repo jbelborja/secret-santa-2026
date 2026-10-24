@@ -112,7 +112,7 @@ export default function ManageRaffleScreen() {
       setEditing(false);
     } catch (err: unknown) {
       const msg = (err as any)?.message || t('common.error');
-      if (Platform.OS === 'web') window.alert(`Error: ${msg}`);
+      if (Platform.OS === 'web') window.alert(`${t('common.error')}: ${msg}`);
       else Alert.alert(t('common.error'), msg);
     } finally {
       setSavingEdit(false);
@@ -125,7 +125,7 @@ export default function ManageRaffleScreen() {
       setInviteModalVisible(true);
     } catch (err: unknown) {
       const msg = (err as any)?.message || t('common.error');
-      if (Platform.OS === 'web') window.alert(`Error: ${msg}`);
+      if (Platform.OS === 'web') window.alert(`${t('common.error')}: ${msg}`);
       else Alert.alert(t('common.error'), msg);
     }
   };
@@ -137,7 +137,10 @@ export default function ManageRaffleScreen() {
     const result = runDraw(participants);
 
     if (!result.success || !result.assignments) {
-      setDrawError(result.error || t('manageRaffle.drawIssue'));
+      const translatedError = result.errorCode
+        ? t(`manageRaffle.drawErrors.${result.errorCode}`, result.errorParams)
+        : result.error || t('manageRaffle.drawIssue');
+      setDrawError(translatedError);
       setDrawing(false);
       return;
     }
@@ -203,7 +206,7 @@ export default function ManageRaffleScreen() {
       console.error('Error committing draw results:', err);
       const msg = (err as any)?.message || (err instanceof Error ? err.message : t('common.error'));
       setDrawError(msg);
-      if (Platform.OS === 'web') window.alert(`Error: ${msg}`);
+      if (Platform.OS === 'web') window.alert(`${t('common.error')}: ${msg}`);
       else Alert.alert(t('common.error'), msg);
     } finally {
       setDrawing(false);
@@ -251,7 +254,7 @@ export default function ManageRaffleScreen() {
       }
     } catch (err: unknown) {
       const msg = (err as any)?.message || t('common.error');
-      if (Platform.OS === 'web') window.alert(`Error: ${msg}`);
+      if (Platform.OS === 'web') window.alert(`${t('common.error')}: ${msg}`);
       else Alert.alert(t('common.error'), msg);
     }
   };

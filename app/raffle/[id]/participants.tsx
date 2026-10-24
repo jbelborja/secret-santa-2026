@@ -82,7 +82,7 @@ export default function ParticipantsManagementScreen() {
         sendInviteEmail({
           participantEmail: newEmail.trim(),
           participantName: newName.trim(),
-          organizerName: user?.displayName || user?.email || 'El Organizador',
+          organizerName: user?.displayName || user?.email || t('invite.theOrganizer'),
           raffleName: raffle.name,
           inviteCode: raffle.inviteCode,
           topic: raffle.topic,
@@ -99,7 +99,7 @@ export default function ParticipantsManagementScreen() {
         (typeof err === 'string' ? err : '');
       const errMsg = rawMsg || t('common.error');
       if (Platform.OS === 'web') {
-        window.alert(`Error: ${errMsg}`);
+        window.alert(`${t('common.error')}: ${errMsg}`);
       } else {
         Alert.alert(t('common.error'), errMsg);
       }
@@ -119,7 +119,7 @@ export default function ParticipantsManagementScreen() {
           (typeof err === 'string' ? err : '');
         const errMsg = rawMsg || t('common.error');
         if (Platform.OS === 'web') {
-          window.alert(`Error: ${errMsg}`);
+          window.alert(`${t('common.error')}: ${errMsg}`);
         } else {
           Alert.alert(t('common.error'), errMsg);
         }

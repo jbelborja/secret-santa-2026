@@ -94,6 +94,7 @@ function RootNavigation() {
         <Stack
           screenOptions={{
             headerTintColor: '#B91C1C',
+            headerBackTitle: t('common.back'),
             headerTitleStyle: {
               fontWeight: 'bold',
             },

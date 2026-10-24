@@ -44,6 +44,8 @@ export interface DrawResult {
   success: boolean;
   assignments?: Record<string, string>; // giverParticipantId -> recipientParticipantId
   error?: string; // e.g. "No valid assignment exists - adjust exclusions"
+  errorCode?: 'need_two' | 'no_valid_recipient' | 'no_solution';
+  errorParams?: Record<string, string>;
 }
 
 export interface RaffleWithParticipants extends Raffle {

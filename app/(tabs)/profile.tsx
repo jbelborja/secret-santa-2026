@@ -123,7 +123,7 @@ export default function ProfileScreen() {
       <View className="items-center mb-6">
         <View className="relative">
           <Avatar
-            name={user?.displayName || user?.email || 'User'}
+            name={user?.displayName || user?.email || t('profile.user')}
             imageUrl={user?.photoURL}
             size="lg"
             className="w-24 h-24 rounded-full border-4 border-white shadow-md"

@@ -17,32 +17,53 @@ import { setDoc, userDoc } from './firestore';
 import { User } from '../types';
 import { nativeOrWebGoogleSignIn, isGoogleAuthConfigured } from './googleAuth';
 
+import { getActiveLanguage } from './i18n';
+
 /**
  * Format Firebase Auth errors into clear, actionable messages
  */
-export function formatAuthError(err: unknown): string {
-  if (!(err instanceof Error)) return 'An unexpected authentication error occurred.';
+export function formatAuthError(err: unknown, lang: 'es' | 'en' = getActiveLanguage()): string {
+  const isEs = lang === 'es';
+  if (!(err instanceof Error)) {
+    return isEs
+      ? 'Ocurrió un error inesperado durante la autenticación.'
+      : 'An unexpected authentication error occurred.';
+  }
   const code = (err as any)?.code || '';
   if (code === 'auth/configuration-not-found') {
-    return 'Authentication is not activated in your Firebase project yet. Go to Firebase Console > Authentication > Click "Get started" and enable Email/Password & Google.';
+    return isEs
+      ? 'La autenticación no está activada en Firebase todavía. Ve a Firebase Console > Authentication > Comenzar y activa Correo/Contraseña y Google.'
+      : 'Authentication is not activated in your Firebase project yet. Go to Firebase Console > Authentication > Click "Get started" and enable Email/Password & Google.';
   }
   if (code === 'auth/operation-not-allowed') {
-    return 'This sign-in method is disabled. In Firebase Console > Authentication > Sign-in method, please enable Email/Password and Google.';
+    return isEs
+      ? 'Este método de inicio de sesión está desactivado. En Firebase Console > Authentication > Sign-in method, activa Correo/Contraseña y Google.'
+      : 'This sign-in method is disabled. In Firebase Console > Authentication > Sign-in method, please enable Email/Password and Google.';
   }
   if (code === 'auth/email-already-in-use') {
-    return 'This email address is already registered. Please sign in instead.';
+    return isEs
+      ? 'Este correo electrónico ya está registrado. Por favor, inicia sesión.'
+      : 'This email address is already registered. Please sign in instead.';
   }
   if (code === 'auth/weak-password') {
-    return 'Password is too weak. Please use at least 6 characters.';
+    return isEs
+      ? 'La contraseña es demasiado débil. Usa al menos 6 caracteres.'
+      : 'Password is too weak. Please use at least 6 characters.';
   }
   if (code === 'auth/invalid-email') {
-    return 'Please enter a valid email address.';
+    return isEs
+      ? 'Por favor, introduce una dirección de correo válida.'
+      : 'Please enter a valid email address.';
   }
   if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
-    return 'Invalid email or password.';
+    return isEs
+      ? 'Correo electrónico o contraseña incorrectos.'
+      : 'Invalid email or password.';
   }
   if (code === 'auth/unauthorized-domain') {
-    return 'Dominio no autorizado: Debes añadir "jbelborja.github.io" en Firebase Console > Authentication > Settings > Authorized domains.';
+    return isEs
+      ? 'Dominio no autorizado: Debes añadir "jbelborja.github.io" en Firebase Console > Authentication > Settings > Authorized domains.'
+      : 'Unauthorized domain: You must add "jbelborja.github.io" in Firebase Console > Authentication > Settings > Authorized domains.';
   }
   if (
     code === 'auth/popup-closed-by-user' ||
@@ -50,7 +71,7 @@ export function formatAuthError(err: unknown): string {
     code === '13' ||
     code === '12501'
   ) {
-    return 'Inicio de sesión cancelado.';
+    return isEs ? 'Inicio de sesión cancelado.' : 'Sign in cancelled.';
   }
   return err.message.replace(/^Firebase:\s*(Error\s*)?/, '').replace(/\s*\(auth\/[^)]+\)\.?$/, '');
 }
@@ -59,7 +80,8 @@ export function formatAuthError(err: unknown): string {
  * Ensures a user document exists in Firestore.
  */
 export async function syncUserDocument(user: FirebaseUser, displayName?: string): Promise<User> {
-  const name = displayName || user.displayName || user.email?.split('@')[0] || 'Santa Fan';
+  const defaultName = getActiveLanguage() === 'es' ? 'Amigo Invisible' : 'Santa Fan';
+  const name = displayName || user.displayName || user.email?.split('@')[0] || defaultName;
   const userData: User = {
     uid: user.uid,
     displayName: name,

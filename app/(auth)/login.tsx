@@ -70,9 +70,7 @@ export default function LoginScreen() {
       navigateAfterAuth();
     } catch (err: unknown) {
       console.error('Auth error:', err);
-      const message =
-        err instanceof Error ? err.message : t('auth.genericError');
-      setError(message.replace('Firebase: ', ''));
+      setError(formatAuthError(err, language));
     } finally {
       setLoading(false);
     }
@@ -103,7 +101,7 @@ export default function LoginScreen() {
       }
     } catch (err: unknown) {
       console.error('Google Sign In error:', err);
-      setError(formatAuthError(err));
+      setError(formatAuthError(err, language));
     }
   };
 

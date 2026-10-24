@@ -1,12 +1,15 @@
 import React from 'react';
 import { Stack } from 'expo-router';
+import { useTranslation } from '@/lib/i18n';
 
 export default function RaffleLayout() {
+  const { t } = useTranslation();
+
   return (
     <Stack
       screenOptions={{
         headerTintColor: '#B91C1C',
-        headerBackTitle: 'Back',
+        headerBackTitle: t('common.back'),
         headerTitleStyle: {
           fontWeight: 'bold',
           color: '#111827',
@@ -22,25 +25,25 @@ export default function RaffleLayout() {
       <Stack.Screen
         name="index"
         options={{
-          headerTitle: 'Secret Santa',
+          headerTitle: t('auth.appName'),
         }}
       />
       <Stack.Screen
         name="manage"
         options={{
-          headerTitle: 'Manage Raffle',
+          headerTitle: t('manageRaffle.headerTitle'),
         }}
       />
       <Stack.Screen
         name="participants"
         options={{
-          headerTitle: 'Participants',
+          headerTitle: t('participantsScreen.headerTitle'),
         }}
       />
       <Stack.Screen
         name="assignment"
         options={{
-          headerTitle: 'My Assignment',
+          headerTitle: t('assignment.headerTitle'),
         }}
       />
     </Stack>

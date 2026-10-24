@@ -31,6 +31,7 @@ export function runDraw(participants: Participant[]): DrawResult {
   if (eligible.length < 2) {
     return {
       success: false,
+      errorCode: 'need_two',
       error: 'At least 2 accepted participants are required to run the draw.',
     };
   }
@@ -42,6 +43,8 @@ export function runDraw(participants: Participant[]): DrawResult {
     if (validRecipients.length === 0) {
       return {
         success: false,
+        errorCode: 'no_valid_recipient',
+        errorParams: { name: giver.name },
         error: `Participant "${giver.name}" has no valid gift recipients due to exclusions. Please adjust exclusions and try again.`,
       };
     }
@@ -89,6 +92,7 @@ export function runDraw(participants: Participant[]): DrawResult {
   if (!success) {
     return {
       success: false,
+      errorCode: 'no_solution',
       error: 'No valid gift assignment exists that satisfies all exclusions. Please relax some exclusions and try again.',
     };
   }

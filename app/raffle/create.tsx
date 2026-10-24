@@ -120,7 +120,7 @@ export default function CreateRaffleScreen() {
           const docRef = await addDoc(rafflesCollection(), {
             id: '',
             name: name.trim(),
-            topic: topic.trim() || 'General',
+            topic: topic.trim() || t('manageRaffle.generalTopic'),
             priceLimit: price,
             currency,
             raffleDate,

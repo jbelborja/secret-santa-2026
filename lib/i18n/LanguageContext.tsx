@@ -36,6 +36,9 @@ const LanguageContext = createContext<LanguageContextType>({
   dateLocale: dateFnsEs,
 });
 
+let currentLanguage: SupportedLanguage = 'es';
+export const getActiveLanguage = (): SupportedLanguage => currentLanguage;
+
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<SupportedLanguage>('es');
 
@@ -45,9 +48,11 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
         const saved = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
         if (saved === 'es' || saved === 'en') {
           setLanguageState(saved);
+          currentLanguage = saved;
         } else {
           // Spanish by default
           setLanguageState('es');
+          currentLanguage = 'es';
         }
       } catch (err) {
         console.warn('Failed to load language preference:', err);
@@ -58,6 +63,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const setLanguage = async (newLang: SupportedLanguage) => {
     setLanguageState(newLang);
+    currentLanguage = newLang;
     try {
       await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, newLang);
     } catch (err) {

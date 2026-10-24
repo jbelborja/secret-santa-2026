@@ -43,7 +43,9 @@ export default function RaffleParticipantScreen() {
           <Ionicons name="alert-circle-outline" size={32} color="#DC2626" />
         </View>
         <Text className="text-lg font-bold text-gray-800 text-center">
-          {raffleError || t('raffleDetail.notFound')}
+          {raffleError && raffleError !== 'Raffle not found'
+            ? raffleError
+            : t('raffleDetail.notFound')}
         </Text>
         <Button
           title={t('raffleDetail.goToRaffles')}
@@ -181,10 +183,12 @@ export default function RaffleParticipantScreen() {
           <View className="py-2 items-center">
             <Ionicons name="information-circle-outline" size={24} color="#D97706" />
             <Text className="text-sm font-bold text-gray-800 mt-1 text-center">
-              No estás en la lista de invitados
+              {t('raffleDetail.notInvitedTitle')}
             </Text>
             <Text className="text-xs text-gray-500 text-center mt-1">
-              Tu correo ({user?.email || 'desconocido'}) no ha sido añadido por el organizador a este sorteo.
+              {t('raffleDetail.notInvitedSubtitle', {
+                email: user?.email || t('raffleDetail.unknownEmail'),
+              })}
             </Text>
           </View>
         ) : myParticipant.status === 'invited' ? (

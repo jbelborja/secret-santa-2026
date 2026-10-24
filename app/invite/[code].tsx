@@ -109,7 +109,8 @@ export default function InviteScreen() {
     if (!raffle || !user) return;
 
     if (!existingParticipant) {
-      const msg = `Tu correo (${user.email || 'desconocido'}) no está en la lista de invitados para este sorteo.`;
+      const emailText = user.email || t('invite.unknownEmail');
+      const msg = t('invite.notInvitedError', { email: emailText });
       if (Platform.OS === 'web') {
         window.alert(msg);
       } else {
@@ -228,7 +229,7 @@ export default function InviteScreen() {
           {raffle.name}
         </Text>
         <Text className="text-sm text-gray-600 text-center max-w-xs mb-6 leading-5">
-          Este sorteo ya ha sido realizado y las parejas de Amigo Invisible ya están asignadas. No es posible unirse a un sorteo cerrado.
+          {t('invite.raffleClosedDesc')}
         </Text>
         <Button
           title={t('invite.goToHome')}
@@ -247,19 +248,22 @@ export default function InviteScreen() {
           <Ionicons name="mail-unread-outline" size={36} color="#D97706" />
         </View>
         <Text className="text-xl font-bold text-gray-900 text-center mb-2">
-          Correo no invitado
+          {t('invite.emailNotInvitedTitle')}
         </Text>
         <Text className="text-xs text-gray-500 text-center mb-1">
-          Has iniciado sesión como:
+          {t('invite.signedInAs')}
         </Text>
         <Text className="text-sm font-bold text-gray-900 text-center mb-4">
-          {user.email || 'Sin correo asociado'}
+          {user.email || t('invite.noEmailAssociated')}
         </Text>
         <Text className="text-xs text-gray-600 text-center max-w-xs mb-6 leading-5">
-          Este correo no está en la lista de invitados para el sorteo <Text className="font-bold text-gray-900">&quot;{raffle.name}&quot;</Text>. Pídele al organizador ({managerName}) que añada tu correo o inicia sesión con la cuenta invitada.
+          {t('invite.emailNotInvitedDesc', {
+            name: raffle.name,
+            manager: managerName,
+          })}
         </Text>
         <Button
-          title="Iniciar sesión con otra cuenta"
+          title={t('invite.signInOtherAccount')}
           variant="primary"
           size="lg"
           onPress={() => router.replace(`/(auth)/login?redirect=/invite/${code}` as any)}
