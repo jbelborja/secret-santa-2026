@@ -62,15 +62,3 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Deploy Firestore Rules and Indexes (Optional)
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-        run: |
-          if [ -n "$FIREBASE_SERVICE_ACCOUNT" ]; then
-            echo "$FIREBASE_SERVICE_ACCOUNT" > sa.json
-            export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/sa.json
-            npx firebase-tools deploy --only firestore:rules,firestore:indexes --project secret-santa-2026-4f5f6 --non-interactive || echo "Aviso: No se pudieron desplegar las reglas de Firestore (no crítico)"
-            rm -f sa.json
-          else
-            echo "Aviso: FIREBASE_SERVICE_ACCOUNT no configurado en secrets, omitiendo deploy de reglas"
-          fi
