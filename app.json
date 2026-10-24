@@ -18,6 +18,7 @@
       "bundleIdentifier": "com.jbelborja.secretsanta",
       "googleServicesFile": "./GoogleService-Info.plist",
       "associatedDomains": [
+        "applinks:jbelborja.github.io",
         "applinks:secret-santa-2026-4f5f6.web.app"
       ]
     },
@@ -33,6 +34,11 @@
           "action": "VIEW",
           "autoVerify": true,
           "data": [
+            {
+              "scheme": "https",
+              "host": "jbelborja.github.io",
+              "pathPrefix": "/secret-santa-2026"
+            },
             {
               "scheme": "https",
               "host": "secret-santa-2026-4f5f6.web.app",

@@ -66,7 +66,7 @@ app.post('/send-invite', async (req: Request, res: Response) => {
       })
     : 'Por confirmar';
 
-  const baseUrl = appUrl || process.env.APP_URL || 'https://secret-santa-2026-4f5f6.web.app';
+  const baseUrl = appUrl || process.env.APP_URL || 'https://jbelborja.github.io/secret-santa-2026';
   const inviteUrl = `${baseUrl}/invite/${inviteCode}`;
 
   const html = generateInviteEmailHtml({
@@ -127,7 +127,7 @@ app.post('/send-draw-emails', async (req: Request, res: Response) => {
       })
     : 'Por confirmar';
 
-  const baseUrl = appUrl || process.env.APP_URL || 'https://secret-santa-2026-4f5f6.web.app';
+  const baseUrl = appUrl || process.env.APP_URL || 'https://jbelborja.github.io/secret-santa-2026';
 
   const results = await Promise.allSettled(
     participants.map(async (p: { name: string; email: string; recipientName: string }) => {
