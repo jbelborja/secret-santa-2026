@@ -51,6 +51,9 @@
       "output": "single",
       "favicon": "./assets/favicon.png"
     },
+    "experiments": {
+      "baseUrl": "/secret-santa-2026"
+    },
     "plugins": [
       "expo-router",
       [
@@ -60,7 +63,8 @@
           "color": "#B91C1C"
         }
       ],
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      "@react-native-google-signin/google-signin"
     ]
   }
 }
