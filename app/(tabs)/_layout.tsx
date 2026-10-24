@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, Pressable } from 'react-native';
+import { View, Text, Image, Pressable, Platform } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
@@ -8,19 +8,23 @@ import { useTranslation } from '@/lib/i18n';
 export default function TabsLayout() {
   const { t } = useTranslation();
   const router = useRouter();
+  const isWeb = Platform.OS === 'web';
 
   return (
     <Tabs
       screenOptions={{
+        headerShown: !isWeb,
         tabBarActiveTintColor: '#B91C1C',
         tabBarInactiveTintColor: '#9CA3AF',
-        tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#F3F4F6',
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
-        },
+        tabBarStyle: isWeb
+          ? { display: 'none' }
+          : {
+              backgroundColor: '#FFFFFF',
+              borderTopColor: '#F3F4F6',
+              height: 60,
+              paddingBottom: 8,
+              paddingTop: 8,
+            },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '600',

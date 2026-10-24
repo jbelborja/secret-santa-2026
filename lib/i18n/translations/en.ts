@@ -64,6 +64,16 @@ export const en: Translations = {
     myRaffles: 'My Raffles',
     profile: 'Profile',
   },
+  webHeader: {
+    myRaffles: 'My Raffles',
+    newRaffle: 'Create Raffle',
+    profile: 'Profile',
+    signIn: 'Sign In',
+    signUp: 'Sign Up',
+    signOut: 'Sign Out',
+    menu: 'Menu',
+    closeMenu: 'Close menu',
+  },
   home: {
     title: 'My Raffles',
     subtitle: 'Organize and exchange secret gifts',

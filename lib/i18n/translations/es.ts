@@ -62,6 +62,16 @@ export const es = {
     myRaffles: 'Mis Sorteos',
     profile: 'Perfil',
   },
+  webHeader: {
+    myRaffles: 'Mis Rifas',
+    newRaffle: 'Crear Rifa',
+    profile: 'Perfil',
+    signIn: 'Iniciar Sesión',
+    signUp: 'Registrarse',
+    signOut: 'Cerrar Sesión',
+    menu: 'Menú',
+    closeMenu: 'Cerrar menú',
+  },
   home: {
     title: 'Mis Sorteos',
     subtitle: 'Organiza e intercambia regalos secretos',

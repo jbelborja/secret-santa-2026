@@ -1,7 +1,7 @@
 import '../global.css';
 
 import React, { useEffect } from 'react';
-import { View, Text, Image, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, Image, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -15,6 +15,7 @@ import {
 } from '@/lib/notifications';
 
 import { LanguageProvider, useTranslation } from '@/lib/i18n';
+import { WebHeader } from '@/components/web/WebHeader';
 
 setupNotificationHandler();
 
@@ -91,49 +92,54 @@ function RootNavigation() {
           <ActivityIndicator size="small" color="#B91C1C" />
         </View>
       ) : (
-        <Stack
-          screenOptions={{
-            headerTintColor: '#B91C1C',
-            headerBackTitle: t('common.back'),
-            headerTitleStyle: {
-              fontWeight: 'bold',
-            },
-            contentStyle: {
-              backgroundColor: '#FAFAFA',
-            },
-          }}
-        >
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="raffle/create"
-            options={{
-              headerTitle: t('createRaffle.headerTitle'),
-              presentation: 'modal',
-              headerStyle: { backgroundColor: '#FFFFFF' },
-            }}
-          />
-          <Stack.Screen
-            name="raffle/[id]"
-            options={{
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="invite/[code]"
-            options={{
-              headerTitle: t('invite.youAreInvited'),
-              presentation: 'modal',
-            }}
-          />
-          <Stack.Screen
-            name="+not-found"
-            options={{
-              title: t('notFound.title'),
-              headerShown: false,
-            }}
-          />
-        </Stack>
+        <View style={styles.appWrapper}>
+          {Platform.OS === 'web' && <WebHeader />}
+          <View style={styles.stackWrapper}>
+            <Stack
+              screenOptions={{
+                headerTintColor: '#B91C1C',
+                headerBackTitle: t('common.back'),
+                headerTitleStyle: {
+                  fontWeight: 'bold',
+                },
+                contentStyle: {
+                  backgroundColor: '#FAFAFA',
+                },
+              }}
+            >
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="raffle/create"
+                options={{
+                  headerTitle: t('createRaffle.headerTitle'),
+                  presentation: 'modal',
+                  headerStyle: { backgroundColor: '#FFFFFF' },
+                }}
+              />
+              <Stack.Screen
+                name="raffle/[id]"
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="invite/[code]"
+                options={{
+                  headerTitle: t('invite.youAreInvited'),
+                  presentation: 'modal',
+                }}
+              />
+              <Stack.Screen
+                name="+not-found"
+                options={{
+                  title: t('notFound.title'),
+                  headerShown: false,
+                }}
+              />
+            </Stack>
+          </View>
+        </View>
       )}
     </>
   );
@@ -153,6 +159,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  appWrapper: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: '#FAFAFA',
+  },
+  stackWrapper: {
+    flex: 1,
+    width: '100%',
   },
   loadingContainer: {
     flex: 1,
