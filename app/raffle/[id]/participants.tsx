@@ -93,13 +93,46 @@ export default function ParticipantsManagementScreen() {
       }
     } catch (err: unknown) {
       console.error('Error adding participant:', err);
-      Alert.alert(t('common.error'), t('common.error'));
+      const rawMsg =
+        (err as any)?.message ||
+        (err instanceof Error ? err.message : '') ||
+        (typeof err === 'string' ? err : '');
+      const errMsg = rawMsg || t('common.error');
+      if (Platform.OS === 'web') {
+        window.alert(`Error: ${errMsg}`);
+      } else {
+        Alert.alert(t('common.error'), errMsg);
+      }
     } finally {
       setAdding(false);
     }
   };
 
   const handleRemove = (participantId: string, name: string) => {
+    const doRemove = async () => {
+      try {
+        await removeParticipant(participantId);
+      } catch (err: unknown) {
+        const rawMsg =
+          (err as any)?.message ||
+          (err instanceof Error ? err.message : '') ||
+          (typeof err === 'string' ? err : '');
+        const errMsg = rawMsg || t('common.error');
+        if (Platform.OS === 'web') {
+          window.alert(`Error: ${errMsg}`);
+        } else {
+          Alert.alert(t('common.error'), errMsg);
+        }
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(t('participantsScreen.removeDesc', { name }))) {
+        doRemove();
+      }
+      return;
+    }
+
     Alert.alert(
       t('participantsScreen.removeTitle'),
       t('participantsScreen.removeDesc', { name }),
@@ -108,13 +141,7 @@ export default function ParticipantsManagementScreen() {
         {
           text: t('common.remove'),
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await removeParticipant(participantId);
-            } catch (err) {
-              Alert.alert(t('common.error'), t('common.error'));
-            }
-          },
+          onPress: doRemove,
         },
       ]
     );

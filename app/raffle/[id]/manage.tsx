@@ -6,6 +6,7 @@ import {
   Alert,
   Pressable,
   Switch,
+  Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -109,8 +110,10 @@ export default function ManageRaffleScreen() {
         giftDate: parsedGiftDate,
       });
       setEditing(false);
-    } catch (err) {
-      Alert.alert(t('common.error'), t('common.error'));
+    } catch (err: unknown) {
+      const msg = (err as any)?.message || t('common.error');
+      if (Platform.OS === 'web') window.alert(`Error: ${msg}`);
+      else Alert.alert(t('common.error'), msg);
     } finally {
       setSavingEdit(false);
     }
@@ -120,14 +123,107 @@ export default function ManageRaffleScreen() {
     try {
       await updateRaffle({ status: 'inviting' });
       setInviteModalVisible(true);
-    } catch (err) {
-      Alert.alert(t('common.error'), t('common.error'));
+    } catch (err: unknown) {
+      const msg = (err as any)?.message || t('common.error');
+      if (Platform.OS === 'web') window.alert(`Error: ${msg}`);
+      else Alert.alert(t('common.error'), msg);
+    }
+  };
+
+  const performDraw = async () => {
+    setDrawing(true);
+    setDrawError(null);
+
+    const result = runDraw(participants);
+
+    if (!result.success || !result.assignments) {
+      setDrawError(result.error || t('manageRaffle.drawIssue'));
+      setDrawing(false);
+      return;
+    }
+
+    try {
+      const batch = writeBatch(db);
+
+      // 1. Assign each giver their recipient
+      for (const [giverId, recipientId] of Object.entries(result.assignments)) {
+        const pDoc = participantDoc(raffle.id, giverId);
+        batch.update(pDoc, { assignedTo: recipientId });
+      }
+
+      // 2. Update raffle status to 'drawn'
+      const rDoc = raffleDoc(raffle.id);
+      batch.update(rDoc, { status: 'drawn' });
+
+      await batch.commit();
+
+      // 3. Send draw emails (fire-and-forget)
+      const participantNameMap = new Map(
+        participants.map((p) => [p.id, p.name])
+      );
+      const emailParticipants = acceptedParticipants
+        .filter((p) => p.email && result.assignments![p.id])
+        .map((p) => ({
+          name: p.name,
+          email: p.email,
+          recipientName: participantNameMap.get(result.assignments![p.id]) || '',
+        }));
+
+      if (emailParticipants.length > 0) {
+        sendDrawEmails({
+          raffleId: raffle.id,
+          raffleName: raffle.name,
+          topic: raffle.topic,
+          priceLimit: raffle.priceLimit,
+          currency: raffle.currency,
+          giftDate: raffle.giftDate ? raffle.giftDate.toISOString() : null,
+          participants: emailParticipants,
+        }).catch((err) => console.warn('Draw emails failed (non-fatal):', err));
+      }
+
+      // 4. Send batch push notifications
+      const tokens = acceptedParticipants
+        .map((p) => p.expoPushToken)
+        .filter((t): t is string => Boolean(t));
+
+      if (tokens.length > 0) {
+        sendBatchPushNotifications(tokens, {
+          title: t('manageRaffle.notificationTitle'),
+          body: t('manageRaffle.notificationBody', { name: raffle.name }),
+          data: { raffleId: raffle.id },
+        });
+      }
+
+      if (Platform.OS === 'web') {
+        window.alert(t('manageRaffle.drawSuccessDesc'));
+      } else {
+        Alert.alert(t('manageRaffle.drawSuccessTitle'), t('manageRaffle.drawSuccessDesc'));
+      }
+    } catch (err: unknown) {
+      console.error('Error committing draw results:', err);
+      const msg = (err as any)?.message || (err instanceof Error ? err.message : t('common.error'));
+      setDrawError(msg);
+      if (Platform.OS === 'web') window.alert(`Error: ${msg}`);
+      else Alert.alert(t('common.error'), msg);
+    } finally {
+      setDrawing(false);
     }
   };
 
   const handleExecuteDraw = async () => {
     if (acceptedCount < 2) {
-      Alert.alert(t('manageRaffle.drawIssue'), t('manageRaffle.needTwoParticipants'));
+      if (Platform.OS === 'web') {
+        window.alert(t('manageRaffle.needTwoParticipants'));
+      } else {
+        Alert.alert(t('manageRaffle.drawIssue'), t('manageRaffle.needTwoParticipants'));
+      }
+      return;
+    }
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(t('manageRaffle.confirmDrawDesc', { count: acceptedCount }))) {
+        performDraw();
+      }
       return;
     }
 
@@ -139,86 +235,35 @@ export default function ManageRaffleScreen() {
         {
           text: t('manageRaffle.drawNamesBtn'),
           style: 'default',
-          onPress: async () => {
-            setDrawing(true);
-            setDrawError(null);
-
-            const result = runDraw(participants);
-
-            if (!result.success || !result.assignments) {
-              setDrawError(result.error || t('manageRaffle.drawIssue'));
-              setDrawing(false);
-              return;
-            }
-
-            try {
-              const batch = writeBatch(db);
-
-              // 1. Assign each giver their recipient
-              for (const [giverId, recipientId] of Object.entries(result.assignments)) {
-                const pDoc = participantDoc(raffle.id, giverId);
-                batch.update(pDoc, { assignedTo: recipientId });
-              }
-
-              // 2. Update raffle status to 'drawn'
-              //    This triggers the onRaffleDrawn Cloud Function which sends
-              //    assignment emails to all participants via Gmail SMTP.
-              const rDoc = raffleDoc(raffle.id);
-              batch.update(rDoc, { status: 'drawn' });
-
-              await batch.commit();
-
-              // 3. Send draw emails via Gmail SMTP (fire-and-forget)
-              const participantNameMap = new Map(
-                participants.map((p) => [p.id, p.name])
-              );
-              const emailParticipants = acceptedParticipants
-                .filter((p) => p.email && result.assignments![p.id])
-                .map((p) => ({
-                  name: p.name,
-                  email: p.email,
-                  recipientName: participantNameMap.get(result.assignments![p.id]) || '',
-                }));
-
-              if (emailParticipants.length > 0) {
-                sendDrawEmails({
-                  raffleId: raffle.id,
-                  raffleName: raffle.name,
-                  topic: raffle.topic,
-                  priceLimit: raffle.priceLimit,
-                  currency: raffle.currency,
-                  giftDate: raffle.giftDate ? raffle.giftDate.toISOString() : null,
-                  participants: emailParticipants,
-                }).catch((err) => console.warn('Draw emails failed (non-fatal):', err));
-              }
-
-              // 4. Send batch push notifications
-              const tokens = acceptedParticipants
-                .map((p) => p.expoPushToken)
-                .filter((t): t is string => Boolean(t));
-
-              if (tokens.length > 0) {
-                sendBatchPushNotifications(tokens, {
-                  title: t('manageRaffle.notificationTitle'),
-                  body: t('manageRaffle.notificationBody', { name: raffle.name }),
-                  data: { raffleId: raffle.id },
-                });
-              }
-
-              Alert.alert(t('manageRaffle.drawSuccessTitle'), t('manageRaffle.drawSuccessDesc'));
-            } catch (err: unknown) {
-              console.error('Error committing draw results:', err);
-              setDrawError(err instanceof Error ? err.message : t('common.error'));
-            } finally {
-              setDrawing(false);
-            }
-          },
+          onPress: performDraw,
         },
       ]
     );
   };
 
+  const performReveal = async () => {
+    try {
+      await updateRaffle({ revealed: true, status: 'completed' });
+      if (Platform.OS === 'web') {
+        window.alert(t('manageRaffle.revealedAlertDesc'));
+      } else {
+        Alert.alert(t('manageRaffle.revealedAlertTitle'), t('manageRaffle.revealedAlertDesc'));
+      }
+    } catch (err: unknown) {
+      const msg = (err as any)?.message || t('common.error');
+      if (Platform.OS === 'web') window.alert(`Error: ${msg}`);
+      else Alert.alert(t('common.error'), msg);
+    }
+  };
+
   const handleRevealAssignments = async () => {
+    if (Platform.OS === 'web') {
+      if (window.confirm(t('manageRaffle.revealConfirmDesc'))) {
+        performReveal();
+      }
+      return;
+    }
+
     Alert.alert(
       t('manageRaffle.revealConfirmTitle'),
       t('manageRaffle.revealConfirmDesc'),
@@ -226,14 +271,7 @@ export default function ManageRaffleScreen() {
         { text: t('common.cancel'), style: 'cancel' },
         {
           text: t('manageRaffle.revealConfirmBtn'),
-          onPress: async () => {
-            try {
-              await updateRaffle({ revealed: true, status: 'completed' });
-              Alert.alert(t('manageRaffle.revealedAlertTitle'), t('manageRaffle.revealedAlertDesc'));
-            } catch (err) {
-              Alert.alert(t('common.error'), t('common.error'));
-            }
-          },
+          onPress: performReveal,
         },
       ]
     );

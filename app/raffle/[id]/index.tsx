@@ -5,6 +5,7 @@ import {
   ScrollView,
   Pressable,
   Platform,
+  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -67,32 +68,38 @@ export default function RaffleParticipantScreen() {
     if (!user || !id) return;
     setActionLoading(true);
     try {
+      const participantPayload: Record<string, any> = {
+        status: 'accepted',
+        userId: user.uid,
+        joinedAt: new Date(),
+      };
+      if (user.expoPushToken) {
+        participantPayload.expoPushToken = user.expoPushToken;
+      }
+
       if (myParticipant) {
-        await updateDoc(participantDoc(id, myParticipant.id), {
-          status: 'accepted',
-          userId: user.uid,
-          joinedAt: new Date(),
-          expoPushToken: user.expoPushToken,
-        });
+        await updateDoc(participantDoc(id, myParticipant.id), participantPayload);
       } else {
         await addDoc(participantsCollection(id), {
-          id: '',
+          ...participantPayload,
           raffleId: id,
-          userId: user.uid,
           name: user.displayName || 'Participant',
           email: user.email || '',
-          status: 'accepted',
           exclusions: [],
           giftGiven: false,
-          expoPushToken: user.expoPushToken,
-          joinedAt: new Date(),
-        });
+        } as any);
       }
     } catch (err: unknown) {
       console.error('Error accepting invitation:', err);
-      const errMsg = err instanceof Error ? err.message : t('common.error');
+      const rawMsg =
+        (err as any)?.message ||
+        (err instanceof Error ? err.message : '') ||
+        (typeof err === 'string' ? err : '');
+      const errMsg = rawMsg || t('common.error');
       if (Platform.OS === 'web') {
         window.alert(`Error: ${errMsg}`);
+      } else {
+        Alert.alert(t('common.error'), errMsg);
       }
     } finally {
       setActionLoading(false);

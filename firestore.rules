@@ -28,21 +28,22 @@ service cloud.firestore {
           // The raffle manager can update any participant
           get(/databases/$(database)/documents/raffles/$(raffleId)).data.managerId == request.auth.uid ||
           // The participant themselves can update their own document
-          resource.data.userId == request.auth.uid ||
-          // An invited participant can claim their pre-created invitation
-          (resource.data.userId == null && request.resource.data.userId == request.auth.uid) ||
-          (resource.data.email != null && request.auth.token.email != null && resource.data.email == request.auth.token.email && request.resource.data.userId == request.auth.uid)
+          resource.data.get('userId', null) == request.auth.uid ||
+          // An invited participant can claim an unclaimed invitation slot
+          (resource.data.get('userId', null) == null && request.resource.data.userId == request.auth.uid) ||
+          // Or matching email if pre-invited
+          (resource.data.get('email', '') != '' && request.auth.token.email != null && resource.data.get('email', '') == request.auth.token.email && request.resource.data.userId == request.auth.uid)
         );
         allow delete: if request.auth != null && (
           get(/databases/$(database)/documents/raffles/$(raffleId)).data.managerId == request.auth.uid ||
-          resource.data.userId == request.auth.uid
+          resource.data.get('userId', null) == request.auth.uid
         );
       }
     }
 
     // Collection group for participants (used by getRafflesIParticipateIn)
     match /{path=**}/participants/{participantId} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && resource.data.get('userId', null) == request.auth.uid;
     }
   }
 }

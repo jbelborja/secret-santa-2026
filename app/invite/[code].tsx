@@ -108,37 +108,41 @@ export default function InviteScreen() {
     setSubmitting(true);
 
     try {
+      const participantPayload: Record<string, any> = {
+        status: 'accepted',
+        userId: user.uid,
+        joinedAt: new Date(),
+      };
+      if (user.expoPushToken) {
+        participantPayload.expoPushToken = user.expoPushToken;
+      }
+
       if (existingParticipant) {
         // Update existing record
+        participantPayload.name = joinName.trim() || existingParticipant.name;
         const pRef = participantDoc(raffle.id, existingParticipant.id);
-        await updateDoc(pRef, {
-          status: 'accepted',
-          userId: user.uid,
-          name: joinName.trim() || existingParticipant.name,
-          joinedAt: new Date(),
-          expoPushToken: user.expoPushToken,
-        });
+        await updateDoc(pRef, participantPayload);
       } else {
         // Create new participant record
         const pColl = participantsCollection(raffle.id);
         await addDoc(pColl, {
-          id: '',
+          ...participantPayload,
           raffleId: raffle.id,
-          userId: user.uid,
           name: joinName.trim() || user.displayName || t('invite.santaFan'),
           email: user.email || '',
-          status: 'accepted',
           exclusions: [],
           giftGiven: false,
-          expoPushToken: user.expoPushToken,
-          joinedAt: new Date(),
-        });
+        } as any);
       }
 
       router.replace(`/raffle/${raffle.id}` as any);
     } catch (err: unknown) {
       console.error('Error accepting invitation:', err);
-      const errMsg = err instanceof Error ? err.message : t('common.error');
+      const rawMsg =
+        (err as any)?.message ||
+        (err instanceof Error ? err.message : '') ||
+        (typeof err === 'string' ? err : '');
+      const errMsg = rawMsg || t('common.error');
       if (Platform.OS === 'web') {
         window.alert(`Error al unirse: ${errMsg}`);
       } else {
