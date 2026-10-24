@@ -28,6 +28,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Avatar } from '@/components/ui/Avatar';
+import { PageContainer } from '@/components/ui/PageContainer';
 
 export default function ManageRaffleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -283,10 +284,11 @@ export default function ManageRaffleScreen() {
   return (
     <ScrollView
       className="flex-1 bg-[#FAFAFA]"
-      contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
+      contentContainerStyle={{ paddingVertical: 20, paddingBottom: 60 }}
     >
-      {/* Raffle Summary Card with Inline Editing */}
-      <Card className="mb-4 bg-white border border-gray-100">
+      <PageContainer maxWidth={880} className="px-4 sm:px-6">
+        {/* Raffle Summary Card with Inline Editing */}
+        <Card className="mb-4 bg-white border border-gray-100">
         <View className="flex-row items-center justify-between mb-2">
           <StatusBadge status={raffle.status} />
           {!editing ? (
@@ -520,6 +522,7 @@ export default function ManageRaffleScreen() {
         visible={inviteModalVisible}
         onClose={() => setInviteModalVisible(false)}
       />
+      </PageContainer>
     </ScrollView>
   );
 }

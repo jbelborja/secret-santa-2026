@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Card } from '@/components/ui/Card';
 import { sendInviteEmail } from '@/lib/email';
+import { PageContainer } from '@/components/ui/PageContainer';
 
 export default function ParticipantsManagementScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -161,6 +162,7 @@ export default function ParticipantsManagementScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
         ListHeaderComponent={
+          <PageContainer maxWidth={720}>
           <View className="mb-4">
             {/* Add Participant Card */}
             <Card className="mb-4 bg-white border border-gray-100">
@@ -207,11 +209,13 @@ export default function ParticipantsManagementScreen() {
               </Text>
             </View>
           </View>
+          </PageContainer>
         }
         renderItem={({ item }) => {
           const isExpanded = expandedParticipantId === item.id;
 
           return (
+            <PageContainer maxWidth={720}>
             <View className="mb-2">
               <Pressable onPress={() => toggleExpand(item.id)}>
                 <ParticipantRow
@@ -233,15 +237,18 @@ export default function ParticipantsManagementScreen() {
                 </View>
               ) : null}
             </View>
+            </PageContainer>
           );
         }}
         ListFooterComponent={
+          <PageContainer maxWidth={720}>
           <View className="mt-6 p-4 bg-amber-50/70 rounded-2xl border border-amber-200/60 items-center">
             <Ionicons name="information-circle-outline" size={20} color="#D97706" />
             <Text className="text-xs text-amber-800 text-center mt-1 leading-5">
               {t('participantsScreen.footerHint')}
             </Text>
           </View>
+          </PageContainer>
         }
       />
     </KeyboardAvoidingView>

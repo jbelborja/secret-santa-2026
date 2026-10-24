@@ -29,6 +29,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { StatusBadge } from '@/components/raffle/StatusBadge';
+import { PageContainer } from '@/components/ui/PageContainer';
 
 export default function InviteScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
@@ -283,9 +284,11 @@ export default function InviteScreen() {
   return (
     <ScrollView
       className="flex-1 bg-[#FAFAFA]"
-      contentContainerStyle={{ padding: 20, paddingBottom: 60 }}
+      contentContainerStyle={{ paddingVertical: 24, paddingBottom: 60 }}
     >
-      <View className="items-center mb-6">
+      <PageContainer maxWidth={540} className="px-4">
+        <View className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm">
+          <View className="items-center mb-6">
         <View className="w-16 h-16 rounded-2xl bg-red-50 border border-red-100 items-center justify-center mb-3">
           <Ionicons name="mail-open-outline" size={30} color="#B91C1C" />
         </View>
@@ -388,7 +391,9 @@ export default function InviteScreen() {
             onPress={handleDecline}
           />
         ) : null}
-      </View>
+        </View>
+        </View>
+      </PageContainer>
     </ScrollView>
   );
 }

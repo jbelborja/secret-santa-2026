@@ -20,6 +20,7 @@ import {
   formatAuthError,
 } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
+import { PageContainer } from '@/components/ui/PageContainer';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -110,50 +111,52 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1, backgroundColor: '#FFFFFF' }}
-      className="flex-1 bg-white"
+      style={{ flex: 1, backgroundColor: '#FAFAFA' }}
+      className="flex-1 bg-[#FAFAFA]"
     >
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingVertical: 24 }}
         style={{ flex: 1 }}
         keyboardShouldPersistTaps="handled"
-        className="px-6 py-12 justify-center"
+        className="px-4"
       >
-        {/* Language Quick Switcher */}
-        <View className="items-end mb-2">
-          <View className="flex-row items-center bg-gray-100 rounded-full p-1 border border-gray-200">
-            <Pressable
-              onPress={() => setLanguage('es')}
-              className={`px-2.5 py-1 rounded-full flex-row items-center ${
-                language === 'es' ? 'bg-white shadow-xs' : ''
-              }`}
-            >
-              <Text className="text-xs mr-1">🇪🇸</Text>
-              <Text
-                className={`text-xs font-bold ${
-                  language === 'es' ? 'text-[#B91C1C]' : 'text-gray-500'
-                }`}
-              >
-                ES
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setLanguage('en')}
-              className={`px-2.5 py-1 rounded-full flex-row items-center ${
-                language === 'en' ? 'bg-white shadow-xs' : ''
-              }`}
-            >
-              <Text className="text-xs mr-1">🇬🇧</Text>
-              <Text
-                className={`text-xs font-bold ${
-                  language === 'en' ? 'text-[#B91C1C]' : 'text-gray-500'
-                }`}
-              >
-                EN
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+        <PageContainer maxWidth={460} className="my-auto">
+          <View className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm">
+            {/* Language Quick Switcher */}
+            <View className="items-end mb-4">
+              <View className="flex-row items-center bg-gray-100 rounded-full p-1 border border-gray-200">
+                <Pressable
+                  onPress={() => setLanguage('es')}
+                  className={`px-2.5 py-1 rounded-full flex-row items-center ${
+                    language === 'es' ? 'bg-white shadow-xs' : ''
+                  }`}
+                >
+                  <Text className="text-xs mr-1">🇪🇸</Text>
+                  <Text
+                    className={`text-xs font-bold ${
+                      language === 'es' ? 'text-[#B91C1C]' : 'text-gray-500'
+                    }`}
+                  >
+                    ES
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setLanguage('en')}
+                  className={`px-2.5 py-1 rounded-full flex-row items-center ${
+                    language === 'en' ? 'bg-white shadow-xs' : ''
+                  }`}
+                >
+                  <Text className="text-xs mr-1">🇬🇧</Text>
+                  <Text
+                    className={`text-xs font-bold ${
+                      language === 'en' ? 'text-[#B91C1C]' : 'text-gray-500'
+                    }`}
+                  >
+                    EN
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
 
         {/* Header */}
         <View className="items-center mb-8">
@@ -271,6 +274,8 @@ export default function LoginScreen() {
           className="border-gray-300"
           leftIcon={<Ionicons name="logo-google" size={18} color="#EA4335" />}
         />
+          </View>
+        </PageContainer>
       </ScrollView>
     </KeyboardAvoidingView>
   );

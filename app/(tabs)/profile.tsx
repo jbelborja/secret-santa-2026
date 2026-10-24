@@ -19,6 +19,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { PageContainer } from '@/components/ui/PageContainer';
 
 export default function ProfileScreen() {
   const { user } = useAuth();
@@ -117,10 +118,11 @@ export default function ProfileScreen() {
   return (
     <ScrollView
       className="flex-1 bg-[#FAFAFA]"
-      contentContainerStyle={{ padding: 20, paddingBottom: 50 }}
+      contentContainerStyle={{ paddingVertical: 24, paddingBottom: 60 }}
     >
-      {/* User Header Profile Card */}
-      <View className="items-center mb-6">
+      <PageContainer maxWidth={640} className="px-4 sm:px-6">
+        {/* User Header Profile Card */}
+        <View className="items-center mb-6">
         <View className="relative">
           <Avatar
             name={user?.displayName || user?.email || t('profile.user')}
@@ -297,14 +299,18 @@ export default function ProfileScreen() {
         </View>
       </Card>
 
-      {/* Sign Out Button */}
-      <Button
-        title={t('profile.signOut')}
-        variant="danger"
-        size="lg"
-        onPress={handleSignOut}
-        leftIcon={<Ionicons name="log-out-outline" size={20} color="#FFFFFF" />}
-      />
+        {/* Sign Out Button */}
+        <View className="items-center sm:items-end mt-2">
+          <Button
+            title={t('profile.signOut')}
+            variant="danger"
+            size="lg"
+            onPress={handleSignOut}
+            className="w-full sm:w-auto px-8 py-3"
+            leftIcon={<Ionicons name="log-out-outline" size={20} color="#FFFFFF" />}
+          />
+        </View>
+      </PageContainer>
     </ScrollView>
   );
 }

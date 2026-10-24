@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Avatar } from '@/components/ui/Avatar';
+import { PageContainer } from '@/components/ui/PageContainer';
 
 export default function AssignmentRevealScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -142,6 +143,7 @@ export default function AssignmentRevealScreen() {
       className="flex-1 bg-[#FAFAFA]"
       contentContainerStyle={{ padding: 20, paddingBottom: 60 }}
     >
+      <PageContainer maxWidth={720}>
       {/* Decorative Header */}
       <Animated.View
         style={{
@@ -288,6 +290,7 @@ export default function AssignmentRevealScreen() {
           </View>
         </Card>
       ) : null}
+      </PageContainer>
     </ScrollView>
   );
 }

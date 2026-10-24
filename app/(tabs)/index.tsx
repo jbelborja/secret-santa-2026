@@ -6,6 +6,8 @@ import {
   ScrollView,
   RefreshControl,
   Pressable,
+  Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -16,11 +18,16 @@ import { RaffleCard } from '@/components/raffle/RaffleCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { JoinWithCodeModal } from '@/components/raffle/JoinWithCodeModal';
+import { PageContainer } from '@/components/ui/PageContainer';
 
 export default function MyRafflesScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
+  const isTablet = width >= 640;
+
   const {
     managedRaffles,
     participatingRaffles,
@@ -36,6 +43,15 @@ export default function MyRafflesScreen() {
   const totalActive =
     managedRaffles.length + participatingRaffles.length + pendingRaffles.length;
 
+  const getCardStyle = () => {
+    if (Platform.OS === 'web') {
+      if (isDesktop) return { width: 'calc(33.333% - 11px)' as any };
+      if (isTablet) return { width: 'calc(50% - 8px)' as any };
+      return { width: '100%' as any };
+    }
+    return { width: '100%' };
+  };
+
   if (loading && totalActive === 0 && pastRaffles.length === 0) {
     return <LoadingSpinner message={t('home.loadingRaffles')} />;
   }
@@ -44,7 +60,7 @@ export default function MyRafflesScreen() {
     <ScrollView
       style={{ flex: 1, backgroundColor: '#FAFAFA' }}
       className="flex-1 bg-[#FAFAFA]"
-      contentContainerStyle={{ padding: 16, paddingBottom: 50 }}
+      contentContainerStyle={{ paddingVertical: 20, paddingBottom: 60 }}
       refreshControl={
         <RefreshControl
           refreshing={loading}
@@ -54,44 +70,45 @@ export default function MyRafflesScreen() {
         />
       }
     >
-      {/* Top Header bar */}
-      <View className="flex-row items-center justify-between mb-5">
-        <View className="flex-row items-center flex-1">
-          <View className="w-11 h-11 rounded-xl overflow-hidden mr-3 border border-red-100 bg-red-50 items-center justify-center shadow-xs">
-            <Image
-              source={require('../../assets/icon.png')}
-              style={{ width: 44, height: 44, borderRadius: 12 }}
-              resizeMode="cover"
-            />
+      <PageContainer maxWidth={1140} className="px-4 sm:px-6">
+        {/* Top Header bar with responsive layout */}
+        <View className="flex-col sm:flex-row sm:items-center justify-between mb-6 pb-4 border-b border-gray-100">
+          <View className="flex-row items-center mb-4 sm:mb-0">
+            <View className="w-12 h-12 rounded-2xl overflow-hidden mr-3.5 border border-red-100 bg-red-50 items-center justify-center shadow-xs">
+              <Image
+                source={require('../../assets/icon.png')}
+                style={{ width: 48, height: 48, borderRadius: 14 }}
+                resizeMode="cover"
+              />
+            </View>
+            <View>
+              <Text className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+                {t('home.title')}
+              </Text>
+              <Text className="text-xs sm:text-sm text-gray-500 mt-0.5">
+                {t('home.subtitle')}
+              </Text>
+            </View>
           </View>
-          <View className="flex-1">
-            <Text className="text-2xl font-black text-gray-900 tracking-tight">
-              {t('home.title')}
-            </Text>
-            <Text className="text-xs text-gray-500 mt-0.5" numberOfLines={1}>
-              {t('home.subtitle')}
-            </Text>
+
+          {/* Quick Action Buttons (Optimized width on web) */}
+          <View className="flex-row gap-3">
+            <Pressable
+              onPress={() => router.push('/raffle/create')}
+              className="flex-1 sm:flex-initial flex-row items-center justify-center bg-[#B91C1C] py-2.5 px-4 rounded-xl shadow-xs active:bg-[#991B1B]"
+            >
+              <Ionicons name="add" size={18} color="#FFFFFF" />
+              <Text className="text-white font-bold text-sm ml-1.5">{t('home.newRaffle')}</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setJoinModalVisible(true)}
+              className="flex-1 sm:flex-initial flex-row items-center justify-center bg-white border border-gray-200 py-2.5 px-4 rounded-xl shadow-xs active:bg-gray-50"
+            >
+              <Ionicons name="ticket-outline" size={18} color="#B91C1C" />
+              <Text className="text-gray-800 font-bold text-sm ml-1.5">{t('home.joinWithCodeBtn')}</Text>
+            </Pressable>
           </View>
         </View>
-      </View>
-
-      {/* Quick Action Bar: New Raffle & Join with Code */}
-      <View className="flex-row gap-2.5 mb-6">
-        <Pressable
-          onPress={() => router.push('/raffle/create')}
-          className="flex-1 flex-row items-center justify-center bg-[#B91C1C] py-3 px-3 rounded-xl shadow-xs active:bg-[#991B1B]"
-        >
-          <Ionicons name="add" size={18} color="#FFFFFF" />
-          <Text className="text-white font-bold text-sm ml-1.5">{t('home.newRaffle')}</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setJoinModalVisible(true)}
-          className="flex-1 flex-row items-center justify-center bg-white border border-gray-200 py-3 px-3 rounded-xl shadow-xs active:bg-gray-50"
-        >
-          <Ionicons name="ticket-outline" size={18} color="#B91C1C" />
-          <Text className="text-gray-800 font-bold text-sm ml-1.5">{t('home.joinWithCodeBtn')}</Text>
-        </Pressable>
-      </View>
 
       {/* Error message */}
       {error ? (
@@ -120,15 +137,18 @@ export default function MyRafflesScreen() {
             {t('home.pendingSubtitle')}
           </Text>
 
-          {pendingRaffles.map((raffle) => (
-            <RaffleCard
-              key={raffle.id}
-              raffle={raffle}
-              isPending
-              isManager={false}
-              onPress={() => router.push(`/raffle/${raffle.id}` as any)}
-            />
-          ))}
+          <View className="flex-row flex-wrap gap-4">
+            {pendingRaffles.map((raffle) => (
+              <View key={raffle.id} style={getCardStyle()}>
+                <RaffleCard
+                  raffle={raffle}
+                  isPending
+                  isManager={false}
+                  onPress={() => router.push(`/raffle/${raffle.id}` as any)}
+                />
+              </View>
+            ))}
+          </View>
         </View>
       ) : null}
 
@@ -170,14 +190,17 @@ export default function MyRafflesScreen() {
             }}
           />
         ) : (
-          participatingRaffles.map((raffle) => (
-            <RaffleCard
-              key={raffle.id}
-              raffle={raffle}
-              isManager={false}
-              onPress={() => router.push(`/raffle/${raffle.id}` as any)}
-            />
-          ))
+          <View className="flex-row flex-wrap gap-4">
+            {participatingRaffles.map((raffle) => (
+              <View key={raffle.id} style={getCardStyle()}>
+                <RaffleCard
+                  raffle={raffle}
+                  isManager={false}
+                  onPress={() => router.push(`/raffle/${raffle.id}` as any)}
+                />
+              </View>
+            ))}
+          </View>
         )}
       </View>
 
@@ -207,14 +230,17 @@ export default function MyRafflesScreen() {
             }}
           />
         ) : (
-          managedRaffles.map((raffle) => (
-            <RaffleCard
-              key={raffle.id}
-              raffle={raffle}
-              isManager
-              onPress={() => router.push(`/raffle/${raffle.id}` as any)}
-            />
-          ))
+          <View className="flex-row flex-wrap gap-4">
+            {managedRaffles.map((raffle) => (
+              <View key={raffle.id} style={getCardStyle()}>
+                <RaffleCard
+                  raffle={raffle}
+                  isManager
+                  onPress={() => router.push(`/raffle/${raffle.id}` as any)}
+                />
+              </View>
+            ))}
+          </View>
         )}
       </View>
 
@@ -264,14 +290,17 @@ export default function MyRafflesScreen() {
                 </Text>
               </View>
             ) : (
-              pastRaffles.map((raffle) => (
-                <RaffleCard
-                  key={raffle.id}
-                  raffle={raffle}
-                  isManager={raffle.managerId === user?.uid}
-                  onPress={() => router.push(`/raffle/${raffle.id}` as any)}
-                />
-              ))
+              <View className="flex-row flex-wrap gap-4">
+                {pastRaffles.map((raffle) => (
+                  <View key={raffle.id} style={getCardStyle()}>
+                    <RaffleCard
+                      raffle={raffle}
+                      isManager={raffle.managerId === user?.uid}
+                      onPress={() => router.push(`/raffle/${raffle.id}` as any)}
+                    />
+                  </View>
+                ))}
+              </View>
             )}
           </View>
         ) : null}
@@ -281,6 +310,7 @@ export default function MyRafflesScreen() {
         visible={joinModalVisible}
         onClose={() => setJoinModalVisible(false)}
       />
+      </PageContainer>
     </ScrollView>
   );
 }

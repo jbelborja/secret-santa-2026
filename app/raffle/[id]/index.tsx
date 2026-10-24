@@ -21,6 +21,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
+import { PageContainer } from '@/components/ui/PageContainer';
 
 export default function RaffleParticipantScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -117,10 +118,11 @@ export default function RaffleParticipantScreen() {
   return (
     <ScrollView
       className="flex-1 bg-[#FAFAFA]"
-      contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
+      contentContainerStyle={{ paddingVertical: 20, paddingBottom: 60 }}
     >
-      {/* Header Info Card */}
-      <Card elevated className="p-5 mb-4 border border-gray-100 bg-white">
+      <PageContainer maxWidth={840} className="px-4 sm:px-6">
+        {/* Header Info Card */}
+        <Card elevated className="p-5 mb-4 border border-gray-100 bg-white">
         <View className="flex-row items-start justify-between">
           <View className="flex-1 mr-3">
             <View className="flex-row items-center mb-1.5">
@@ -345,6 +347,7 @@ export default function RaffleParticipantScreen() {
           </View>
         ))}
       </View>
+      </PageContainer>
     </ScrollView>
   );
 }

@@ -25,6 +25,8 @@ import { Button } from '@/components/ui/Button';
 
 const CURRENCIES = ['EUR', 'USD', 'GBP', 'CAD', 'AUD'];
 
+import { PageContainer } from '@/components/ui/PageContainer';
+
 export default function CreateRaffleScreen() {
   const router = useRouter();
   const { user } = useAuth();
@@ -167,136 +169,143 @@ export default function CreateRaffleScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      className="flex-1 bg-white"
+      className="flex-1 bg-[#FAFAFA]"
     >
       <ScrollView
         ref={scrollViewRef}
-        contentContainerStyle={{ padding: 20, paddingBottom: 60 }}
+        contentContainerStyle={{ paddingVertical: 20, paddingBottom: 60 }}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Banner / Cover Picker */}
-        <Pressable
-          onPress={pickImage}
-          className="w-full h-40 bg-red-50 rounded-2xl border-2 border-dashed border-red-200 items-center justify-center overflow-hidden mb-6"
-        >
-          {coverImageUrl ? (
-            <Image
-              source={{ uri: coverImageUrl }}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
-          ) : (
-            <View className="items-center">
-              <View className="w-12 h-12 rounded-full bg-white items-center justify-center mb-2 shadow-xs">
-                <Ionicons name="image-outline" size={24} color="#B91C1C" />
+        <PageContainer maxWidth={680} className="px-4 sm:px-6">
+          <View className="bg-white rounded-3xl p-5 sm:p-8 border border-gray-100 shadow-xs">
+            {/* Banner / Cover Picker */}
+            <Pressable
+              onPress={pickImage}
+              className="w-full h-40 sm:h-48 bg-red-50 rounded-2xl border-2 border-dashed border-red-200 items-center justify-center overflow-hidden mb-6"
+            >
+              {coverImageUrl ? (
+                <Image
+                  source={{ uri: coverImageUrl }}
+                  className="w-full h-full"
+                  resizeMode="cover"
+                />
+              ) : (
+                <View className="items-center">
+                  <View className="w-12 h-12 rounded-full bg-white items-center justify-center mb-2 shadow-xs">
+                    <Ionicons name="image-outline" size={24} color="#B91C1C" />
+                  </View>
+                  <Text className="text-sm font-semibold text-[#B91C1C]">
+                    {t('createRaffle.coverPhoto')}
+                  </Text>
+                  <Text className="text-xs text-gray-400 mt-0.5">
+                    {t('createRaffle.coverPhotoHint')}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
+
+            {/* Error message */}
+            {error ? (
+              <View className="bg-red-50 border border-red-200 rounded-xl p-3 mb-5 flex-row items-center">
+                <Ionicons name="alert-circle" size={18} color="#DC2626" />
+                <Text className="text-xs text-red-600 font-semibold ml-2 flex-1">
+                  {error}
+                </Text>
               </View>
-              <Text className="text-sm font-semibold text-[#B91C1C]">
-                {t('createRaffle.coverPhoto')}
-              </Text>
-              <Text className="text-xs text-gray-400 mt-0.5">
-                {t('createRaffle.coverPhotoHint')}
-              </Text>
-            </View>
-          )}
-        </Pressable>
+            ) : null}
 
-        {/* Error message */}
-        {error ? (
-          <View className="bg-red-50 border border-red-200 rounded-xl p-3 mb-5 flex-row items-center">
-            <Ionicons name="alert-circle" size={18} color="#DC2626" />
-            <Text className="text-xs text-red-600 font-semibold ml-2 flex-1">
-              {error}
-            </Text>
-          </View>
-        ) : null}
-
-        {/* Form Fields */}
-        <View className="space-y-1">
-          <Input
-            label={t('createRaffle.nameLabel')}
-            placeholder={t('createRaffle.namePlaceholder')}
-            value={name}
-            onChangeText={setName}
-          />
-
-          <Input
-            label={t('createRaffle.themeLabel')}
-            placeholder={t('createRaffle.themePlaceholder')}
-            value={topic}
-            onChangeText={setTopic}
-          />
-
-          <View className="flex-row space-x-3 mb-3">
-            <View className="flex-1">
+            {/* Form Fields */}
+            <View className="space-y-1">
               <Input
-                label={t('createRaffle.budgetLabel')}
-                placeholder={t('createRaffle.budgetPlaceholder')}
-                value={priceLimit}
-                onChangeText={setPriceLimit}
-                keyboardType="numeric"
+                label={t('createRaffle.nameLabel')}
+                placeholder={t('createRaffle.namePlaceholder')}
+                value={name}
+                onChangeText={setName}
               />
-            </View>
 
-            <View className="w-32 ml-3">
-              <Text className="text-sm font-semibold text-gray-700 mb-1.5 ml-0.5">
-                {t('createRaffle.currencyLabel')}
-              </Text>
-              <View className="flex-row border border-gray-200 rounded-xl p-1 bg-gray-50/50 justify-around">
-                {CURRENCIES.slice(0, 3).map((curr) => (
-                  <Pressable
-                    key={curr}
-                    onPress={() => setCurrency(curr)}
-                    className={`px-2.5 py-2 rounded-lg ${
-                      currency === curr ? 'bg-[#B91C1C]' : 'bg-transparent'
-                    }`}
-                  >
-                    <Text
-                      className={`text-xs font-bold ${
-                        currency === curr ? 'text-white' : 'text-gray-600'
-                      }`}
-                    >
-                      {curr}
-                    </Text>
-                  </Pressable>
-                ))}
+              <Input
+                label={t('createRaffle.themeLabel')}
+                placeholder={t('createRaffle.themePlaceholder')}
+                value={topic}
+                onChangeText={setTopic}
+              />
+
+              <View className="flex-row space-x-3 mb-3">
+                <View className="flex-1">
+                  <Input
+                    label={t('createRaffle.budgetLabel')}
+                    placeholder={t('createRaffle.budgetPlaceholder')}
+                    value={priceLimit}
+                    onChangeText={setPriceLimit}
+                    keyboardType="numeric"
+                  />
+                </View>
+
+                <View className="w-32 ml-3">
+                  <Text className="text-sm font-semibold text-gray-700 mb-1.5 ml-0.5">
+                    {t('createRaffle.currencyLabel')}
+                  </Text>
+                  <View className="flex-row border border-gray-200 rounded-xl p-1 bg-gray-50/50 justify-around">
+                    {CURRENCIES.slice(0, 3).map((curr) => (
+                      <Pressable
+                        key={curr}
+                        onPress={() => setCurrency(curr)}
+                        className={`px-2.5 py-2 rounded-lg ${
+                          currency === curr ? 'bg-[#B91C1C]' : 'bg-transparent'
+                        }`}
+                      >
+                        <Text
+                          className={`text-xs font-bold ${
+                            currency === curr ? 'text-white' : 'text-gray-600'
+                          }`}
+                        >
+                          {curr}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
               </View>
-            </View>
-          </View>
 
-          {/* Date pickers (standard ISO YYYY-MM-DD input with calendar icons) */}
-          <View className="flex-row space-x-3 mb-2">
-            <View className="flex-1">
-              <Input
-                label={t('createRaffle.drawDateLabel')}
-                placeholder="2026-12-15"
-                value={raffleDateStr}
-                onChangeText={setRaffleDateStr}
-                leftIcon={<Ionicons name="calendar-outline" size={16} color="#9CA3AF" />}
+              {/* Date pickers (standard ISO YYYY-MM-DD input with calendar icons) */}
+              <View className="flex-row space-x-3 mb-2">
+                <View className="flex-1">
+                  <Input
+                    label={t('createRaffle.drawDateLabel')}
+                    placeholder="2026-12-15"
+                    value={raffleDateStr}
+                    onChangeText={setRaffleDateStr}
+                    leftIcon={<Ionicons name="calendar-outline" size={16} color="#9CA3AF" />}
+                  />
+                </View>
+                <View className="flex-1 ml-3">
+                  <Input
+                    label={t('createRaffle.giftDateLabel')}
+                    placeholder="2026-12-25"
+                    value={giftDateStr}
+                    onChangeText={setGiftDateStr}
+                    leftIcon={<Ionicons name="gift-outline" size={16} color="#9CA3AF" />}
+                  />
+                </View>
+              </View>
+              <Text className="text-xs text-gray-400 mb-6 ml-1">
+                {t('createRaffle.dateHint')}
+              </Text>
+            </View>
+
+            {/* Submit Button */}
+            <View className="items-center sm:items-end mt-2">
+              <Button
+                title={t('createRaffle.submit')}
+                onPress={handleCreate}
+                variant="primary"
+                size="lg"
+                loading={loading}
+                className="w-full sm:w-auto px-8 py-3"
               />
             </View>
-            <View className="flex-1 ml-3">
-              <Input
-                label={t('createRaffle.giftDateLabel')}
-                placeholder="2026-12-25"
-                value={giftDateStr}
-                onChangeText={setGiftDateStr}
-                leftIcon={<Ionicons name="gift-outline" size={16} color="#9CA3AF" />}
-              />
-            </View>
           </View>
-          <Text className="text-xs text-gray-400 mb-6 ml-1">
-            {t('createRaffle.dateHint')}
-          </Text>
-        </View>
-
-        {/* Submit */}
-        <Button
-          title={t('createRaffle.submit')}
-          onPress={handleCreate}
-          variant="primary"
-          size="lg"
-          loading={loading}
-        />
+        </PageContainer>
       </ScrollView>
     </KeyboardAvoidingView>
   );

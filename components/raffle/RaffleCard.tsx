@@ -38,7 +38,7 @@ export const RaffleCard: React.FC<RaffleCardProps> = ({
     <Card
       onPress={onPress}
       elevated
-      className={`overflow-hidden border border-gray-100 p-0 mb-3 bg-white ${className}`}
+      className={`overflow-hidden border border-gray-100 p-0 bg-white ${className}`}
     >
       {/* Header band */}
       {raffle.coverImageUrl ? (
