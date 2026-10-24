@@ -41,6 +41,9 @@ export function formatAuthError(err: unknown): string {
   if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
     return 'Invalid email or password.';
   }
+  if (code === 'auth/unauthorized-domain') {
+    return 'Dominio no autorizado: Debes añadir "jbelborja.github.io" en Firebase Console > Authentication > Settings > Authorized domains.';
+  }
   if (
     code === 'auth/popup-closed-by-user' ||
     code === 'SIGN_IN_CANCELLED' ||
