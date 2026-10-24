@@ -134,7 +134,7 @@ export default function CreateRaffleScreen() {
           });
 
           // Also add manager as the first participant
-          await addDoc(participantsCollection(docRef.id), {
+          const managerParticipant: Record<string, any> = {
             id: '',
             raffleId: docRef.id,
             userId: user.uid,
@@ -143,9 +143,13 @@ export default function CreateRaffleScreen() {
             status: 'accepted',
             exclusions: [],
             giftGiven: false,
-            expoPushToken: user.expoPushToken,
             joinedAt: new Date(),
-          });
+          };
+          if (user.expoPushToken) {
+            managerParticipant.expoPushToken = user.expoPushToken;
+          }
+
+          await addDoc(participantsCollection(docRef.id), managerParticipant as any);
 
           router.replace(`/raffle/${docRef.id}/manage` as any);
         })(),
