@@ -8,7 +8,7 @@ import {
   Platform,
   Pressable,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -23,7 +23,16 @@ import { useTranslation } from '@/lib/i18n';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const { t, language, setLanguage } = useTranslation();
+
+  const navigateAfterAuth = () => {
+    if (redirect) {
+      router.replace(redirect as any);
+    } else {
+      router.replace('/(tabs)');
+    }
+  };
   const [isSignUp, setIsSignUp] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -58,7 +67,7 @@ export default function LoginScreen() {
       } else {
         await signInWithEmail(email, password);
       }
-      router.replace('/(tabs)');
+      navigateAfterAuth();
     } catch (err: unknown) {
       console.error('Auth error:', err);
       const message =
@@ -74,7 +83,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await signInWithApple();
-      router.replace('/(tabs)');
+      navigateAfterAuth();
     } catch (err: unknown) {
       console.error('Apple Sign In error:', err);
       if ((err as any)?.code !== 'ERR_REQUEST_CANCELED') {
@@ -90,7 +99,7 @@ export default function LoginScreen() {
     try {
       const result = await signInWithGoogle();
       if (result) {
-        router.replace('/(tabs)');
+        navigateAfterAuth();
       }
     } catch (err: unknown) {
       console.error('Google Sign In error:', err);

@@ -4,6 +4,7 @@ import {
   Text,
   ScrollView,
   Alert,
+  Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -135,9 +136,14 @@ export default function InviteScreen() {
       }
 
       router.replace(`/raffle/${raffle.id}` as any);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error accepting invitation:', err);
-      Alert.alert(t('common.error'), t('common.error'));
+      const errMsg = err instanceof Error ? err.message : t('common.error');
+      if (Platform.OS === 'web') {
+        window.alert(`Error al unirse: ${errMsg}`);
+      } else {
+        Alert.alert(t('common.error'), errMsg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -199,8 +205,31 @@ export default function InviteScreen() {
           title={t('invite.signInToJoin')}
           variant="primary"
           size="lg"
-          onPress={() => router.replace('/(auth)/login')}
+          onPress={() => router.replace(`/(auth)/login?redirect=/invite/${code}` as any)}
           className="w-full"
+        />
+      </View>
+    );
+  }
+
+  // If raffle has already been drawn and the user is NOT one of the participants
+  const isAlreadyDrawn = raffle.status === 'drawn' || raffle.status === 'completed';
+  if (isAlreadyDrawn && !existingParticipant) {
+    return (
+      <View className="flex-1 items-center justify-center p-6 bg-white">
+        <View className="w-20 h-20 rounded-full bg-amber-50 items-center justify-center mb-4 border border-amber-100">
+          <Ionicons name="lock-closed-outline" size={36} color="#D97706" />
+        </View>
+        <Text className="text-xl font-bold text-gray-900 text-center mb-2">
+          {raffle.name}
+        </Text>
+        <Text className="text-sm text-gray-600 text-center max-w-xs mb-6 leading-5">
+          Este sorteo ya ha sido realizado y las parejas de Amigo Invisible ya están asignadas. No es posible unirse a un sorteo cerrado.
+        </Text>
+        <Button
+          title={t('invite.goToHome')}
+          variant="primary"
+          onPress={() => router.replace('/(tabs)')}
         />
       </View>
     );

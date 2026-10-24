@@ -4,6 +4,7 @@ import {
   Text,
   ScrollView,
   Pressable,
+  Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -87,8 +88,12 @@ export default function RaffleParticipantScreen() {
           joinedAt: new Date(),
         });
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error accepting invitation:', err);
+      const errMsg = err instanceof Error ? err.message : t('common.error');
+      if (Platform.OS === 'web') {
+        window.alert(`Error: ${errMsg}`);
+      }
     } finally {
       setActionLoading(false);
     }

@@ -29,7 +29,13 @@ export const JoinWithCodeModal: React.FC<JoinWithCodeModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const handleJoin = () => {
-    const cleanCode = code.trim().toUpperCase();
+    let cleanCode = code.trim().toUpperCase();
+    if (cleanCode.includes('/INVITE/')) {
+      cleanCode = cleanCode.split('/INVITE/').pop()?.split('?')[0]?.split('#')[0]?.trim() || cleanCode;
+    }
+    // Clean any trailing non-alphanumeric characters
+    cleanCode = cleanCode.replace(/[^A-Z0-9]/g, '');
+
     if (!cleanCode) {
       setError(t('home.joinCodeRequired'));
       return;

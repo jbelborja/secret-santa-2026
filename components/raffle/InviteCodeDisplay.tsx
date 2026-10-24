@@ -22,8 +22,10 @@ export const InviteCodeDisplay: React.FC<InviteCodeDisplayProps> = ({
 }) => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
-
-  const inviteUrl = `secretsanta://invite/${inviteCode}`;
+  const webBaseUrl =
+    process.env.EXPO_PUBLIC_FIREBASE_HOSTING_URL ||
+    'https://jbelborja.github.io/secret-santa-2026';
+  const inviteUrl = `${webBaseUrl}/invite/${inviteCode}`;
 
   const handleShare = async () => {
     try {
@@ -41,7 +43,12 @@ export const InviteCodeDisplay: React.FC<InviteCodeDisplayProps> = ({
     }
   };
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(inviteCode);
+      }
+    } catch {}
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
