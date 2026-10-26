@@ -1,24 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   ScrollView,
   Alert,
   Pressable,
-  Switch,
   Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { writeBatch } from 'firebase/firestore';
 import { format, parse, isValid } from 'date-fns';
-import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from '@/lib/i18n';
 import { useRaffle } from '@/hooks/useRaffle';
 import { useParticipants } from '@/hooks/useParticipants';
-import { raffleDoc, participantDoc } from '@/lib/firestore';
-import { runDraw } from '@/lib/draw';
+import {
+  raffleDoc,
+  participantDoc,
+  executeRaffleDraw,
+  completeRaffleExchange,
+} from '@/lib/firestore';
 import { sendBatchPushNotifications } from '@/lib/notifications';
 import { sendDrawEmails } from '@/lib/email';
 import { StatusBadge } from '@/components/raffle/StatusBadge';
@@ -36,7 +37,7 @@ export default function ManageRaffleScreen() {
   const { user } = useAuth();
   const { t, formatDate } = useTranslation();
   const { raffle, loading: raffleLoading, updateRaffle, deleteRaffle } = useRaffle(id);
-  const { participants, loading: partsLoading, markGiftGiven } = useParticipants(id);
+  const { participants, loading: partsLoading } = useParticipants(id);
 
   const [inviteModalVisible, setInviteModalVisible] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -48,6 +49,7 @@ export default function ManageRaffleScreen() {
   const [drawing, setDrawing] = useState(false);
   const [drawError, setDrawError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [concluding, setConcluding] = useState(false);
 
   if (raffleLoading || partsLoading) {
     return <LoadingSpinner message={t('manageRaffle.loading')} />;
@@ -132,37 +134,23 @@ export default function ManageRaffleScreen() {
     }
   };
 
-  const performDraw = async () => {
+  const performDraw = async (isAuto = false) => {
     setDrawing(true);
     setDrawError(null);
 
-    const result = runDraw(participants);
-
-    if (!result.success || !result.assignments) {
-      const translatedError = result.errorCode
-        ? t(`manageRaffle.drawErrors.${result.errorCode}`, result.errorParams)
-        : result.error || t('manageRaffle.drawIssue');
-      setDrawError(translatedError);
-      setDrawing(false);
-      return;
-    }
-
     try {
-      const batch = writeBatch(db);
+      const result = await executeRaffleDraw(raffle.id, participants);
 
-      // 1. Assign each giver their recipient
-      for (const [giverId, recipientId] of Object.entries(result.assignments)) {
-        const pDoc = participantDoc(raffle.id, giverId);
-        batch.update(pDoc, { assignedTo: recipientId });
+      if (!result.success || !result.assignments) {
+        const translatedError = result.errorCode
+          ? t(`manageRaffle.drawErrors.${result.errorCode}`, result.errorParams)
+          : result.error || t('manageRaffle.drawIssue');
+        setDrawError(translatedError);
+        setDrawing(false);
+        return;
       }
 
-      // 2. Update raffle status to 'drawn'
-      const rDoc = raffleDoc(raffle.id);
-      batch.update(rDoc, { status: 'drawn' });
-
-      await batch.commit();
-
-      // 3. Send draw emails (fire-and-forget)
+      // Send draw emails (fire-and-forget)
       const participantNameMap = new Map(
         participants.map((p) => [p.id, p.name])
       );
@@ -186,7 +174,7 @@ export default function ManageRaffleScreen() {
         }).catch((err) => console.warn('Draw emails failed (non-fatal):', err));
       }
 
-      // 4. Send batch push notifications
+      // Send batch push notifications
       const tokens = acceptedParticipants
         .map((p) => p.expoPushToken)
         .filter((t): t is string => Boolean(t));
@@ -199,35 +187,47 @@ export default function ManageRaffleScreen() {
         });
       }
 
-      if (Platform.OS === 'web') {
-        window.alert(t('manageRaffle.drawSuccessDesc'));
-      } else {
-        Alert.alert(t('manageRaffle.drawSuccessTitle'), t('manageRaffle.drawSuccessDesc'));
+      if (!isAuto) {
+        if (Platform.OS === 'web') {
+          window.alert(t('manageRaffle.drawSuccessDesc'));
+        } else {
+          Alert.alert(t('manageRaffle.drawSuccessTitle'), t('manageRaffle.drawSuccessDesc'));
+        }
       }
     } catch (err: unknown) {
       console.error('Error committing draw results:', err);
       const msg = (err as any)?.message || (err instanceof Error ? err.message : t('common.error'));
       setDrawError(msg);
-      if (Platform.OS === 'web') window.alert(`${t('common.error')}: ${msg}`);
-      else Alert.alert(t('common.error'), msg);
+      if (!isAuto) {
+        if (Platform.OS === 'web') window.alert(`${t('common.error')}: ${msg}`);
+        else Alert.alert(t('common.error'), msg);
+      }
     } finally {
       setDrawing(false);
     }
   };
 
+  const isDrawDatePassed = new Date() >= new Date(raffle.raffleDate);
+  const allResponded = invitedCount === 0;
+  const canTriggerDraw = (allResponded || isDrawDatePassed) && acceptedCount >= 2;
+
   const handleExecuteDraw = async () => {
-    if (acceptedCount < 2) {
+    if (!canTriggerDraw) {
+      const reason =
+        acceptedCount < 2
+          ? t('manageRaffle.needTwoParticipants')
+          : t('manageRaffle.waitingForResponses', { count: invitedCount });
       if (Platform.OS === 'web') {
-        window.alert(t('manageRaffle.needTwoParticipants'));
+        window.alert(reason);
       } else {
-        Alert.alert(t('manageRaffle.drawIssue'), t('manageRaffle.needTwoParticipants'));
+        Alert.alert(t('manageRaffle.drawIssue'), reason);
       }
       return;
     }
 
     if (Platform.OS === 'web') {
       if (window.confirm(t('manageRaffle.confirmDrawDesc', { count: acceptedCount }))) {
-        performDraw();
+        performDraw(false);
       }
       return;
     }
@@ -240,47 +240,70 @@ export default function ManageRaffleScreen() {
         {
           text: t('manageRaffle.drawNamesBtn'),
           style: 'default',
-          onPress: performDraw,
+          onPress: () => performDraw(false),
         },
       ]
     );
   };
 
-  const performReveal = async () => {
+  const performCompleteExchange = async () => {
+    setConcluding(true);
     try {
-      await updateRaffle({ revealed: true, status: 'completed' });
+      await completeRaffleExchange(raffle.id);
       if (Platform.OS === 'web') {
-        window.alert(t('manageRaffle.revealedAlertDesc'));
+        window.alert(t('manageRaffle.autoConcludedDesc'));
       } else {
-        Alert.alert(t('manageRaffle.revealedAlertTitle'), t('manageRaffle.revealedAlertDesc'));
+        Alert.alert(t('manageRaffle.completedTitle'), t('manageRaffle.autoConcludedDesc'));
       }
     } catch (err: unknown) {
-      const msg = (err as any)?.message || t('common.error');
+      console.error('Error completing gift exchange:', err);
+      const msg = (err as any)?.message || (err instanceof Error ? err.message : t('common.error'));
       if (Platform.OS === 'web') window.alert(`${t('common.error')}: ${msg}`);
       else Alert.alert(t('common.error'), msg);
+    } finally {
+      setConcluding(false);
     }
   };
 
-  const handleRevealAssignments = async () => {
+  const handleCompleteGiftExchange = () => {
     if (Platform.OS === 'web') {
-      if (window.confirm(t('manageRaffle.revealConfirmDesc'))) {
-        performReveal();
+      if (window.confirm(t('manageRaffle.confirmDeliverAllDesc'))) {
+        performCompleteExchange();
       }
       return;
     }
 
     Alert.alert(
-      t('manageRaffle.revealConfirmTitle'),
-      t('manageRaffle.revealConfirmDesc'),
+      t('manageRaffle.confirmDeliverAllTitle'),
+      t('manageRaffle.confirmDeliverAllDesc'),
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
-          text: t('manageRaffle.revealConfirmBtn'),
-          onPress: performReveal,
+          text: t('manageRaffle.deliverAllGiftsBtn'),
+          style: 'default',
+          onPress: performCompleteExchange,
         },
       ]
     );
   };
+
+  // Automatic date checks:
+  // 1. If status is 'inviting' and draw date has passed -> auto-execute draw
+  // 2. If status is 'drawn' and gift exchange date has passed -> auto-complete exchange
+  useEffect(() => {
+    if (!raffle || partsLoading) return;
+    const now = Date.now();
+    const raffleTime = new Date(raffle.raffleDate).getTime();
+    const giftTime = new Date(raffle.giftDate).getTime();
+
+    if (raffle.status === 'inviting' && now >= raffleTime && acceptedCount >= 2 && !drawing) {
+      performDraw(true);
+    } else if (raffle.status === 'drawn' && now >= giftTime && !concluding) {
+      completeRaffleExchange(raffle.id).catch((err) =>
+        console.warn('Auto complete gift exchange notice:', err)
+      );
+    }
+  }, [raffle?.status, raffle?.raffleDate, raffle?.giftDate, acceptedCount, partsLoading]);
 
   const handleDeleteRaffle = () => {
     const doDelete = async () => {
@@ -477,14 +500,40 @@ export default function ManageRaffleScreen() {
             <Text className="text-base font-bold text-gray-900 mb-1">
               {t('manageRaffle.invitingTitle', { count: acceptedCount })}
             </Text>
-            <Text className="text-xs text-gray-500 mb-4">
+            <Text className="text-xs text-gray-500 mb-3">
               {t('manageRaffle.invitingDesc')}
             </Text>
+
+            {!canTriggerDraw && !isDrawDatePassed ? (
+              <View className="mb-3.5 p-3 bg-amber-50 rounded-xl border border-amber-200">
+                <View className="flex-row items-center mb-1">
+                  <Ionicons name="time-outline" size={16} color="#D97706" />
+                  <Text className="text-xs font-bold text-amber-900 ml-1.5">
+                    {t('manageRaffle.waitingForResponses', { count: invitedCount })}
+                  </Text>
+                </View>
+                <Text className="text-[11px] text-amber-800 leading-4">
+                  {t('manageRaffle.drawUnlocksWhenAllRespond', {
+                    date: formatDate(raffle.raffleDate, 'PPP'),
+                  })}
+                </Text>
+              </View>
+            ) : isDrawDatePassed && acceptedCount >= 2 ? (
+              <View className="mb-3.5 p-3 bg-blue-50 rounded-xl border border-blue-200">
+                <View className="flex-row items-center mb-1">
+                  <Ionicons name="sparkles" size={16} color="#2563EB" />
+                  <Text className="text-xs font-bold text-blue-900 ml-1.5">
+                    {t('manageRaffle.autoDrawDatePassed')}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
+
             <Button
               title={t('manageRaffle.runDrawNow')}
               variant="secondary"
               size="lg"
-              disabled={acceptedCount < 2}
+              disabled={!canTriggerDraw}
               loading={drawing}
               onPress={handleExecuteDraw}
             />
@@ -496,51 +545,35 @@ export default function ManageRaffleScreen() {
           </View>
         ) : raffle.status === 'drawn' ? (
           <View>
-            <View className="flex-row items-center justify-between mb-3">
+            <View className="flex-row items-center justify-between mb-2">
               <View>
                 <Text className="text-base font-bold text-violet-900">
                   {t('manageRaffle.drawCompleteTitle')}
                 </Text>
-                <Text className="text-xs text-gray-500">
-                  {t('manageRaffle.drawCompleteDesc')}
+                <Text className="text-xs text-gray-500 mt-0.5">
+                  {t('assignment.groupExchangeNotice', {
+                    date: formatDate(raffle.giftDate, 'PPP'),
+                  })}
                 </Text>
               </View>
             </View>
 
-            {/* Gift Delivery Checklist */}
-            <View className="my-2 space-y-1">
-              {acceptedParticipants.map((p) => (
-                <View
-                  key={p.id}
-                  className="flex-row items-center justify-between p-2.5 bg-gray-50 rounded-xl mb-1.5 border border-gray-100"
-                >
-                  <View className="flex-row items-center">
-                    <Avatar name={p.name} size="sm" />
-                    <Text className="text-xs font-semibold text-gray-800 ml-2">
-                      {p.name}
-                    </Text>
-                  </View>
-                  <View className="flex-row items-center">
-                    <Text className="text-[11px] text-gray-500 mr-2">
-                      {p.giftGiven ? t('manageRaffle.delivered') : t('manageRaffle.pending')}
-                    </Text>
-                    <Switch
-                      value={p.giftGiven}
-                      onValueChange={(val) => markGiftGiven(p.id, val)}
-                      trackColor={{ false: '#D1D5DB', true: '#15803D' }}
-                    />
-                  </View>
-                </View>
-              ))}
+            <View className="p-3 bg-violet-50 rounded-xl border border-violet-200 mb-4">
+              <View className="flex-row items-center mb-1">
+                <Ionicons name="gift-outline" size={17} color="#7C3AED" />
+                <Text className="text-xs font-bold text-violet-900 ml-1.5">
+                  {t('manageRaffle.deliverAllGiftsDesc')}
+                </Text>
+              </View>
             </View>
 
-            {/* Reveal Button */}
             <Button
-              title={t('manageRaffle.revealAllBtn')}
-              variant="outline"
-              size="md"
-              className="mt-3 border-violet-600"
-              onPress={handleRevealAssignments}
+              title={t('manageRaffle.deliverAllGiftsBtn')}
+              variant="secondary"
+              size="lg"
+              loading={concluding}
+              onPress={handleCompleteGiftExchange}
+              leftIcon={<Ionicons name="gift-outline" size={18} color="#FFFFFF" />}
             />
           </View>
         ) : (

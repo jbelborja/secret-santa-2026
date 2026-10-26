@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from '@/lib/i18n';
 import { useRaffle } from '@/hooks/useRaffle';
 import { useParticipants } from '@/hooks/useParticipants';
-import { updateDoc, participantDoc, addDoc, participantsCollection } from '@/lib/firestore';
+import {
+  updateDoc,
+  participantDoc,
+  executeRaffleDraw,
+  completeRaffleExchange,
+} from '@/lib/firestore';
 import { StatusBadge } from '@/components/raffle/StatusBadge';
 import { CountdownTimer } from '@/components/CountdownTimer';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -26,7 +31,7 @@ import { PageContainer } from '@/components/ui/PageContainer';
 export default function RaffleParticipantScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, firebaseUser } = useAuth();
   const { t } = useTranslation();
   const { raffle, loading: raffleLoading, error: raffleError } = useRaffle(id);
   const { participants, loading: partsLoading, error: partsError } = useParticipants(id);
@@ -58,11 +63,12 @@ export default function RaffleParticipantScreen() {
     );
   }
 
-  const isManager = user?.uid === raffle.managerId;
-  const userEmail = (user?.email || '').trim().toLowerCase();
+  const currentUid = user?.uid || firebaseUser?.uid;
+  const isManager = currentUid === raffle.managerId;
+  const userEmail = (user?.email || firebaseUser?.email || '').trim().toLowerCase();
   const myParticipant = participants.find(
     (p) =>
-      p.userId === user?.uid ||
+      (currentUid && p.userId === currentUid) ||
       (userEmail && (p.email || '').trim().toLowerCase() === userEmail)
   );
 
@@ -70,16 +76,35 @@ export default function RaffleParticipantScreen() {
   const targetDateForTimer = isDrawn ? raffle.giftDate : raffle.raffleDate;
   const timerLabel = isDrawn ? t('raffleDetail.giftExchangeIn') : t('raffleDetail.pairingsDrawnIn');
 
+  // Automatic date checks:
+  useEffect(() => {
+    if (!raffle || partsLoading) return;
+    const now = Date.now();
+    const raffleTime = new Date(raffle.raffleDate).getTime();
+    const giftTime = new Date(raffle.giftDate).getTime();
+    const acceptedCount = participants.filter((p) => p.status === 'accepted').length;
+
+    if (raffle.status === 'inviting' && now >= raffleTime && acceptedCount >= 2) {
+      executeRaffleDraw(raffle.id, participants).catch((err) =>
+        console.warn('Auto draw execution note:', err)
+      );
+    } else if (raffle.status === 'drawn' && now >= giftTime) {
+      completeRaffleExchange(raffle.id).catch((err) =>
+        console.warn('Auto complete exchange note:', err)
+      );
+    }
+  }, [raffle?.status, raffle?.raffleDate, raffle?.giftDate, partsLoading, participants.length]);
+
   const handleAcceptInvite = async () => {
-    if (!user || !id || !myParticipant) return;
+    if (!currentUid || !id || !myParticipant) return;
     setActionLoading(true);
     try {
       const participantPayload: Record<string, any> = {
         status: 'accepted',
-        userId: user.uid,
+        userId: currentUid,
         joinedAt: new Date(),
       };
-      if (user.expoPushToken) {
+      if (user?.expoPushToken) {
         participantPayload.expoPushToken = user.expoPushToken;
       }
 
@@ -245,11 +270,11 @@ export default function RaffleParticipantScreen() {
                   {t('raffleDetail.inNotice')}
                 </Text>
               </View>
-              {myParticipant.giftGiven ? (
+              {raffle.status === 'completed' ? (
                 <View className="bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex-row items-center">
-                  <Ionicons name="checkmark" size={12} color="#059669" />
+                  <Ionicons name="checkmark-done" size={12} color="#059669" />
                   <Text className="text-xs font-semibold text-emerald-700 ml-1">
-                    {t('raffleDetail.giftSentBadge')}
+                    {t('common.done')}
                   </Text>
                 </View>
               ) : null}

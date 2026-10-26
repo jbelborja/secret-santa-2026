@@ -21,6 +21,14 @@ function ensureConfigured() {
 export async function nativeOrWebGoogleSignIn(): Promise<FirebaseUser> {
   ensureConfigured();
   await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+
+  // Ensure any previous Google session is cleared so the account chooser dialog is always shown
+  try {
+    await GoogleSignin.signOut();
+  } catch {
+    // Ignore if not previously signed in
+  }
+
   const response = await GoogleSignin.signIn();
 
   let idToken: string | null = null;
@@ -44,6 +52,16 @@ export async function nativeOrWebGoogleSignIn(): Promise<FirebaseUser> {
   return userCredential.user;
 }
 
+export async function nativeOrWebGoogleSignOut(): Promise<void> {
+  try {
+    ensureConfigured();
+    await GoogleSignin.signOut();
+  } catch (err) {
+    console.warn('Native Google Sign-Out note:', err);
+  }
+}
+
 export function isGoogleAuthConfigured(): boolean {
   return Boolean(WEB_CLIENT_ID);
 }
+

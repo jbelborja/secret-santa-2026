@@ -238,6 +238,14 @@ export const en: Translations = {
     deleteRaffleDesc: 'Permanently delete this raffle, along with all participants and gift assignments. This action cannot be undone.',
     deleteConfirmTitle: 'Delete Raffle?',
     deleteConfirmDesc: 'Are you sure you want to delete "{name}"? This action is permanent and cannot be undone.',
+    waitingForResponses: 'Waiting for all participants to accept or decline ({count} pending).',
+    drawUnlocksWhenAllRespond: 'The draw can be triggered once everyone responds, or it will trigger automatically on {date}.',
+    autoDrawDatePassed: 'The scheduled draw date has been reached. Running draw with confirmed participants.',
+    deliverAllGiftsBtn: 'Mark All Gifts Exchanged & Finish',
+    deliverAllGiftsDesc: 'Mark all gifts as given together and reveal all Secret Santa pairings to everyone.',
+    confirmDeliverAllTitle: 'Finish Raffle & Reveal All?',
+    confirmDeliverAllDesc: 'All gifts will be marked as exchanged together, and all Secret Santa pairings will be revealed to everyone. This concludes the raffle.',
+    autoConcludedDesc: 'The gift exchange date has arrived! All gifts have been given together and assignments are revealed.',
   },
   participantsScreen: {
     headerTitle: 'Participants',
@@ -294,6 +302,8 @@ export const en: Translations = {
     matchesRevealedTitle: "Everyone's Matches Revealed",
     matchesRevealedDesc: 'The exchange has completed!',
     someone: 'Someone',
+    groupExchangeNotice: 'All gifts will be exchanged together on {date}.',
+    groupExchangeCompleted: 'All gifts have been exchanged! The raffle is completed.',
   },
   invite: {
     loading: 'Checking invitation code...',

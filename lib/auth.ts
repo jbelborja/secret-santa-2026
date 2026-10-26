@@ -15,7 +15,11 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { auth } from './firebase';
 import { setDoc, userDoc } from './firestore';
 import { User } from '../types';
-import { nativeOrWebGoogleSignIn, isGoogleAuthConfigured } from './googleAuth';
+import {
+  nativeOrWebGoogleSignIn,
+  nativeOrWebGoogleSignOut,
+  isGoogleAuthConfigured,
+} from './googleAuth';
 
 import { getActiveLanguage } from './i18n';
 
@@ -130,6 +134,11 @@ export async function signUpWithEmail(
 }
 
 export async function logOut(): Promise<void> {
+  try {
+    await nativeOrWebGoogleSignOut();
+  } catch (err) {
+    console.warn('Google sign-out error during logOut:', err);
+  }
   await firebaseSignOut(auth);
 }
 

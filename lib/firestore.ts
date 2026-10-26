@@ -21,7 +21,8 @@ import {
   SnapshotOptions,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { Raffle, Participant, User } from '../types';
+import { Raffle, Participant, User, DrawResult } from '../types';
+import { runDraw } from './draw';
 
 export {
   collection,
@@ -276,6 +277,59 @@ export async function deleteRaffle(raffleId: string): Promise<void> {
   } else {
     await deleteDoc(raffleDoc(raffleId));
   }
+}
+
+export async function executeRaffleDraw(
+  raffleId: string,
+  participants: Participant[]
+): Promise<DrawResult> {
+  const result = runDraw(participants);
+  if (!result.success || !result.assignments) {
+    return result;
+  }
+
+  const batch = writeBatch(db);
+
+  // 1. Assign each giver their recipient
+  for (const [giverId, recipientId] of Object.entries(result.assignments)) {
+    const pDoc = participantDoc(raffleId, giverId);
+    batch.update(pDoc, { assignedTo: recipientId });
+  }
+
+  // 2. Mark any remaining unresponded 'invited' participants as 'declined'
+  participants
+    .filter((p) => p.status === 'invited')
+    .forEach((p) => {
+      const pDoc = participantDoc(raffleId, p.id);
+      batch.update(pDoc, { status: 'declined' });
+    });
+
+  // 3. Update raffle status to 'drawn'
+  const rDoc = raffleDoc(raffleId);
+  batch.update(rDoc, { status: 'drawn' });
+
+  await batch.commit();
+
+  return result;
+}
+
+export async function completeRaffleExchange(raffleId: string): Promise<void> {
+  const partsColl = participantsCollection(raffleId);
+  const partsSnap = await getDocs(partsColl);
+
+  const batch = writeBatch(db);
+  batch.update(raffleDoc(raffleId), {
+    status: 'completed',
+    revealed: true,
+  });
+
+  partsSnap.docs.forEach((docSnap) => {
+    batch.update(docSnap.ref, {
+      giftGiven: true,
+    });
+  });
+
+  await batch.commit();
 }
 
 export async function getMyRaffles(userId: string): Promise<Raffle[]> {

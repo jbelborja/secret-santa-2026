@@ -47,14 +47,6 @@ export const ParticipantRow: React.FC<ParticipantRowProps> = ({
               >
                 {participant.name}
               </Text>
-              {participant.giftGiven ? (
-                <View className="ml-2 flex-row items-center bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                  <Ionicons name="checkmark-circle" size={12} color="#059669" />
-                  <Text className="text-[10px] font-semibold text-emerald-700 ml-0.5">
-                    {t('participantRow.giftSent')}
-                  </Text>
-                </View>
-              ) : null}
             </View>
 
             <Text

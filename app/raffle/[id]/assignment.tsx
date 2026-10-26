@@ -5,7 +5,6 @@ import {
   ScrollView,
   Animated,
   Easing,
-  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -14,7 +13,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from '@/lib/i18n';
 import { useRaffle } from '@/hooks/useRaffle';
 import { useParticipants } from '@/hooks/useParticipants';
-import { participantDoc, updateDoc } from '@/lib/firestore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -25,11 +23,9 @@ export default function AssignmentRevealScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, formatDate } = useTranslation();
   const { raffle, loading: raffleLoading } = useRaffle(id);
-  const { participants, loading: partsLoading, markGiftGiven } = useParticipants(id);
-
-  const [marking, setMarking] = useState(false);
+  const { participants, loading: partsLoading } = useParticipants(id);
 
   // Confetti / reveal animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -114,24 +110,6 @@ export default function AssignmentRevealScreen() {
   const now = new Date();
   const giftDate = raffle.giftDate instanceof Date ? raffle.giftDate : new Date(raffle.giftDate);
   const daysLeft = Math.max(0, differenceInDays(giftDate, now));
-
-  const handleToggleGiftGiven = async () => {
-    if (!myParticipant) return;
-    setMarking(true);
-    try {
-      await markGiftGiven(myParticipant.id, !myParticipant.giftGiven);
-      Alert.alert(
-        !myParticipant.giftGiven ? t('assignment.deliveredTitle') : t('assignment.statusUpdatedTitle'),
-        !myParticipant.giftGiven
-          ? t('assignment.deliveredDesc')
-          : t('assignment.statusUpdatedDesc')
-      );
-    } catch (err) {
-      Alert.alert(t('common.error'), t('common.error'));
-    } finally {
-      setMarking(false);
-    }
-  };
 
   const confettiTranslate = confettiAnim.interpolate({
     inputRange: [0, 1],
@@ -226,21 +204,19 @@ export default function AssignmentRevealScreen() {
             </View>
           </View>
 
-          {/* Mark as Given Button */}
-          {myParticipant ? (
-            <Button
-              title={
-                myParticipant.giftGiven
-                  ? t('assignment.markAsNotGiven')
-                  : t('assignment.markAsGiven')
-              }
-              variant={myParticipant.giftGiven ? 'outline' : 'secondary'}
-              size="lg"
-              loading={marking}
-              onPress={handleToggleGiftGiven}
-              className="w-full mt-4"
-            />
-          ) : null}
+          {/* Group Exchange Notice */}
+          <View className="mt-4 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+            <View className="flex-row items-center mb-0.5">
+              <Ionicons name="gift-outline" size={16} color="#059669" />
+              <Text className="text-xs font-bold text-emerald-900 ml-1.5 flex-1">
+                {raffle.status === 'completed'
+                  ? t('assignment.groupExchangeCompleted')
+                  : t('assignment.groupExchangeNotice', {
+                      date: formatDate(giftDate, 'PPP'),
+                    })}
+              </Text>
+            </View>
+          </View>
         </Card>
       </Animated.View>
 

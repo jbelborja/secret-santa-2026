@@ -236,6 +236,14 @@ export const es = {
     deleteRaffleDesc: 'Elimina permanentemente este sorteo, todos sus participantes y asignaciones. Esta acción no se puede deshacer.',
     deleteConfirmTitle: '¿Eliminar sorteo?',
     deleteConfirmDesc: '¿Seguro que quieres eliminar "{name}"? Esta acción es permanente y no se puede deshacer.',
+    waitingForResponses: 'Esperando a que todos los participantes respondan ({count} pendientes).',
+    drawUnlocksWhenAllRespond: 'El sorteo se podrá realizar cuando todos respondan, o se sorteará automáticamente el {date}.',
+    autoDrawDatePassed: 'La fecha prevista de sorteo ha llegado. Puedes realizar el sorteo con los participantes confirmados.',
+    deliverAllGiftsBtn: 'Entregar todos los regalos y finalizar',
+    deliverAllGiftsDesc: 'Marca todos los regalos como entregados juntos y revela las parejas a todos.',
+    confirmDeliverAllTitle: '¿Finalizar sorteo y revelar todo?',
+    confirmDeliverAllDesc: 'Todos los regalos se marcarán como entregados juntos y se revelarán las parejas a todos los participantes. Esto dará por concluido el sorteo.',
+    autoConcludedDesc: '¡Ha llegado la fecha de entrega de regalos! Todos los regalos se han entregado juntos y las parejas están visibles.',
   },
   participantsScreen: {
     headerTitle: 'Participantes',
@@ -292,6 +300,8 @@ export const es = {
     matchesRevealedTitle: 'Parejas de Todos Reveladas',
     matchesRevealedDesc: '¡El intercambio ha finalizado!',
     someone: 'Alguien',
+    groupExchangeNotice: 'Todos los regalos se entregarán juntos el {date}.',
+    groupExchangeCompleted: '¡Todos los regalos han sido entregados! El sorteo ha finalizado.',
   },
   invite: {
     loading: 'Comprobando código de invitación...',
