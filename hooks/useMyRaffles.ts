@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { getMyRaffles, getRafflesIParticipateIn } from '../lib/firestore';
 import { useAuth } from './useAuth';
 import { Raffle } from '../types';
 
 export function useMyRaffles() {
-  const { user } = useAuth();
+  const { user, firebaseUser } = useAuth();
   const [managedRaffles, setManagedRaffles] = useState<Raffle[]>([]);
   const [participatingRaffles, setParticipatingRaffles] = useState<Raffle[]>([]);
   const [pendingRaffles, setPendingRaffles] = useState<Raffle[]>([]);
@@ -13,7 +14,10 @@ export function useMyRaffles() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchRaffles = useCallback(async () => {
-    if (!user) {
+    const activeUserId = user?.uid || firebaseUser?.uid;
+    const activeUserEmail = (user?.email || firebaseUser?.email || '').trim().toLowerCase();
+
+    if (!activeUserId) {
       setManagedRaffles([]);
       setParticipatingRaffles([]);
       setPendingRaffles([]);
@@ -27,8 +31,8 @@ export function useMyRaffles() {
 
     try {
       const [managed, participatingData] = await Promise.all([
-        getMyRaffles(user.uid),
-        getRafflesIParticipateIn(user.uid, user.email || undefined),
+        getMyRaffles(activeUserId),
+        getRafflesIParticipateIn(activeUserId, activeUserEmail || undefined),
       ]);
 
       const now = Date.now();
@@ -53,7 +57,7 @@ export function useMyRaffles() {
       // 2. Process participating and pending raffles
       for (const { raffle: r, participant: p } of participatingData) {
         // If managed by current user, it was already handled above
-        if (r.managerId === user.uid) {
+        if (r.managerId === activeUserId) {
           continue;
         }
 
@@ -76,11 +80,13 @@ export function useMyRaffles() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, firebaseUser]);
 
-  useEffect(() => {
-    fetchRaffles();
-  }, [fetchRaffles]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchRaffles();
+    }, [fetchRaffles])
+  );
 
   return {
     managedRaffles,

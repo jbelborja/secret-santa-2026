@@ -85,7 +85,7 @@ export async function syncUserDocument(user: FirebaseUser, displayName?: string)
   const userData: User = {
     uid: user.uid,
     displayName: name,
-    email: user.email || '',
+    email: (user.email || '').trim().toLowerCase(),
     photoURL: user.photoURL || undefined,
     createdAt: new Date(),
   };
@@ -101,7 +101,7 @@ export async function syncUserDocument(user: FirebaseUser, displayName?: string)
 
 export async function signInWithEmail(email: string, password: string): Promise<FirebaseUser> {
   try {
-    const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
+    const credential = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
     return credential.user;
   } catch (err) {
     throw new Error(formatAuthError(err));
@@ -114,7 +114,11 @@ export async function signUpWithEmail(
   displayName: string
 ): Promise<FirebaseUser> {
   try {
-    const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+    const credential = await createUserWithEmailAndPassword(
+      auth,
+      email.trim().toLowerCase(),
+      password
+    );
     if (displayName) {
       await updateProfile(credential.user, { displayName: displayName.trim() });
     }

@@ -32,7 +32,10 @@ service cloud.firestore {
           (
             request.auth.token.email != null &&
             resource.data.get('email', '') != '' &&
-            resource.data.get('email', '') == request.auth.token.email &&
+            (
+              resource.data.get('email', '') == request.auth.token.email ||
+              resource.data.get('email', '') == request.auth.token.email.lower()
+            ) &&
             request.resource.data.userId == request.auth.uid
           )
         );
@@ -45,7 +48,17 @@ service cloud.firestore {
 
     // Collection group for participants (used by getRafflesIParticipateIn)
     match /{path=**}/participants/{participantId} {
-      allow read: if request.auth != null && resource.data.get('userId', null) == request.auth.uid;
+      allow read: if request.auth != null && (
+        resource.data.get('userId', null) == request.auth.uid ||
+        (
+          request.auth.token.email != null &&
+          resource.data.get('email', '') != '' &&
+          (
+            resource.data.get('email', '') == request.auth.token.email ||
+            resource.data.get('email', '') == request.auth.token.email.lower()
+          )
+        )
+      );
     }
   }
 }
