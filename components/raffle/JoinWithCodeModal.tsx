@@ -5,8 +5,8 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
+  Pressable,
+  StyleSheet,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -59,75 +59,104 @@ export const JoinWithCodeModal: React.FC<JoinWithCodeModalProps> = ({
       transparent
       animationType="fade"
       onRequestClose={handleClose}
+      statusBarTranslucent
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View className="flex-1 bg-black/50 items-center justify-center p-5">
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            className="w-full max-w-sm"
+      <View style={styles.overlay}>
+        {/* Backdrop: tapping outside the modal card closes the modal */}
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={handleClose}
+          accessibilityLabel={t('common.cancel')}
+        />
+
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.keyboardAvoid}
+          pointerEvents="box-none"
+        >
+          <View
+            className="w-full max-w-sm bg-white rounded-2xl p-6 border border-gray-100 shadow-lg items-center"
+            style={styles.modalCard}
           >
-            <View className="bg-white rounded-2xl p-6 border border-gray-100 shadow-lg items-center">
-              {/* Header Icon */}
-              <View className="w-12 h-12 rounded-xl bg-red-50 border border-red-100 items-center justify-center mb-3">
-                <Ionicons name="ticket-outline" size={24} color="#B91C1C" />
-              </View>
-
-              <Text className="text-lg font-bold text-gray-900 text-center mb-1">
-                {t('home.joinModalTitle')}
-              </Text>
-              <Text className="text-xs text-gray-500 text-center mb-5 px-1 leading-4">
-                {t('home.joinModalSubtitle')}
-              </Text>
-
-              {/* Code Input */}
-              <Input
-                value={code}
-                onChangeText={(text) => {
-                  setCode(text.toUpperCase());
-                  if (error) setError(null);
-                }}
-                placeholder={t('home.joinCodePlaceholder')}
-                autoCapitalize="characters"
-                autoCorrect={false}
-                maxLength={10}
-                className="mb-1"
-                style={{
-                  textAlign: 'center',
-                  fontSize: 20,
-                  fontWeight: '800',
-                  letterSpacing: 4,
-                  fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-                }}
-                error={error || undefined}
-                returnKeyType="go"
-                onSubmitEditing={handleJoin}
-              />
-
-              {/* Action Buttons */}
-              <View className="w-full gap-2 mt-4">
-                <Button
-                  title={t('home.joinSubmitBtn')}
-                  onPress={handleJoin}
-                  variant="primary"
-                  size="lg"
-                  className="w-full"
-                  disabled={!code.trim()}
-                  leftIcon={<Ionicons name="enter-outline" size={18} color="#FFFFFF" />}
-                />
-                <Button
-                  title={t('home.joinCancelBtn')}
-                  onPress={handleClose}
-                  variant="ghost"
-                  size="md"
-                  className="w-full"
-                />
-              </View>
+            {/* Header Icon */}
+            <View className="w-12 h-12 rounded-xl bg-red-50 border border-red-100 items-center justify-center mb-3">
+              <Ionicons name="ticket-outline" size={24} color="#B91C1C" />
             </View>
-          </KeyboardAvoidingView>
-        </View>
-      </TouchableWithoutFeedback>
+
+            <Text className="text-lg font-bold text-gray-900 text-center mb-1">
+              {t('home.joinModalTitle')}
+            </Text>
+            <Text className="text-xs text-gray-500 text-center mb-5 px-1 leading-4">
+              {t('home.joinModalSubtitle')}
+            </Text>
+
+            {/* Code Input */}
+            <Input
+              value={code}
+              onChangeText={(text) => {
+                setCode(text.toUpperCase());
+                if (error) setError(null);
+              }}
+              placeholder={t('home.joinCodePlaceholder')}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              maxLength={120}
+              className="mb-1 w-full"
+              style={{
+                textAlign: 'center',
+                fontSize: 20,
+                fontWeight: 'bold',
+                letterSpacing: Platform.OS === 'ios' ? 4 : undefined,
+                fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+              }}
+              error={error || undefined}
+              returnKeyType="go"
+              onSubmitEditing={handleJoin}
+            />
+
+            {/* Action Buttons */}
+            <View className="w-full gap-2 mt-4">
+              <Button
+                title={t('home.joinSubmitBtn')}
+                onPress={handleJoin}
+                variant="primary"
+                size="lg"
+                className="w-full"
+                disabled={!code.trim()}
+                leftIcon={<Ionicons name="enter-outline" size={18} color="#FFFFFF" />}
+              />
+              <Button
+                title={t('home.joinCancelBtn')}
+                onPress={handleClose}
+                variant="ghost"
+                size="md"
+                className="w-full"
+              />
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 };
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  keyboardAvoid: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCard: {
+    zIndex: 10,
+    elevation: 5,
+  },
+});
 
 export default JoinWithCodeModal;
