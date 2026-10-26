@@ -256,6 +256,28 @@ export async function getRaffleByInviteCode(
   return snapshot.docs[0].data();
 }
 
+export async function deleteRaffle(raffleId: string): Promise<void> {
+  const partsColl = participantsCollection(raffleId);
+  const partsSnap = await getDocs(partsColl);
+
+  const BATCH_SIZE = 400;
+  if (!partsSnap.empty) {
+    for (let i = 0; i < partsSnap.docs.length; i += BATCH_SIZE) {
+      const batch = writeBatch(db);
+      const chunk = partsSnap.docs.slice(i, i + BATCH_SIZE);
+      chunk.forEach((docSnap) => {
+        batch.delete(docSnap.ref);
+      });
+      if (i + BATCH_SIZE >= partsSnap.docs.length) {
+        batch.delete(raffleDoc(raffleId));
+      }
+      await batch.commit();
+    }
+  } else {
+    await deleteDoc(raffleDoc(raffleId));
+  }
+}
+
 export async function getMyRaffles(userId: string): Promise<Raffle[]> {
   const q = query(
     rafflesCollection(),

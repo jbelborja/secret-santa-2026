@@ -18,6 +18,7 @@ export const en: Translations = {
     disabled: 'Disabled',
     enabled: 'Enabled',
     retry: 'Retry',
+    delete: 'Delete',
   },
   status: {
     draft: 'Draft',
@@ -232,6 +233,11 @@ export const en: Translations = {
     notificationTitle: 'Secret Santa: Names Drawn',
     notificationBody: 'Your secret match for "{name}" has been chosen! Tap to reveal.',
     inputValidation: 'Please verify your inputs',
+    dangerZoneTitle: 'Danger Zone',
+    deleteRaffleBtn: 'Delete Raffle',
+    deleteRaffleDesc: 'Permanently delete this raffle, along with all participants and gift assignments. This action cannot be undone.',
+    deleteConfirmTitle: 'Delete Raffle?',
+    deleteConfirmDesc: 'Are you sure you want to delete "{name}"? This action is permanent and cannot be undone.',
   },
   participantsScreen: {
     headerTitle: 'Participants',

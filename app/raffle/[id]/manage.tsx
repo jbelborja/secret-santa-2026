@@ -35,7 +35,7 @@ export default function ManageRaffleScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { t, formatDate } = useTranslation();
-  const { raffle, loading: raffleLoading, updateRaffle } = useRaffle(id);
+  const { raffle, loading: raffleLoading, updateRaffle, deleteRaffle } = useRaffle(id);
   const { participants, loading: partsLoading, markGiftGiven } = useParticipants(id);
 
   const [inviteModalVisible, setInviteModalVisible] = useState(false);
@@ -47,6 +47,7 @@ export default function ManageRaffleScreen() {
   const [savingEdit, setSavingEdit] = useState(false);
   const [drawing, setDrawing] = useState(false);
   const [drawError, setDrawError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   if (raffleLoading || partsLoading) {
     return <LoadingSpinner message={t('manageRaffle.loading')} />;
@@ -276,6 +277,48 @@ export default function ManageRaffleScreen() {
         {
           text: t('manageRaffle.revealConfirmBtn'),
           onPress: performReveal,
+        },
+      ]
+    );
+  };
+
+  const handleDeleteRaffle = () => {
+    const doDelete = async () => {
+      setDeleting(true);
+      try {
+        await deleteRaffle();
+        router.replace('/(tabs)');
+      } catch (err: unknown) {
+        console.error('Error deleting raffle:', err);
+        const rawMsg =
+          (err as any)?.message ||
+          (err instanceof Error ? err.message : '') ||
+          t('common.error');
+        if (Platform.OS === 'web') {
+          window.alert(`${t('common.error')}: ${rawMsg}`);
+        } else {
+          Alert.alert(t('common.error'), rawMsg);
+        }
+        setDeleting(false);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(t('manageRaffle.deleteConfirmDesc', { name: raffle.name }))) {
+        doDelete();
+      }
+      return;
+    }
+
+    Alert.alert(
+      t('manageRaffle.deleteConfirmTitle'),
+      t('manageRaffle.deleteConfirmDesc', { name: raffle.name }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: doDelete,
         },
       ]
     );
@@ -513,6 +556,31 @@ export default function ManageRaffleScreen() {
             </Text>
           </View>
         )}
+      </Card>
+
+      {/* Danger Zone: Delete Raffle */}
+      <Card className="mt-4 mb-4 bg-red-50/50 border border-red-200">
+        <View className="flex-row items-center mb-1.5">
+          <View className="w-8 h-8 rounded-lg bg-red-100 items-center justify-center mr-2.5">
+            <Ionicons name="trash-outline" size={17} color="#DC2626" />
+          </View>
+          <Text className="text-base font-bold text-red-900">
+            {t('manageRaffle.dangerZoneTitle')}
+          </Text>
+        </View>
+
+        <Text className="text-xs text-red-700/80 mb-3.5 leading-4">
+          {t('manageRaffle.deleteRaffleDesc')}
+        </Text>
+
+        <Button
+          title={t('manageRaffle.deleteRaffleBtn')}
+          onPress={handleDeleteRaffle}
+          variant="danger"
+          size="md"
+          loading={deleting}
+          leftIcon={<Ionicons name="trash-outline" size={16} color="#FFFFFF" />}
+        />
       </Card>
 
       {/* Invite Code Modal */}

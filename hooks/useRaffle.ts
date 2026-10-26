@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { onSnapshot, updateDoc } from 'firebase/firestore';
-import { raffleDoc } from '../lib/firestore';
+import { raffleDoc, deleteRaffle as firestoreDeleteRaffle } from '../lib/firestore';
 import { Raffle } from '../types';
 
 export function useRaffle(raffleId?: string) {
@@ -67,12 +67,18 @@ export function useRaffle(raffleId?: string) {
     [raffleId]
   );
 
+  const deleteRaffle = useCallback(async () => {
+    if (!raffleId) throw new Error('No raffle ID provided');
+    await firestoreDeleteRaffle(raffleId);
+  }, [raffleId]);
+
   return {
     raffle,
     loading,
     error,
     refetch,
     updateRaffle,
+    deleteRaffle,
   };
 }
 

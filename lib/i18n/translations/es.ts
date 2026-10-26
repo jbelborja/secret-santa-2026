@@ -16,6 +16,7 @@ export const es = {
     disabled: 'Desactivado',
     enabled: 'Activado',
     retry: 'Reintentar',
+    delete: 'Eliminar',
   },
   status: {
     draft: 'Borrador',
@@ -230,6 +231,11 @@ export const es = {
     notificationTitle: 'Amigo Invisible: Parejas Sorteadas',
     notificationBody: '¡Tu amigo invisible para "{name}" ya ha sido asignado! Toca para descubrirlo.',
     inputValidation: 'Por favor, verifica los campos introducidos',
+    dangerZoneTitle: 'Zona de peligro',
+    deleteRaffleBtn: 'Eliminar sorteo',
+    deleteRaffleDesc: 'Elimina permanentemente este sorteo, todos sus participantes y asignaciones. Esta acción no se puede deshacer.',
+    deleteConfirmTitle: '¿Eliminar sorteo?',
+    deleteConfirmDesc: '¿Seguro que quieres eliminar "{name}"? Esta acción es permanente y no se puede deshacer.',
   },
   participantsScreen: {
     headerTitle: 'Participantes',
