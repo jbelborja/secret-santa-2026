@@ -51,6 +51,24 @@ export default function ManageRaffleScreen() {
   const [deleting, setDeleting] = useState(false);
   const [concluding, setConcluding] = useState(false);
 
+  // IMPORTANT: useEffect must be before any conditional early returns (Rules of Hooks).
+  // Automatic date-triggered draw / completion:
+  useEffect(() => {
+    if (!raffle || partsLoading) return;
+    const now = Date.now();
+    const raffleTime = new Date(raffle.raffleDate).getTime();
+    const giftTime = new Date(raffle.giftDate).getTime();
+    const acceptedNow = participants.filter((p) => p.status === 'accepted').length;
+
+    if (raffle.status === 'inviting' && now >= raffleTime && acceptedNow >= 2 && !drawing) {
+      performDraw(true);
+    } else if (raffle.status === 'drawn' && now >= giftTime && !concluding) {
+      completeRaffleExchange(raffle.id).catch((err) =>
+        console.warn('Auto complete gift exchange notice:', err)
+      );
+    }
+  }, [raffle?.status, raffle?.raffleDate, raffle?.giftDate, participants.length, partsLoading]);
+
   if (raffleLoading || partsLoading) {
     return <LoadingSpinner message={t('manageRaffle.loading')} />;
   }
@@ -287,23 +305,7 @@ export default function ManageRaffleScreen() {
     );
   };
 
-  // Automatic date checks:
-  // 1. If status is 'inviting' and draw date has passed -> auto-execute draw
-  // 2. If status is 'drawn' and gift exchange date has passed -> auto-complete exchange
-  useEffect(() => {
-    if (!raffle || partsLoading) return;
-    const now = Date.now();
-    const raffleTime = new Date(raffle.raffleDate).getTime();
-    const giftTime = new Date(raffle.giftDate).getTime();
 
-    if (raffle.status === 'inviting' && now >= raffleTime && acceptedCount >= 2 && !drawing) {
-      performDraw(true);
-    } else if (raffle.status === 'drawn' && now >= giftTime && !concluding) {
-      completeRaffleExchange(raffle.id).catch((err) =>
-        console.warn('Auto complete gift exchange notice:', err)
-      );
-    }
-  }, [raffle?.status, raffle?.raffleDate, raffle?.giftDate, acceptedCount, partsLoading]);
 
   const handleDeleteRaffle = () => {
     const doDelete = async () => {

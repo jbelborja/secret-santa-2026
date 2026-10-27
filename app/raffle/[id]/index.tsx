@@ -38,6 +38,27 @@ export default function RaffleParticipantScreen() {
 
   const [actionLoading, setActionLoading] = useState(false);
 
+  // IMPORTANT: All hooks must be called before any conditional early returns
+  // (Rules of Hooks). This effect guards itself internally with null checks.
+  // Automatic date-triggered draw / completion:
+  useEffect(() => {
+    if (!raffle || partsLoading) return;
+    const now = Date.now();
+    const raffleTime = new Date(raffle.raffleDate).getTime();
+    const giftTime = new Date(raffle.giftDate).getTime();
+    const acceptedCount = participants.filter((p) => p.status === 'accepted').length;
+
+    if (raffle.status === 'inviting' && now >= raffleTime && acceptedCount >= 2) {
+      executeRaffleDraw(raffle.id, participants).catch((err) =>
+        console.warn('Auto draw execution note:', err)
+      );
+    } else if (raffle.status === 'drawn' && now >= giftTime) {
+      completeRaffleExchange(raffle.id).catch((err) =>
+        console.warn('Auto complete exchange note:', err)
+      );
+    }
+  }, [raffle?.status, raffle?.raffleDate, raffle?.giftDate, partsLoading, participants.length]);
+
   if (raffleLoading || partsLoading) {
     return <LoadingSpinner message={t('raffleDetail.loading')} />;
   }
@@ -75,25 +96,6 @@ export default function RaffleParticipantScreen() {
   const isDrawn = raffle.status === 'drawn' || raffle.status === 'completed';
   const targetDateForTimer = isDrawn ? raffle.giftDate : raffle.raffleDate;
   const timerLabel = isDrawn ? t('raffleDetail.giftExchangeIn') : t('raffleDetail.pairingsDrawnIn');
-
-  // Automatic date checks:
-  useEffect(() => {
-    if (!raffle || partsLoading) return;
-    const now = Date.now();
-    const raffleTime = new Date(raffle.raffleDate).getTime();
-    const giftTime = new Date(raffle.giftDate).getTime();
-    const acceptedCount = participants.filter((p) => p.status === 'accepted').length;
-
-    if (raffle.status === 'inviting' && now >= raffleTime && acceptedCount >= 2) {
-      executeRaffleDraw(raffle.id, participants).catch((err) =>
-        console.warn('Auto draw execution note:', err)
-      );
-    } else if (raffle.status === 'drawn' && now >= giftTime) {
-      completeRaffleExchange(raffle.id).catch((err) =>
-        console.warn('Auto complete exchange note:', err)
-      );
-    }
-  }, [raffle?.status, raffle?.raffleDate, raffle?.giftDate, partsLoading, participants.length]);
 
   const handleAcceptInvite = async () => {
     if (!currentUid || !id || !myParticipant) return;
