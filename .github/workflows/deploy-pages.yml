@@ -35,8 +35,47 @@ jobs:
       - name: Export web build
         run: |
           npx expo export --platform web --output-dir dist
-          # Copy index.html to 404.html to support direct links and deep client-side routing on GitHub Pages
-          cp dist/index.html dist/404.html
+
+          # GitHub Pages SPA routing fix:
+          # When a user navigates directly to a deep link like /raffle/ABC, GitHub Pages
+          # returns a 404 (no static file exists). We fix this with a two-part trick:
+          #
+          # 1. 404.html: immediately redirects to the app root, encoding the original
+          #    path as a ?p= query parameter so it isn't lost.
+          # 2. index.html: a small inline script runs before React/Expo boots and restores
+          #    the encoded path via history.replaceState, so Expo Router sees the correct URL.
+
+          BASE_URL="/secret-santa-2026"
+
+          # --- Generate 404.html ---
+          cat > dist/404.html << 'FOUR04'
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8" />
+              <title>Secret Santa</title>
+              <script>
+                // GitHub Pages SPA redirect (https://github.com/rafgraph/spa-github-pages)
+                // Encodes the path, query, and hash as a query param and redirects to the
+                // base URL so index.html can restore them via history.replaceState.
+                var l = window.location;
+                l.replace(
+                  l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+                  '/secret-santa-2026' +
+                  '/?p=' + encodeURIComponent(l.pathname.slice('/secret-santa-2026'.length) + l.search) +
+                  (l.hash ? '&hash=' + encodeURIComponent(l.hash.slice(1)) : '')
+                );
+              </script>
+            </head>
+            <body></body>
+          </html>
+          FOUR04
+
+          # --- Inject path-restore script into index.html (before </head>) ---
+          RESTORE_SCRIPT='<script>(function(){var p=new URLSearchParams(window.location.search).get("p");if(p){var h=new URLSearchParams(window.location.search).get("hash");window.history.replaceState(null,null,"/secret-santa-2026"+decodeURIComponent(p)+(h?"#"+decodeURIComponent(h):""));}}());</script>'
+
+          # Insert the restore script right before </head>
+          sed -i "s|</head>|${RESTORE_SCRIPT}</head>|" dist/index.html
         env:
           EXPO_PUBLIC_FIREBASE_API_KEY: ${{ secrets.EXPO_PUBLIC_FIREBASE_API_KEY }}
           EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN }}
