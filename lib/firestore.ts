@@ -351,67 +351,61 @@ export async function getRafflesIParticipateIn(
   userId: string,
   userEmail?: string
 ): Promise<ParticipantRaffleItem[]> {
-  try {
-    const participantDocsMap = new Map<string, Participant>();
+  const participantDocsMap = new Map<string, Participant>();
 
-    // 1. Query collectionGroup participants by userId
-    const qUserId = query(
+  // 1. Query collectionGroup participants by userId
+  // Requires: fieldOverride COLLECTION_GROUP index on participants.userId
+  const qUserId = query(
+    collectionGroup(db, 'participants').withConverter(participantConverter),
+    where('userId', '==', userId)
+  );
+  const snapUserId = await getDocs(qUserId);
+  snapUserId.forEach((docSnap) => {
+    const p = docSnap.data();
+    const rId = p.raffleId || docSnap.ref.parent.parent?.id;
+    if (rId) {
+      participantDocsMap.set(rId, { ...p, raffleId: rId, id: docSnap.id });
+    }
+  });
+
+  // 2. Query collectionGroup participants by email (for invited users who haven't accepted yet)
+  // Requires: fieldOverride COLLECTION_GROUP index on participants.email
+  const cleanEmail = (userEmail || '').trim().toLowerCase();
+  if (cleanEmail) {
+    const qEmail = query(
       collectionGroup(db, 'participants').withConverter(participantConverter),
-      where('userId', '==', userId)
+      where('email', '==', cleanEmail)
     );
-    const snapUserId = await getDocs(qUserId);
-    snapUserId.forEach((docSnap) => {
+    const snapEmail = await getDocs(qEmail);
+    snapEmail.forEach((docSnap) => {
       const p = docSnap.data();
       const rId = p.raffleId || docSnap.ref.parent.parent?.id;
-      if (rId) {
+      if (rId && !participantDocsMap.has(rId)) {
         participantDocsMap.set(rId, { ...p, raffleId: rId, id: docSnap.id });
       }
     });
+  }
 
-    // 2. Query collectionGroup participants by email (for invited users who haven't claimed yet)
-    const cleanEmail = (userEmail || '').trim().toLowerCase();
-    if (cleanEmail) {
-      try {
-        const qEmail = query(
-          collectionGroup(db, 'participants').withConverter(participantConverter),
-          where('email', '==', cleanEmail)
-        );
-        const snapEmail = await getDocs(qEmail);
-        snapEmail.forEach((docSnap) => {
-          const p = docSnap.data();
-          const rId = p.raffleId || docSnap.ref.parent.parent?.id;
-          if (rId && !participantDocsMap.has(rId)) {
-            participantDocsMap.set(rId, { ...p, raffleId: rId, id: docSnap.id });
-          }
-        });
-      } catch (emailErr) {
-        console.warn('Collection group query on email notice:', emailErr);
-      }
-    }
-
-    if (participantDocsMap.size === 0) {
-      return [];
-    }
-
-    const rafflePromises = Array.from(participantDocsMap.entries()).map(
-      async ([raffleId, participant]) => {
-        const raffleSnap = await getDoc(raffleDoc(raffleId));
-        if (raffleSnap.exists()) {
-          return {
-            raffle: raffleSnap.data(),
-            participant,
-          };
-        }
-        return null;
-      }
-    );
-
-    const items = await Promise.all(rafflePromises);
-    return items
-      .filter((item): item is ParticipantRaffleItem => item !== null)
-      .sort((a, b) => b.raffle.createdAt.getTime() - a.raffle.createdAt.getTime());
-  } catch (err) {
-    console.warn('getRafflesIParticipateIn notice:', err);
+  if (participantDocsMap.size === 0) {
     return [];
   }
+
+  const rafflePromises = Array.from(participantDocsMap.entries()).map(
+    async ([raffleId, participant]) => {
+      const raffleSnap = await getDoc(raffleDoc(raffleId));
+      if (raffleSnap.exists()) {
+        return {
+          raffle: raffleSnap.data(),
+          participant,
+        };
+      }
+      return null;
+    }
+  );
+
+  const items = await Promise.all(rafflePromises);
+  return items
+    .filter((item): item is ParticipantRaffleItem => item !== null)
+    .sort((a, b) => b.raffle.createdAt.getTime() - a.raffle.createdAt.getTime());
 }
+
