@@ -26,7 +26,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Verify SMTP connection on startup
-transporter.verify((err) => {
+transporter.verify((err: Error | null) => {
   if (err) {
     console.error('❌ SMTP connection failed:', err.message);
   } else {
@@ -170,9 +170,15 @@ app.post('/send-draw-emails', async (req: Request, res: Response) => {
 });
 
 // ---------------------------------------------------------------------------
-// Health check
+// Health check & Root
 // ---------------------------------------------------------------------------
-app.get('/health', (_req, res) => res.json({ ok: true }));
+app.get('/', (_req: Request, res: Response) => {
+  res.json({ ok: true, service: 'secret-santa-email-server' });
+});
+
+app.get('/health', (_req: Request, res: Response) => {
+  res.json({ ok: true });
+});
 
 const PORT = Number(process.env.PORT) || 3001;
 app.listen(PORT, () => {

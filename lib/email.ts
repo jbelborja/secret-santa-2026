@@ -1,5 +1,6 @@
-const BASE_URL =
+const rawBaseUrl =
   process.env.EXPO_PUBLIC_EMAIL_SERVER_URL || 'http://localhost:3001';
+const BASE_URL = rawBaseUrl.replace(/\/+$/, '');
 
 /**
  * Send an invitation email to a participant via the standalone email server,
