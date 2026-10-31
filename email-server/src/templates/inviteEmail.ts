@@ -2,7 +2,7 @@ export interface InviteEmailData {
   inviteeName: string;
   organizerName: string;
   raffleName: string;
-  inviteCode: string;
+  inviteCode?: string;
   topic?: string;
   priceLimit: number;
   currency: string;
@@ -15,7 +15,6 @@ export function generateInviteEmailHtml(data: InviteEmailData): string {
     inviteeName,
     organizerName,
     raffleName,
-    inviteCode,
     topic,
     priceLimit,
     currency,
@@ -68,29 +67,6 @@ export function generateInviteEmailHtml(data: InviteEmailData): string {
     .greeting {
       font-size: 16px;
       margin-bottom: 16px;
-    }
-    .code-box {
-      background-color: #F9FAFB;
-      border: 2px dashed #D1D5DB;
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-      margin: 24px 0;
-    }
-    .code-label {
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #6B7280;
-      margin-bottom: 6px;
-      letter-spacing: 1px;
-    }
-    .code-value {
-      font-size: 32px;
-      font-weight: 900;
-      letter-spacing: 6px;
-      font-family: 'Courier New', Courier, monospace;
-      color: #B91C1C;
     }
     .details-table {
       width: 100%;
@@ -147,11 +123,6 @@ export function generateInviteEmailHtml(data: InviteEmailData): string {
     <div class="content">
       <p class="greeting">¡Hola <strong>${inviteeName}</strong>!</p>
       <p><strong>${organizerName}</strong> te ha invitado a participar en el sorteo de Amigo Invisible para <strong>${raffleName}</strong>.</p>
-
-      <div class="code-box">
-        <div class="code-label">Tu Código de Invitación</div>
-        <div class="code-value">${inviteCode}</div>
-      </div>
 
       <table class="details-table">
         <tr>

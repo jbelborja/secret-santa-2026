@@ -17,7 +17,6 @@ import { useMyRaffles } from '@/hooks/useMyRaffles';
 import { RaffleCard } from '@/components/raffle/RaffleCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { JoinWithCodeModal } from '@/components/raffle/JoinWithCodeModal';
 import { PageContainer } from '@/components/ui/PageContainer';
 
 export default function MyRafflesScreen() {
@@ -37,7 +36,6 @@ export default function MyRafflesScreen() {
     error,
     refetch,
   } = useMyRaffles();
-  const [joinModalVisible, setJoinModalVisible] = useState(false);
   const [showPastRaffles, setShowPastRaffles] = useState(false);
 
   const totalActive =
@@ -91,23 +89,14 @@ export default function MyRafflesScreen() {
             </View>
           </View>
 
-          {/* Quick Action Buttons (Optimized width on web) */}
-          <View className="flex-row gap-3">
-            <Pressable
-              onPress={() => router.push('/raffle/create')}
-              className="flex-1 sm:flex-initial flex-row items-center justify-center bg-[#B91C1C] py-2.5 px-4 rounded-xl shadow-xs active:bg-[#991B1B]"
-            >
-              <Ionicons name="add" size={18} color="#FFFFFF" />
-              <Text className="text-white font-bold text-sm ml-1.5">{t('home.newRaffle')}</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setJoinModalVisible(true)}
-              className="flex-1 sm:flex-initial flex-row items-center justify-center bg-white border border-gray-200 py-2.5 px-4 rounded-xl shadow-xs active:bg-gray-50"
-            >
-              <Ionicons name="ticket-outline" size={18} color="#B91C1C" />
-              <Text className="text-gray-800 font-bold text-sm ml-1.5">{t('home.joinWithCodeBtn')}</Text>
-            </Pressable>
-          </View>
+          {/* Quick Action Button */}
+          <Pressable
+            onPress={() => router.push('/raffle/create')}
+            className="flex-row items-center justify-center bg-[#B91C1C] py-2.5 px-4 rounded-xl shadow-xs active:bg-[#991B1B]"
+          >
+            <Ionicons name="add" size={18} color="#FFFFFF" />
+            <Text className="text-white font-bold text-sm ml-1.5">{t('home.newRaffle')}</Text>
+          </Pressable>
         </View>
 
       {/* Error message */}
@@ -165,18 +154,6 @@ export default function MyRafflesScreen() {
               </Text>
             </View>
           </View>
-
-          {participatingRaffles.length > 0 ? (
-            <Pressable
-              onPress={() => setJoinModalVisible(true)}
-              className="flex-row items-center active:opacity-70 py-1"
-            >
-              <Ionicons name="add-circle-outline" size={16} color="#B91C1C" />
-              <Text className="text-xs font-bold text-[#B91C1C] ml-1">
-                {t('home.joinWithCodeBtn')}
-              </Text>
-            </Pressable>
-          ) : null}
         </View>
 
         {participatingRaffles.length === 0 ? (
@@ -184,10 +161,6 @@ export default function MyRafflesScreen() {
             icon="snow-outline"
             title={t('home.emptyParticipateTitle')}
             subtitle={t('home.emptyParticipateSubtitle')}
-            action={{
-              label: t('home.joinWithCodeBtn'),
-              onPress: () => setJoinModalVisible(true),
-            }}
           />
         ) : (
           <View className="flex-row flex-wrap gap-4">
@@ -305,11 +278,6 @@ export default function MyRafflesScreen() {
           </View>
         ) : null}
       </View>
-
-      <JoinWithCodeModal
-        visible={joinModalVisible}
-        onClose={() => setJoinModalVisible(false)}
-      />
       </PageContainer>
     </ScrollView>
   );
