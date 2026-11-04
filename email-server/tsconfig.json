@@ -4,10 +4,13 @@
     "target": "es2020",
     "lib": ["es2020"],
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true
   },
-  "include": ["src"]
+  "include": ["api", "lib"],
+  "exclude": ["node_modules", "dist"]
 }

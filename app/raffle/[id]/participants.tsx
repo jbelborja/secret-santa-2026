@@ -90,7 +90,16 @@ export default function ParticipantsManagementScreen() {
           priceLimit: raffle.priceLimit,
           currency: raffle.currency,
           giftDate: raffle.giftDate ? raffle.giftDate.toISOString() : null,
-        }).catch((err) => console.warn('Invite email failed (non-fatal):', err));
+        }).catch((err) => {
+          console.warn('Invite email failed (non-fatal):', err);
+          const errText = err instanceof Error ? err.message : String(err);
+          const alertMsg = `Participante añadido, pero no se pudo enviar el correo de invitación: ${errText}`;
+          if (Platform.OS === 'web') {
+            window.alert(alertMsg);
+          } else {
+            Alert.alert(t('common.error'), alertMsg);
+          }
+        });
       }
     } catch (err: unknown) {
       console.error('Error adding participant:', err);

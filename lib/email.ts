@@ -3,8 +3,7 @@ const rawBaseUrl =
 const BASE_URL = rawBaseUrl.replace(/\/+$/, '');
 
 /**
- * Send an invitation email to a participant via the standalone email server,
- * which relays through Gmail SMTP.
+ * Send an invitation email to a participant via the Vercel email server (Gmail SMTP).
  */
 export async function sendInviteEmail(params: {
   participantEmail: string;
@@ -17,24 +16,29 @@ export async function sendInviteEmail(params: {
   currency?: string;
   giftDate?: string | null;
 }): Promise<void> {
-  const res = await fetch(`${BASE_URL}/send-invite`, {
+  const hostingUrl =
+    process.env.EXPO_PUBLIC_FIREBASE_HOSTING_URL ||
+    'https://jbelborja.github.io/secret-santa-2026';
+
+  const res = await fetch(`${BASE_URL}/api/send-invite`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       ...params,
-      appUrl: process.env.EXPO_PUBLIC_FIREBASE_HOSTING_URL,
+      appUrl: hostingUrl,
     }),
   });
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body?.error || `Email server error: ${res.status}`);
+    throw new Error(
+      body?.error || `Email server error ${res.status}`
+    );
   }
 }
 
 /**
- * Send the secret-assignment emails to all participants after the draw,
- * which relays through Gmail SMTP.
+ * Send secret assignment emails to participants via the Vercel email server (Gmail SMTP).
  */
 export async function sendDrawEmails(params: {
   raffleId: string;
@@ -49,18 +53,24 @@ export async function sendDrawEmails(params: {
     recipientName: string;
   }>;
 }): Promise<{ sent: number; failed: number }> {
-  const res = await fetch(`${BASE_URL}/send-draw-emails`, {
+  const hostingUrl =
+    process.env.EXPO_PUBLIC_FIREBASE_HOSTING_URL ||
+    'https://jbelborja.github.io/secret-santa-2026';
+
+  const res = await fetch(`${BASE_URL}/api/send-draw-emails`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       ...params,
-      appUrl: process.env.EXPO_PUBLIC_FIREBASE_HOSTING_URL,
+      appUrl: hostingUrl,
     }),
   });
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body?.error || `Email server error: ${res.status}`);
+    throw new Error(
+      body?.error || `Email server error ${res.status}`
+    );
   }
 
   return res.json();
