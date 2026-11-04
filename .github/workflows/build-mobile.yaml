@@ -51,6 +51,7 @@ jobs:
           EXPO_PUBLIC_FIREBASE_HOSTING_URL=${{ secrets.EXPO_PUBLIC_FIREBASE_HOSTING_URL }}
           EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
           EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=${{ secrets.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID }}
+          EXPO_PUBLIC_EMAIL_SERVER_URL=${{ secrets.EXPO_PUBLIC_EMAIL_SERVER_URL || vars.EXPO_PUBLIC_EMAIL_SERVER_URL }}
           EOF
 
       - name: Create google-services.json
@@ -143,6 +144,7 @@ jobs:
           EXPO_PUBLIC_FIREBASE_HOSTING_URL: ${{ secrets.EXPO_PUBLIC_FIREBASE_HOSTING_URL }}
           EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
           EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID }}
+          EXPO_PUBLIC_EMAIL_SERVER_URL: ${{ secrets.EXPO_PUBLIC_EMAIL_SERVER_URL || vars.EXPO_PUBLIC_EMAIL_SERVER_URL }}
         run: ./gradlew assembleRelease -PkotlinVersion=1.9.25
 
       - name: Upload APK
@@ -184,6 +186,7 @@ jobs:
           EXPO_PUBLIC_FIREBASE_APP_ID=${{ secrets.EXPO_PUBLIC_FIREBASE_APP_ID }}
           EXPO_PUBLIC_FIREBASE_HOSTING_URL=${{ secrets.EXPO_PUBLIC_FIREBASE_HOSTING_URL }}
           EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
+          EXPO_PUBLIC_EMAIL_SERVER_URL=${{ secrets.EXPO_PUBLIC_EMAIL_SERVER_URL || vars.EXPO_PUBLIC_EMAIL_SERVER_URL }}
           EOF
 
       - name: Create GoogleService-Info.plist
@@ -329,6 +332,7 @@ jobs:
           EXPO_PUBLIC_FIREBASE_APP_ID: ${{ secrets.EXPO_PUBLIC_FIREBASE_APP_ID }}
           EXPO_PUBLIC_FIREBASE_HOSTING_URL: ${{ secrets.EXPO_PUBLIC_FIREBASE_HOSTING_URL }}
           EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
+          EXPO_PUBLIC_EMAIL_SERVER_URL: ${{ secrets.EXPO_PUBLIC_EMAIL_SERVER_URL || vars.EXPO_PUBLIC_EMAIL_SERVER_URL }}
         run: |
           WORKSPACE_NAME=$(basename *.xcworkspace .xcworkspace)
           echo "Building workspace and scheme: $WORKSPACE_NAME"
