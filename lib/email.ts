@@ -1,5 +1,6 @@
 const rawBaseUrl =
-  process.env.EXPO_PUBLIC_EMAIL_SERVER_URL || 'http://localhost:3001';
+  process.env.EXPO_PUBLIC_EMAIL_SERVER_URL ||
+  'https://secret-santa-2026-email-server.vercel.app';
 const BASE_URL = rawBaseUrl.replace(/\/+$/, '');
 
 /**
