@@ -4,7 +4,7 @@
   "description": "Vercel serverless email server for Secret Santa (Gmail SMTP)",
   "private": true,
   "engines": {
-    "node": "20.x"
+    "node": "26.x"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
