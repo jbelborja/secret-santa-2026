@@ -70,8 +70,8 @@ export const onRaffleDrawn = onDocumentUpdated(
       return;
     }
 
-    // Build participant lookup map: id -> name
-    const participantMap = new Map<string, string>();
+    // Build participant lookup map: id -> { name, giftSuggestions }
+    const participantMap = new Map<string, { name: string; giftSuggestions?: string }>();
     const participantsList: Array<{
       id: string;
       name: string;
@@ -81,7 +81,10 @@ export const onRaffleDrawn = onDocumentUpdated(
 
     partsSnap.forEach((doc) => {
       const data = doc.data();
-      participantMap.set(doc.id, data.name || 'Amigo Invisible');
+      participantMap.set(doc.id, {
+        name: data.name || 'Amigo Invisible',
+        giftSuggestions: data.giftSuggestions || undefined,
+      });
       participantsList.push({
         id: doc.id,
         name: data.name || 'Participante',
@@ -118,11 +121,12 @@ export const onRaffleDrawn = onDocumentUpdated(
         return;
       }
 
-      const recipientName = participantMap.get(giver.assignedTo)!;
+      const recipient = participantMap.get(giver.assignedTo)!;
 
       const html = generateDrawEmailHtml({
         giverName: giver.name,
-        recipientName,
+        recipientName: recipient.name,
+        recipientSuggestions: recipient.giftSuggestions,
         raffleName: afterData.name,
         topic: afterData.topic,
         priceLimit: afterData.priceLimit || 0,

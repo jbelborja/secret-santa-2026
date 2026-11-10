@@ -22,9 +22,6 @@ import {
 } from '@/lib/firestore';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-
-const CURRENCIES = ['EUR', 'USD', 'GBP', 'CAD', 'AUD'];
-
 import { PageContainer } from '@/components/ui/PageContainer';
 
 export default function CreateRaffleScreen() {
@@ -241,28 +238,14 @@ export default function CreateRaffleScreen() {
                   />
                 </View>
 
-                <View className="w-32 ml-3">
+                <View className="w-24 ml-3">
                   <Text className="text-sm font-semibold text-gray-700 mb-1.5 ml-0.5">
                     {t('createRaffle.currencyLabel')}
                   </Text>
-                  <View className="flex-row border border-gray-200 rounded-xl p-1 bg-gray-50/50 justify-around">
-                    {CURRENCIES.slice(0, 3).map((curr) => (
-                      <Pressable
-                        key={curr}
-                        onPress={() => setCurrency(curr)}
-                        className={`px-2.5 py-2 rounded-lg ${
-                          currency === curr ? 'bg-[#B91C1C]' : 'bg-transparent'
-                        }`}
-                      >
-                        <Text
-                          className={`text-xs font-bold ${
-                            currency === curr ? 'text-white' : 'text-gray-600'
-                          }`}
-                        >
-                          {curr}
-                        </Text>
-                      </Pressable>
-                    ))}
+                  <View className="border border-gray-200 rounded-xl px-2.5 py-3 bg-gray-50 items-center justify-center">
+                    <Text className="text-xs font-bold text-gray-800">
+                      EUR (€)
+                    </Text>
                   </View>
                 </View>
               </View>

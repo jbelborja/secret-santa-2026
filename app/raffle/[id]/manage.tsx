@@ -105,6 +105,9 @@ export default function ManageRaffleScreen() {
   const acceptedCount = participants.filter((p) => p.status === 'accepted').length;
   const declinedCount = participants.filter((p) => p.status === 'declined').length;
   const acceptedParticipants = participants.filter((p) => p.status === 'accepted');
+  const activeExclusionsCount = Math.floor(
+    participants.reduce((acc, p) => acc + (p.exclusions?.length || 0), 0) / 2
+  );
 
   const startEdit = () => {
     setEditName(raffle.name);
@@ -169,16 +172,20 @@ export default function ManageRaffleScreen() {
       }
 
       // Send draw emails (fire-and-forget)
-      const participantNameMap = new Map(
-        participants.map((p) => [p.id, p.name])
+      const participantMap = new Map(
+        participants.map((p) => [p.id, p])
       );
       const emailParticipants = acceptedParticipants
         .filter((p) => p.email && result.assignments![p.id])
-        .map((p) => ({
-          name: p.name,
-          email: p.email,
-          recipientName: participantNameMap.get(result.assignments![p.id]) || '',
-        }));
+        .map((p) => {
+          const rec = participantMap.get(result.assignments![p.id]);
+          return {
+            name: p.name,
+            email: p.email,
+            recipientName: rec?.name || '',
+            recipientSuggestions: rec?.giftSuggestions || '',
+          };
+        });
 
       if (emailParticipants.length > 0) {
         sendDrawEmails({
@@ -461,6 +468,48 @@ export default function ManageRaffleScreen() {
             className="flex-1 ml-2"
             onPress={() => setInviteModalVisible(true)}
             leftIcon={<Ionicons name="share-social-outline" size={16} color="#B91C1C" />}
+          />
+        </View>
+      </Card>
+
+      {/* Pair Constraints (Exclusions) Card */}
+      <Card className="mb-4 bg-white border border-gray-100">
+        <View className="flex-row items-center justify-between mb-2">
+          <View className="flex-row items-center flex-1 mr-2">
+            <View className="w-8 h-8 rounded-full bg-red-50 items-center justify-center mr-2.5 border border-red-100">
+              <Ionicons name="hand-left-outline" size={16} color="#B91C1C" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-base font-bold text-gray-900">
+                {t('manageRaffle.pairConstraintsTitle')}
+              </Text>
+              <Text className="text-xs text-gray-500">
+                {t('manageRaffle.pairConstraintsDesc')}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <View className="flex-row items-center justify-between pt-3 border-t border-gray-100">
+          <View className="flex-row items-center">
+            <Ionicons
+              name={activeExclusionsCount > 0 ? 'shield-checkmark' : 'shield-outline'}
+              size={16}
+              color={activeExclusionsCount > 0 ? '#B91C1C' : '#9CA3AF'}
+            />
+            <Text className="text-xs font-semibold text-gray-700 ml-1.5">
+              {activeExclusionsCount > 0
+                ? t('manageRaffle.activeConstraintsCount', { count: activeExclusionsCount })
+                : t('manageRaffle.noConstraintsActive')}
+            </Text>
+          </View>
+
+          <Button
+            title={t('manageRaffle.manageConstraintsBtn')}
+            variant="outline"
+            size="sm"
+            onPress={() => router.push(`/raffle/${raffle.id}/participants` as any)}
+            leftIcon={<Ionicons name="people-outline" size={14} color="#B91C1C" />}
           />
         </View>
       </Card>

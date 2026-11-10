@@ -24,6 +24,7 @@ import { CountdownTimer } from '@/components/CountdownTimer';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { PageContainer } from '@/components/ui/PageContainer';
@@ -37,6 +38,9 @@ export default function RaffleParticipantScreen() {
   const { participants, loading: partsLoading, error: partsError } = useParticipants(id);
 
   const [actionLoading, setActionLoading] = useState(false);
+  const [mySuggestions, setMySuggestions] = useState('');
+  const [savingSuggestions, setSavingSuggestions] = useState(false);
+  const [suggestionsSaved, setSuggestionsSaved] = useState(false);
 
   // IMPORTANT: All hooks must be called before any conditional early returns
   // (Rules of Hooks). This effect guards itself internally with null checks.
@@ -58,6 +62,19 @@ export default function RaffleParticipantScreen() {
       );
     }
   }, [raffle?.status, raffle?.raffleDate, raffle?.giftDate, partsLoading, participants.length]);
+
+  useEffect(() => {
+    const currentUid = user?.uid || firebaseUser?.uid;
+    const userEmail = (user?.email || firebaseUser?.email || '').trim().toLowerCase();
+    const found = participants.find(
+      (p) =>
+        (currentUid && p.userId === currentUid) ||
+        (userEmail && (p.email || '').trim().toLowerCase() === userEmail)
+    );
+    if (found?.giftSuggestions !== undefined) {
+      setMySuggestions(found.giftSuggestions || '');
+    }
+  }, [user, firebaseUser, participants]);
 
   if (raffleLoading || partsLoading) {
     return <LoadingSpinner message={t('raffleDetail.loading')} />;
@@ -139,6 +156,25 @@ export default function RaffleParticipantScreen() {
       console.error('Error declining invitation:', err);
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleSaveSuggestions = async () => {
+    if (!id || !myParticipant) return;
+    setSavingSuggestions(true);
+    try {
+      await updateDoc(participantDoc(id, myParticipant.id), {
+        giftSuggestions: mySuggestions.trim(),
+      });
+      setSuggestionsSaved(true);
+      setTimeout(() => setSuggestionsSaved(false), 3000);
+    } catch (err: unknown) {
+      console.error('Error saving suggestions:', err);
+      const errMsg = (err instanceof Error ? err.message : '') || t('common.error');
+      if (Platform.OS === 'web') window.alert(errMsg);
+      else Alert.alert(t('common.error'), errMsg);
+    } finally {
+      setSavingSuggestions(false);
     }
   };
 
@@ -298,6 +334,55 @@ export default function RaffleParticipantScreen() {
           </View>
         )}
       </Card>
+
+      {/* Participant's Own Gift Suggestions / Wishlist Card */}
+      {myParticipant && myParticipant.status === 'accepted' ? (
+        <Card className="mb-4 bg-white border border-gray-100">
+          <View className="flex-row items-center mb-1">
+            <View className="w-8 h-8 rounded-full bg-red-50 items-center justify-center mr-2.5 border border-red-100">
+              <Ionicons name="sparkles-outline" size={16} color="#B91C1C" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-base font-bold text-gray-900">
+                {t('raffleDetail.mySuggestionsTitle')}
+              </Text>
+              <Text className="text-xs text-gray-400">
+                {t('raffleDetail.mySuggestionsSubtitle')}
+              </Text>
+            </View>
+          </View>
+
+          <View className="mt-3 mb-2">
+            <Input
+              placeholder={t('raffleDetail.suggestionsPlaceholder')}
+              value={mySuggestions}
+              onChangeText={setMySuggestions}
+              multiline
+            />
+          </View>
+
+          <View className="flex-row items-center justify-between pt-1">
+            {suggestionsSaved ? (
+              <View className="flex-row items-center">
+                <Ionicons name="checkmark-circle" size={16} color="#15803D" />
+                <Text className="text-xs font-semibold text-[#15803D] ml-1">
+                  {t('raffleDetail.suggestionsSaved')}
+                </Text>
+              </View>
+            ) : (
+              <View />
+            )}
+
+            <Button
+              title={t('raffleDetail.saveSuggestions')}
+              variant="outline"
+              size="sm"
+              loading={savingSuggestions}
+              onPress={handleSaveSuggestions}
+            />
+          </View>
+        </Card>
+      ) : null}
 
       {/* Group Revealed Section */}
       {raffle.revealed ? (

@@ -1,6 +1,7 @@
 export interface DrawEmailData {
   giverName: string;
   recipientName: string;
+  recipientSuggestions?: string;
   raffleName: string;
   topic?: string;
   priceLimit: number;
@@ -9,10 +10,30 @@ export interface DrawEmailData {
   appUrl: string;
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function formatSuggestionsHtml(suggestions: string): string {
+  const escaped = escapeHtml(suggestions);
+  return escaped
+    .replace(
+      /(https?:\/\/[^\s]+)/g,
+      '<a href="$1" target="_blank" style="color: #2563EB; font-weight: 600; text-decoration: underline; word-break: break-all;">$1</a>'
+    )
+    .replace(/\n/g, '<br/>');
+}
+
 export function generateDrawEmailHtml(data: DrawEmailData): string {
   const {
     giverName,
     recipientName,
+    recipientSuggestions,
     raffleName,
     topic,
     priceLimit,
@@ -149,6 +170,16 @@ export function generateDrawEmailHtml(data: DrawEmailData): string {
         <div class="match-label">Te ha tocado regalarle a:</div>
         <div class="match-name">${recipientName}</div>
       </div>
+
+      ${recipientSuggestions ? `
+      <div style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 12px; padding: 16px 20px; margin: 20px 0; text-align: left;">
+        <div style="font-size: 13px; font-weight: 700; color: #B45309; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+          💡 Sugerencias de regalo de ${escapeHtml(recipientName)}:
+        </div>
+        <div style="font-size: 14px; line-height: 1.5; color: #374151;">
+          ${formatSuggestionsHtml(recipientSuggestions)}
+        </div>
+      </div>` : ''}
 
       <table class="details-table">
         <tr>

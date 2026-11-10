@@ -41,6 +41,7 @@ export default function InviteScreen() {
   const [managerName, setManagerName] = useState<string>(t('invite.theOrganizer'));
   const [existingParticipant, setExistingParticipant] = useState<Participant | null>(null);
   const [joinName, setJoinName] = useState<string>('');
+  const [giftSuggestions, setGiftSuggestions] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,6 +93,9 @@ export default function InviteScreen() {
           });
 
           setExistingParticipant(foundPart);
+          if (foundPart && (foundPart as any).giftSuggestions) {
+            setGiftSuggestions((foundPart as any).giftSuggestions);
+          }
         }
       } catch (err: unknown) {
         console.error('Error fetching invite:', err);
@@ -128,6 +132,7 @@ export default function InviteScreen() {
         userId: user.uid,
         name: joinName.trim() || existingParticipant.name,
         joinedAt: new Date(),
+        giftSuggestions: giftSuggestions.trim() || existingParticipant.giftSuggestions || '',
       };
       if (user.expoPushToken) {
         participantPayload.expoPushToken = user.expoPushToken;
@@ -356,7 +361,7 @@ export default function InviteScreen() {
       ) : null}
 
       {/* Join As Name Input */}
-      <View className="mb-6">
+      <View className="mb-4">
         <Input
           label={t('invite.joinAs')}
           placeholder={t('invite.joinAsPlaceholder')}
@@ -365,6 +370,20 @@ export default function InviteScreen() {
         />
         <Text className="text-[11px] text-gray-400 ml-1">
           {t('invite.joinAsHint')}
+        </Text>
+      </View>
+
+      {/* Gift Suggestions Input (Optional) */}
+      <View className="mb-6">
+        <Input
+          label={t('invite.suggestionsLabel')}
+          placeholder={t('invite.suggestionsPlaceholder')}
+          value={giftSuggestions}
+          onChangeText={setGiftSuggestions}
+          multiline
+        />
+        <Text className="text-[11px] text-gray-400 ml-1">
+          {t('invite.suggestionsHint')}
         </Text>
       </View>
 

@@ -152,6 +152,15 @@ export function useParticipants(raffleId?: string) {
     [raffleId]
   );
 
+  const updateGiftSuggestions = useCallback(
+    async (participantId: string, giftSuggestions: string): Promise<void> => {
+      if (!raffleId) throw new Error('No raffle ID provided');
+      const docRef = participantDoc(raffleId, participantId);
+      await updateDoc(docRef, { giftSuggestions: giftSuggestions.trim() });
+    },
+    [raffleId]
+  );
+
   return {
     participants,
     loading,
@@ -160,6 +169,7 @@ export function useParticipants(raffleId?: string) {
     removeParticipant,
     toggleExclusion,
     markGiftGiven,
+    updateGiftSuggestions,
   };
 }
 

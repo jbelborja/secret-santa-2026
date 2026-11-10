@@ -5,7 +5,30 @@ import {
   ScrollView,
   Animated,
   Easing,
+  Linking,
 } from 'react-native';
+
+function renderLinkedText(text: string) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g);
+  return parts.map((part, index) => {
+    if (part.match(/^https?:\/\//i)) {
+      return (
+        <Text
+          key={index}
+          className="text-blue-600 underline font-semibold"
+          onPress={() =>
+            Linking.openURL(part).catch((err) =>
+              console.warn('Cannot open URL:', err)
+            )
+          }
+        >
+          {part}
+        </Text>
+      );
+    }
+    return <Text key={index}>{part}</Text>;
+  });
+}
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { differenceInDays } from 'date-fns';
@@ -203,6 +226,28 @@ export default function AssignmentRevealScreen() {
               </Text>
             </View>
           </View>
+
+          {/* Recipient Gift Suggestions Card */}
+          {recipientParticipant ? (
+            <View className="w-full bg-amber-50/70 rounded-2xl p-4 border border-amber-200/80 my-3">
+              <View className="flex-row items-center mb-2">
+                <Ionicons name="sparkles" size={16} color="#D97706" />
+                <Text className="text-xs font-bold text-amber-900 ml-1.5 uppercase tracking-wider">
+                  {t('assignment.recipientSuggestionsTitle', { name: recipientParticipant.name })}
+                </Text>
+              </View>
+
+              {recipientParticipant.giftSuggestions ? (
+                <Text className="text-sm text-gray-800 leading-5">
+                  {renderLinkedText(recipientParticipant.giftSuggestions)}
+                </Text>
+              ) : (
+                <Text className="text-xs text-amber-800/80 italic leading-4">
+                  {t('assignment.noSuggestionsYet', { name: recipientParticipant.name })}
+                </Text>
+              )}
+            </View>
+          ) : null}
 
           {/* Group Exchange Notice */}
           <View className="mt-4 p-3 bg-emerald-50 rounded-xl border border-emerald-200">

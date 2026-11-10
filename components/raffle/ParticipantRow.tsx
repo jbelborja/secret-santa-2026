@@ -47,6 +47,14 @@ export const ParticipantRow: React.FC<ParticipantRowProps> = ({
               >
                 {participant.name}
               </Text>
+              {participant.exclusions?.length > 0 ? (
+                <View className="ml-1.5 px-1.5 py-0.5 rounded-full bg-red-50 flex-row items-center border border-red-200">
+                  <Ionicons name="hand-left-outline" size={11} color="#B91C1C" />
+                  <Text className="text-[10px] font-bold text-[#B91C1C] ml-0.5">
+                    {participant.exclusions.length}
+                  </Text>
+                </View>
+              ) : null}
             </View>
 
             <Text

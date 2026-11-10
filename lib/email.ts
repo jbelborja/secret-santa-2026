@@ -52,6 +52,7 @@ export async function sendDrawEmails(params: {
     name: string;
     email: string;
     recipientName: string;
+    recipientSuggestions?: string;
   }>;
 }): Promise<{ sent: number; failed: number }> {
   const hostingUrl =

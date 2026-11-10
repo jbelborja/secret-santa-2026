@@ -29,6 +29,7 @@ export interface Participant {
   giftGiven: boolean;
   expoPushToken?: string;
   joinedAt?: Date;
+  giftSuggestions?: string; // ideas or links provided by the participant
 }
 
 export interface User {

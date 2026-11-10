@@ -126,6 +126,7 @@ export const participantConverter: FirestoreDataConverter<Participant> = {
         participant.joinedAt instanceof Date
           ? Timestamp.fromDate(participant.joinedAt)
           : participant.joinedAt || serverTimestamp(),
+      giftSuggestions: participant.giftSuggestions ?? null,
     };
   },
   fromFirestore(
@@ -150,6 +151,7 @@ export const participantConverter: FirestoreDataConverter<Participant> = {
           : data.joinedAt
           ? new Date(data.joinedAt)
           : undefined,
+      giftSuggestions: data.giftSuggestions ?? undefined,
     };
   },
 };

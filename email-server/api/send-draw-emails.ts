@@ -42,7 +42,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const results = await Promise.allSettled(
     participants.map(
-      async (p: { name: string; email: string; recipientName: string }) => {
+      async (p: {
+        name: string;
+        email: string;
+        recipientName: string;
+        recipientSuggestions?: string;
+      }) => {
         if (!p.email || !p.email.includes('@')) {
           console.log(`Skipping "${p.name}" — no valid email`);
           return;
@@ -51,6 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const html = generateDrawEmailHtml({
           giverName: p.name,
           recipientName: p.recipientName,
+          recipientSuggestions: p.recipientSuggestions,
           raffleName,
           topic,
           priceLimit: priceLimit || 0,
