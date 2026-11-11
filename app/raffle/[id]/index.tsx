@@ -391,7 +391,7 @@ export default function RaffleParticipantScreen() {
             <View className="w-8 h-8 rounded-lg bg-violet-100 items-center justify-center mr-2 border border-violet-200">
               <Ionicons name="sparkles" size={16} color="#7C3AED" />
             </View>
-            <View>
+            <View className="flex-1">
               <Text className="text-base font-black text-violet-900">
                 {t('raffleDetail.allRevealedTitle')}
               </Text>
@@ -409,17 +409,17 @@ export default function RaffleParticipantScreen() {
                 return (
                   <View
                     key={giver.id}
-                    className="flex-row items-center justify-between bg-white p-3 rounded-xl border border-violet-100 mb-1.5"
+                    className="flex-row items-center bg-white p-3 rounded-xl border border-violet-100 mb-1.5"
                   >
-                    <View className="flex-row items-center">
+                    <View className="flex-row items-center flex-1 min-w-0 mr-1">
                       <Avatar name={giver.name} size="sm" />
-                      <Text className="text-sm font-bold text-gray-800 ml-2">
+                      <Text className="text-sm font-bold text-gray-800 ml-2 flex-1" numberOfLines={2}>
                         {giver.name}
                       </Text>
                     </View>
                     <Ionicons name="arrow-forward" size={16} color="#8B5CF6" />
-                    <View className="flex-row items-center">
-                      <Text className="text-sm font-bold text-[#B91C1C] mr-2">
+                    <View className="flex-row items-center flex-1 min-w-0 ml-1 justify-end">
+                      <Text className="text-sm font-bold text-[#B91C1C] mr-2 flex-1 text-right" numberOfLines={2}>
                         {recipient?.name || t('raffleDetail.someone')}
                       </Text>
                       <Avatar name={recipient?.name || '?'} size="sm" />
@@ -449,9 +449,9 @@ export default function RaffleParticipantScreen() {
             key={p.id}
             className="flex-row items-center justify-between bg-white p-3 rounded-xl mb-2 border border-gray-100 shadow-sm"
           >
-            <View className="flex-row items-center">
+            <View className="flex-row items-center flex-1 min-w-0 mr-2">
               <Avatar name={p.name} size="sm" />
-              <Text className="text-sm font-semibold text-gray-900 ml-3">
+              <Text className="text-sm font-semibold text-gray-900 ml-3 flex-1" numberOfLines={2}>
                 {p.name} {p.userId === user?.uid ? t('raffleDetail.you') : ''}
               </Text>
             </View>

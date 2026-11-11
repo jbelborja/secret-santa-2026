@@ -557,9 +557,9 @@ export default function ManageRaffleScreen() {
 
             {!canTriggerDraw && !isDrawDatePassed ? (
               <View className="mb-3.5 p-3 bg-amber-50 rounded-xl border border-amber-200">
-                <View className="flex-row items-center mb-1">
-                  <Ionicons name="time-outline" size={16} color="#D97706" />
-                  <Text className="text-xs font-bold text-amber-900 ml-1.5">
+                <View className="flex-row items-start mb-1">
+                  <Ionicons name="time-outline" size={16} color="#D97706" style={{ marginTop: 1 }} />
+                  <Text className="text-xs font-bold text-amber-900 ml-1.5 flex-1">
                     {t('manageRaffle.waitingForResponses', { count: invitedCount })}
                   </Text>
                 </View>
@@ -571,9 +571,9 @@ export default function ManageRaffleScreen() {
               </View>
             ) : isDrawDatePassed && acceptedCount >= 2 ? (
               <View className="mb-3.5 p-3 bg-blue-50 rounded-xl border border-blue-200">
-                <View className="flex-row items-center mb-1">
-                  <Ionicons name="sparkles" size={16} color="#2563EB" />
-                  <Text className="text-xs font-bold text-blue-900 ml-1.5">
+                <View className="flex-row items-start mb-1">
+                  <Ionicons name="sparkles" size={16} color="#2563EB" style={{ marginTop: 1 }} />
+                  <Text className="text-xs font-bold text-blue-900 ml-1.5 flex-1">
                     {t('manageRaffle.autoDrawDatePassed')}
                   </Text>
                 </View>
@@ -596,8 +596,8 @@ export default function ManageRaffleScreen() {
           </View>
         ) : raffle.status === 'drawn' ? (
           <View>
-            <View className="flex-row items-center justify-between mb-2">
-              <View>
+            <View className="flex-row items-start justify-between mb-2">
+              <View className="flex-1 mr-2">
                 <Text className="text-base font-bold text-violet-900">
                   {t('manageRaffle.drawCompleteTitle')}
                 </Text>
@@ -610,9 +610,9 @@ export default function ManageRaffleScreen() {
             </View>
 
             <View className="p-3 bg-violet-50 rounded-xl border border-violet-200 mb-4">
-              <View className="flex-row items-center mb-1">
-                <Ionicons name="gift-outline" size={17} color="#7C3AED" />
-                <Text className="text-xs font-bold text-violet-900 ml-1.5">
+              <View className="flex-row items-start mb-1">
+                <Ionicons name="gift-outline" size={17} color="#7C3AED" style={{ marginTop: 1 }} />
+                <Text className="text-xs font-bold text-violet-900 ml-1.5 flex-1">
                   {t('manageRaffle.deliverAllGiftsDesc')}
                 </Text>
               </View>
@@ -648,7 +648,7 @@ export default function ManageRaffleScreen() {
           <View className="w-8 h-8 rounded-lg bg-red-100 items-center justify-center mr-2.5">
             <Ionicons name="trash-outline" size={17} color="#DC2626" />
           </View>
-          <Text className="text-base font-bold text-red-900">
+          <Text className="text-base font-bold text-red-900 flex-1">
             {t('manageRaffle.dangerZoneTitle')}
           </Text>
         </View>

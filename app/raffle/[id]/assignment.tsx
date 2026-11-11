@@ -201,23 +201,23 @@ export default function AssignmentRevealScreen() {
 
           {/* Details Pill Box */}
           <View className="w-full bg-gray-50 rounded-2xl p-4 border border-gray-100 my-2 space-y-2">
-            <View className="flex-row items-center justify-between">
-              <Text className="text-xs text-gray-500 font-medium">{t('assignment.themeLabel')}</Text>
-              <Text className="text-xs font-bold text-gray-800">
+            <View className="flex-row items-start justify-between gap-x-2">
+              <Text className="text-xs text-gray-500 font-medium flex-shrink-0">{t('assignment.themeLabel')}</Text>
+              <Text className="text-xs font-bold text-gray-800 text-right flex-1" numberOfLines={3}>
                 {raffle.topic || t('assignment.generalGifts')}
               </Text>
             </View>
 
-            <View className="flex-row items-center justify-between">
-              <Text className="text-xs text-gray-500 font-medium">{t('assignment.budgetLabel')}</Text>
-              <Text className="text-xs font-bold text-[#D97706]">
+            <View className="flex-row items-start justify-between gap-x-2">
+              <Text className="text-xs text-gray-500 font-medium flex-shrink-0">{t('assignment.budgetLabel')}</Text>
+              <Text className="text-xs font-bold text-[#D97706] text-right flex-1">
                 {raffle.priceLimit} {raffle.currency}
               </Text>
             </View>
 
-            <View className="flex-row items-center justify-between">
-              <Text className="text-xs text-gray-500 font-medium">{t('assignment.exchangeCountdown')}</Text>
-              <Text className="text-xs font-bold text-[#15803D]">
+            <View className="flex-row items-start justify-between gap-x-2">
+              <Text className="text-xs text-gray-500 font-medium flex-shrink-0">{t('assignment.exchangeCountdown')}</Text>
+              <Text className="text-xs font-bold text-[#15803D] text-right flex-1" numberOfLines={2}>
                 {daysLeft === 0
                   ? t('assignment.giftDayToday')
                   : daysLeft === 1
@@ -230,9 +230,9 @@ export default function AssignmentRevealScreen() {
           {/* Recipient Gift Suggestions Card */}
           {recipientParticipant ? (
             <View className="w-full bg-amber-50/70 rounded-2xl p-4 border border-amber-200/80 my-3">
-              <View className="flex-row items-center mb-2">
-                <Ionicons name="sparkles" size={16} color="#D97706" />
-                <Text className="text-xs font-bold text-amber-900 ml-1.5 uppercase tracking-wider">
+              <View className="flex-row items-start mb-2">
+                <Ionicons name="sparkles" size={16} color="#D97706" style={{ marginTop: 1 }} />
+                <Text className="text-xs font-bold text-amber-900 ml-1.5 uppercase tracking-wider flex-1">
                   {t('assignment.recipientSuggestionsTitle', { name: recipientParticipant.name })}
                 </Text>
               </View>
@@ -250,9 +250,9 @@ export default function AssignmentRevealScreen() {
           ) : null}
 
           {/* Group Exchange Notice */}
-          <View className="mt-4 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
-            <View className="flex-row items-center mb-0.5">
-              <Ionicons name="gift-outline" size={16} color="#059669" />
+          <View className="mt-4 p-3 bg-emerald-50 rounded-xl border border-emerald-200 w-full">
+            <View className="flex-row items-start">
+              <Ionicons name="gift-outline" size={16} color="#059669" style={{ marginTop: 1 }} />
               <Text className="text-xs font-bold text-emerald-900 ml-1.5 flex-1">
                 {raffle.status === 'completed'
                   ? t('assignment.groupExchangeCompleted')
@@ -272,7 +272,7 @@ export default function AssignmentRevealScreen() {
             <View className="w-8 h-8 rounded-lg bg-violet-100 items-center justify-center mr-2 border border-violet-200">
               <Ionicons name="sparkles" size={16} color="#7C3AED" />
             </View>
-            <View>
+            <View className="flex-1">
               <Text className="text-base font-bold text-violet-900">
                 {t('assignment.matchesRevealedTitle')}
               </Text>
@@ -290,17 +290,17 @@ export default function AssignmentRevealScreen() {
                 return (
                   <View
                     key={giver.id}
-                    className="flex-row items-center justify-between bg-white p-3 rounded-xl border border-purple-100 mb-1.5"
+                    className="flex-row items-center bg-white p-3 rounded-xl border border-purple-100 mb-1.5"
                   >
-                    <View className="flex-row items-center">
+                    <View className="flex-row items-center flex-1 min-w-0 mr-1">
                       <Avatar name={giver.name} size="sm" />
-                      <Text className="text-xs font-bold text-gray-800 ml-2">
+                      <Text className="text-xs font-bold text-gray-800 ml-2 flex-1" numberOfLines={2}>
                         {giver.name}
                       </Text>
                     </View>
                     <Ionicons name="arrow-forward" size={14} color="#8B5CF6" />
-                    <View className="flex-row items-center">
-                      <Text className="text-xs font-bold text-[#B91C1C] mr-2">
+                    <View className="flex-row items-center flex-1 min-w-0 ml-1 justify-end">
+                      <Text className="text-xs font-bold text-[#B91C1C] mr-2 flex-1 text-right" numberOfLines={2}>
                         {recipient?.name || t('assignment.someone')}
                       </Text>
                       <Avatar name={recipient?.name || '?'} size="sm" />
