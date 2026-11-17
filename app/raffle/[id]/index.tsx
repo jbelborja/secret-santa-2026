@@ -16,6 +16,7 @@ import { useParticipants } from '@/hooks/useParticipants';
 import {
   updateDoc,
   participantDoc,
+  addGiftSuggestion,
   executeRaffleDraw,
   completeRaffleExchange,
 } from '@/lib/firestore';
@@ -41,6 +42,10 @@ export default function RaffleParticipantScreen() {
   const [mySuggestions, setMySuggestions] = useState('');
   const [savingSuggestions, setSavingSuggestions] = useState(false);
   const [suggestionsSaved, setSuggestionsSaved] = useState(false);
+  const [suggestionTargetId, setSuggestionTargetId] = useState('');
+  const [suggestionText, setSuggestionText] = useState('');
+  const [savingGiftSuggestion, setSavingGiftSuggestion] = useState(false);
+  const [giftSuggestionSaved, setGiftSuggestionSaved] = useState(false);
 
   // IMPORTANT: All hooks must be called before any conditional early returns
   // (Rules of Hooks). This effect guards itself internally with null checks.
@@ -175,6 +180,36 @@ export default function RaffleParticipantScreen() {
       else Alert.alert(t('common.error'), errMsg);
     } finally {
       setSavingSuggestions(false);
+    }
+  };
+
+  const handleAddGiftSuggestion = async () => {
+    const target = participants.find((p) => p.id === suggestionTargetId);
+    if (
+      !id ||
+      !myParticipant ||
+      myParticipant.status !== 'accepted' ||
+      !target ||
+      target.status !== 'accepted' ||
+      target.id === myParticipant.id ||
+      !suggestionText.trim()
+    ) {
+      return;
+    }
+
+    setSavingGiftSuggestion(true);
+    try {
+      await addGiftSuggestion(id, target.id, myParticipant.id, suggestionText);
+      setSuggestionText('');
+      setGiftSuggestionSaved(true);
+      setTimeout(() => setGiftSuggestionSaved(false), 3000);
+    } catch (err) {
+      console.error('Error adding gift suggestion:', err);
+      const errMsg = (err instanceof Error ? err.message : '') || t('common.error');
+      if (Platform.OS === 'web') window.alert(errMsg);
+      else Alert.alert(t('common.error'), errMsg);
+    } finally {
+      setSavingGiftSuggestion(false);
     }
   };
 
@@ -379,6 +414,86 @@ export default function RaffleParticipantScreen() {
               size="sm"
               loading={savingSuggestions}
               onPress={handleSaveSuggestions}
+            />
+          </View>
+        </Card>
+      ) : null}
+
+      {myParticipant?.status === 'accepted' && raffle.status !== 'completed' ? (
+        <Card className="mb-4 bg-white border border-gray-100">
+          <View className="flex-row items-center mb-1">
+            <View className="w-8 h-8 rounded-full bg-amber-50 items-center justify-center mr-2.5 border border-amber-100">
+              <Ionicons name="gift-outline" size={16} color="#D97706" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-base font-bold text-gray-900">
+                {t('raffleDetail.suggestForParticipantTitle')}
+              </Text>
+              <Text className="text-xs text-gray-400">
+                {t('raffleDetail.suggestForParticipantSubtitle')}
+              </Text>
+            </View>
+          </View>
+
+          <View className="mt-3 mb-3">
+            {participants
+              .filter((p) => p.status === 'accepted' && p.id !== myParticipant.id)
+              .map((participant) => (
+                <Pressable
+                  key={participant.id}
+                  onPress={() => {
+                    setSuggestionTargetId(participant.id);
+                    setGiftSuggestionSaved(false);
+                  }}
+                  className={`flex-row items-center p-3 rounded-xl border mb-2 ${
+                    suggestionTargetId === participant.id
+                      ? 'bg-amber-50 border-amber-300'
+                      : 'bg-white border-gray-100'
+                  }`}
+                >
+                  <Avatar name={participant.name} size="sm" />
+                  <Text className="text-sm font-semibold text-gray-900 ml-3 flex-1">
+                    {participant.name}
+                  </Text>
+                  {suggestionTargetId === participant.id ? (
+                    <Ionicons name="checkmark-circle" size={18} color="#D97706" />
+                  ) : null}
+                </Pressable>
+              ))}
+          </View>
+
+          <Input
+            placeholder={t('raffleDetail.suggestionsPlaceholder')}
+            value={suggestionText}
+            onChangeText={(text) => {
+              setSuggestionText(text);
+              setGiftSuggestionSaved(false);
+            }}
+            multiline
+            maxLength={2000}
+          />
+          <View className="flex-row items-center justify-between mt-3">
+            {giftSuggestionSaved ? (
+              <Text className="text-xs font-semibold text-[#15803D]">
+                {t('raffleDetail.suggestionsSaved')}
+              </Text>
+            ) : (
+              <View />
+            )}
+            <Button
+              title={t('raffleDetail.addSuggestion')}
+              variant="outline"
+              size="sm"
+              loading={savingGiftSuggestion}
+              disabled={
+                !participants.some(
+                  (participant) =>
+                    participant.id === suggestionTargetId &&
+                    participant.status === 'accepted' &&
+                    participant.id !== myParticipant.id
+                ) || !suggestionText.trim()
+              }
+              onPress={handleAddGiftSuggestion}
             />
           </View>
         </Card>

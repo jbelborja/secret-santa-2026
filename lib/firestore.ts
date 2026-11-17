@@ -21,7 +21,7 @@ import {
   SnapshotOptions,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { Raffle, Participant, User, DrawResult } from '../types';
+import { Raffle, Participant, User, DrawResult, GiftSuggestion } from '../types';
 import { runDraw } from './draw';
 
 export {
@@ -223,6 +223,52 @@ export function participantDoc(
   ).withConverter(participantConverter);
 }
 
+export async function addGiftSuggestion(
+  raffleId: string,
+  recipientParticipantId: string,
+  fromParticipantId: string,
+  text: string
+): Promise<void> {
+  await addDoc(
+    collection(
+      db,
+      'raffles',
+      raffleId,
+      'participants',
+      recipientParticipantId,
+      'suggestions'
+    ),
+    {
+      fromParticipantId,
+      text: text.trim(),
+      createdAt: serverTimestamp(),
+    }
+  );
+}
+
+export async function getGiftSuggestions(
+  raffleId: string,
+  recipientParticipantId: string
+): Promise<GiftSuggestion[]> {
+  const suggestionsRef = collection(
+    db,
+    'raffles',
+    raffleId,
+    'participants',
+    recipientParticipantId,
+    'suggestions'
+  );
+  const snapshot = await getDocs(query(suggestionsRef, orderBy('createdAt', 'asc')));
+  return snapshot.docs.map((suggestionDoc) => {
+    const data = suggestionDoc.data();
+    return {
+      id: suggestionDoc.id,
+      fromParticipantId: data.fromParticipantId,
+      text: data.text,
+    };
+  });
+}
+
 export function usersCollection(): CollectionReference<User> {
   return collection(db, 'users').withConverter(userConverter);
 }
@@ -410,4 +456,3 @@ export async function getRafflesIParticipateIn(
     .filter((item): item is ParticipantRaffleItem => item !== null)
     .sort((a, b) => b.raffle.createdAt.getTime() - a.raffle.createdAt.getTime());
 }
-

@@ -69,7 +69,6 @@
           "color": "#B91C1C"
         }
       ],
-      "expo-apple-authentication",
       "@react-native-google-signin/google-signin"
     ]
   }

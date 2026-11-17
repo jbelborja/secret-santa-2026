@@ -1,7 +1,13 @@
 import { GoogleAuthProvider, signInWithPopup, User as FirebaseUser } from 'firebase/auth';
-import { auth } from './firebase';
+import { auth, isFirebaseConfigured } from './firebase';
 
 export async function nativeOrWebGoogleSignIn(): Promise<FirebaseUser> {
+  if (!isFirebaseConfigured) {
+    throw new Error(
+      'Google sign-in is unavailable because Firebase is not configured. Copy .env.example to .env and provide the Firebase web app values.'
+    );
+  }
+
   const provider = new GoogleAuthProvider();
   provider.addScope('profile');
   provider.addScope('email');
@@ -17,5 +23,5 @@ export async function nativeOrWebGoogleSignOut(): Promise<void> {
 }
 
 export function isGoogleAuthConfigured(): boolean {
-  return true;
+  return isFirebaseConfigured;
 }

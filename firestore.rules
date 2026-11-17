@@ -44,6 +44,25 @@ service cloud.firestore {
           resource.data.get('userId', null) == request.auth.uid
         );
       }
+
+      match /participants/{participantId}/suggestions/{suggestionId} {
+        allow read: if request.auth != null &&
+          get(/databases/$(database)/documents/raffles/$(raffleId)).data.status in ['drawn', 'completed'];
+        allow create: if request.auth != null &&
+          get(/databases/$(database)/documents/raffles/$(raffleId)).data.status in ['inviting', 'drawn'] &&
+          get(/databases/$(database)/documents/raffles/$(raffleId)/participants/$(participantId)).data.status == 'accepted' &&
+          request.resource.data.keys().hasAll(['fromParticipantId', 'text', 'createdAt']) &&
+          request.resource.data.keys().hasOnly(['fromParticipantId', 'text', 'createdAt']) &&
+          request.resource.data.fromParticipantId is string &&
+          request.resource.data.fromParticipantId != participantId &&
+          get(/databases/$(database)/documents/raffles/$(raffleId)/participants/$(request.resource.data.fromParticipantId)).data.userId == request.auth.uid &&
+          get(/databases/$(database)/documents/raffles/$(raffleId)/participants/$(request.resource.data.fromParticipantId)).data.status == 'accepted' &&
+          request.resource.data.text is string &&
+          request.resource.data.text.size() > 0 &&
+          request.resource.data.text.size() <= 2000 &&
+          request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
+      }
     }
 
     // Collection group for participants (used by getRafflesIParticipateIn)

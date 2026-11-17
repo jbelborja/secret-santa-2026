@@ -45,6 +45,7 @@ export const en: Translations = {
     orContinueWith: 'Or continue with',
     signInApple: 'Sign in with Apple',
     signInGoogle: 'Sign in with Google',
+    googleConfigMissing: 'Google sign-in is unavailable because Firebase is not configured. Copy .env.example to .env and add your Firebase web app values, then restart Expo.',
     fillEmailPassword: 'Please fill in both email and password.',
     provideName: 'Please provide your name.',
     genericError: 'An error occurred during authentication.',
@@ -175,8 +176,11 @@ export const en: Translations = {
     unknownEmail: 'unknown',
     mySuggestionsTitle: 'Your Gift Suggestions',
     mySuggestionsSubtitle: 'Add ideas or links for the person gifting you',
+    suggestForParticipantTitle: 'Suggest a Gift for Someone',
+    suggestForParticipantSubtitle: 'Share an idea for another participant’s gift',
     suggestionsPlaceholder: 'e.g. Books, fun mugs, or this link: https://...',
     saveSuggestions: 'Save Suggestions',
+    addSuggestion: 'Add Suggestion',
     suggestionsSaved: 'Suggestions saved successfully!',
   },
   manageRaffle: {
@@ -308,6 +312,8 @@ export const en: Translations = {
     groupExchangeNotice: 'All gifts will be exchanged together on {date}.',
     groupExchangeCompleted: 'All gifts have been exchanged! The raffle is completed.',
     recipientSuggestionsTitle: "{name}'s Gift Suggestions",
+    suggestionFrom: 'Suggestion from {name}',
+    suggestionsLoadError: 'Could not load additional gift suggestions.',
     noSuggestionsYet: '{name} has not added gift suggestions yet. Surprise them with something great!',
   },
   invite: {

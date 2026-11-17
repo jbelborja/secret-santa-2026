@@ -32,6 +32,12 @@ export interface Participant {
   giftSuggestions?: string; // ideas or links provided by the participant
 }
 
+export interface GiftSuggestion {
+  id: string;
+  fromParticipantId: string;
+  text: string;
+}
+
 export interface User {
   uid: string;
   displayName: string;

@@ -265,12 +265,18 @@ export default function LoginScreen() {
         ) : null}
 
         {/* Google Sign In */}
+        {!isGoogleConfigured ? (
+          <Text className="text-xs text-amber-800 text-center mb-3">
+            {t('auth.googleConfigMissing')}
+          </Text>
+        ) : null}
         <Button
           title={t('auth.signInGoogle')}
           onPress={handleGoogleAuth}
           variant="outline"
           size="md"
           loading={googleLoading}
+          disabled={!isGoogleConfigured}
           className="border-gray-300"
           leftIcon={<Ionicons name="logo-google" size={18} color="#EA4335" />}
         />

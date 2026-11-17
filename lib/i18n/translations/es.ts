@@ -43,6 +43,7 @@ export const es = {
     orContinueWith: 'O continúa con',
     signInApple: 'Continuar con Apple',
     signInGoogle: 'Continuar con Google',
+    googleConfigMissing: 'No se puede iniciar sesión con Google porque Firebase no está configurado. Copia .env.example a .env, añade los datos de tu app web de Firebase y reinicia Expo.',
     fillEmailPassword: 'Por favor, introduce el correo electrónico y la contraseña.',
     provideName: 'Por favor, introduce tu nombre.',
     genericError: 'Ocurrió un error durante la autenticación.',
@@ -173,8 +174,11 @@ export const es = {
     unknownEmail: 'desconocido',
     mySuggestionsTitle: 'Tus Sugerencias de Regalo',
     mySuggestionsSubtitle: 'Añade ideas o enlaces para la persona que te regalará',
+    suggestForParticipantTitle: 'Sugiere un regalo para alguien',
+    suggestForParticipantSubtitle: 'Comparte una idea para el regalo de otro participante',
     suggestionsPlaceholder: 'ej. Libros, tazas divertidas o este enlace: https://...',
     saveSuggestions: 'Guardar Sugerencias',
+    addSuggestion: 'Añadir Sugerencia',
     suggestionsSaved: '¡Sugerencias guardadas con éxito!',
   },
   manageRaffle: {
@@ -306,6 +310,8 @@ export const es = {
     groupExchangeNotice: 'Todos los regalos se entregarán juntos el {date}.',
     groupExchangeCompleted: '¡Todos los regalos han sido entregados! El sorteo ha finalizado.',
     recipientSuggestionsTitle: 'Sugerencias de Regalo de {name}',
+    suggestionFrom: 'Sugerencia de {name}',
+    suggestionsLoadError: 'No se pudieron cargar las sugerencias de regalo adicionales.',
     noSuggestionsYet: '{name} no ha añadido sugerencias de regalos todavía. ¡Sorpréndele con algo genial!',
   },
   invite: {

@@ -36,6 +36,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from '@/lib/i18n';
 import { useRaffle } from '@/hooks/useRaffle';
 import { useParticipants } from '@/hooks/useParticipants';
+import { getGiftSuggestions } from '@/lib/firestore';
+import { GiftSuggestion } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -49,6 +51,45 @@ export default function AssignmentRevealScreen() {
   const { t, formatDate } = useTranslation();
   const { raffle, loading: raffleLoading } = useRaffle(id);
   const { participants, loading: partsLoading } = useParticipants(id);
+  const [otherSuggestions, setOtherSuggestions] = useState<GiftSuggestion[]>([]);
+  const [suggestionsLoadError, setSuggestionsLoadError] = useState(false);
+
+  useEffect(() => {
+    const myParticipant = participants.find(
+      (p) =>
+        p.userId === user?.uid ||
+        (user?.email && p.email.toLowerCase() === user.email.toLowerCase())
+    );
+    const recipientId = myParticipant?.assignedTo;
+    if (
+      !id ||
+      !recipientId ||
+      (raffle?.status !== 'drawn' && raffle?.status !== 'completed')
+    ) {
+      setOtherSuggestions([]);
+      setSuggestionsLoadError(false);
+      return;
+    }
+
+    let active = true;
+    setOtherSuggestions([]);
+    setSuggestionsLoadError(false);
+    getGiftSuggestions(id, recipientId)
+      .then((suggestions) => {
+        if (active) {
+          setOtherSuggestions(suggestions);
+          setSuggestionsLoadError(false);
+        }
+      })
+      .catch((err) => {
+        console.error('Error loading gift suggestions:', err);
+        if (active) setSuggestionsLoadError(true);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [id, raffle?.status, participants, user?.uid, user?.email]);
 
   // Confetti / reveal animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -237,9 +278,39 @@ export default function AssignmentRevealScreen() {
                 </Text>
               </View>
 
-              {recipientParticipant.giftSuggestions ? (
-                <Text className="text-sm text-gray-800 leading-5">
-                  {renderLinkedText(recipientParticipant.giftSuggestions)}
+              {recipientParticipant.giftSuggestions || otherSuggestions.length ? (
+                <>
+                  {recipientParticipant.giftSuggestions ? (
+                    <Text className="text-sm text-gray-800 leading-5 mb-2">
+                      {renderLinkedText(recipientParticipant.giftSuggestions)}
+                    </Text>
+                  ) : null}
+                  {otherSuggestions.map((suggestion) => {
+                    const author = participants.find(
+                      (participant) => participant.id === suggestion.fromParticipantId
+                    );
+                    return (
+                      <View key={suggestion.id} className="border-t border-amber-200 pt-2 mt-2">
+                        <Text className="text-[11px] font-semibold text-amber-900 mb-1">
+                          {t('assignment.suggestionFrom', {
+                            name: author?.name || t('assignment.someone'),
+                          })}
+                        </Text>
+                        <Text className="text-sm text-gray-800 leading-5">
+                          {renderLinkedText(suggestion.text)}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                  {suggestionsLoadError ? (
+                    <Text className="text-xs text-red-700 mt-2">
+                      {t('assignment.suggestionsLoadError')}
+                    </Text>
+                  ) : null}
+                </>
+              ) : suggestionsLoadError ? (
+                <Text className="text-xs text-red-700 leading-4">
+                  {t('assignment.suggestionsLoadError')}
                 </Text>
               ) : (
                 <Text className="text-xs text-amber-800/80 italic leading-4">

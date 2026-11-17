@@ -12,11 +12,18 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || '',
 };
 
+export const isFirebaseConfigured = Boolean(
+  firebaseConfig.apiKey &&
+    firebaseConfig.authDomain &&
+    firebaseConfig.projectId &&
+    firebaseConfig.appId
+);
+
 // Avoid re-initializing on hot reload; fallback gracefully if env vars not provided
 let app: FirebaseApp;
 if (getApps().length > 0) {
   app = getApps()[0];
-} else if (firebaseConfig.apiKey) {
+} else if (isFirebaseConfigured) {
   app = initializeApp(firebaseConfig);
 } else {
   console.warn(
