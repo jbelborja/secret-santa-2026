@@ -55,8 +55,18 @@ service cloud.firestore {
           request.resource.data.keys().hasOnly(['fromParticipantId', 'text', 'createdAt']) &&
           request.resource.data.fromParticipantId is string &&
           request.resource.data.fromParticipantId != participantId &&
-          get(/databases/$(database)/documents/raffles/$(raffleId)/participants/$(request.resource.data.fromParticipantId)).data.userId == request.auth.uid &&
           get(/databases/$(database)/documents/raffles/$(raffleId)/participants/$(request.resource.data.fromParticipantId)).data.status == 'accepted' &&
+          (
+            get(/databases/$(database)/documents/raffles/$(raffleId)/participants/$(request.resource.data.fromParticipantId)).data.get('userId', null) == request.auth.uid ||
+            (
+              request.auth.token.email != null &&
+              get(/databases/$(database)/documents/raffles/$(raffleId)/participants/$(request.resource.data.fromParticipantId)).data.get('email', '') != '' &&
+              (
+                get(/databases/$(database)/documents/raffles/$(raffleId)/participants/$(request.resource.data.fromParticipantId)).data.get('email', '') == request.auth.token.email ||
+                get(/databases/$(database)/documents/raffles/$(raffleId)/participants/$(request.resource.data.fromParticipantId)).data.get('email', '') == request.auth.token.email.lower()
+              )
+            )
+          ) &&
           request.resource.data.text is string &&
           request.resource.data.text.size() > 0 &&
           request.resource.data.text.size() <= 2000 &&
