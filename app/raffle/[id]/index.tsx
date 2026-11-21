@@ -267,11 +267,13 @@ export default function RaffleParticipantScreen() {
       </Card>
 
       {/* Countdown Timer */}
-      <CountdownTimer
-        targetDate={targetDateForTimer}
-        label={timerLabel}
-        className="mb-4"
-      />
+      {raffle.status !== 'completed' ? (
+        <CountdownTimer
+          targetDate={targetDateForTimer}
+          label={timerLabel}
+          className="mb-4"
+        />
+      ) : null}
 
       {/* Participation Status Card */}
       <Card className="mb-4 bg-white border border-gray-100">

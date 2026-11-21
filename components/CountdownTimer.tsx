@@ -43,6 +43,11 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   );
 
   useEffect(() => {
+    if (calculateTimeRemaining(target).isPast) {
+      setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isPast: true });
+      return;
+    }
+
     const timer = setInterval(() => {
       const remaining = calculateTimeRemaining(target);
       setTimeLeft(remaining);
@@ -51,6 +56,10 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
 
     return () => clearInterval(timer);
   }, [target.getTime()]);
+
+  if (timeLeft.isPast) {
+    return null;
+  }
 
   const padNumber = (num: number) => num.toString().padStart(2, '0');
 
@@ -79,23 +88,15 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
         </Text>
       ) : null}
 
-      {timeLeft.isPast ? (
-        <View className="py-2 px-4 bg-emerald-50 rounded-xl border border-emerald-200">
-          <Text className="text-sm font-semibold text-emerald-700 text-center">
-            {t('timer.past')}
-          </Text>
-        </View>
-      ) : (
-        <View className="flex-row items-center justify-center">
-          <Segment value={timeLeft.days} unit={t('timer.days')} />
-          <Separator />
-          <Segment value={timeLeft.hours} unit={t('timer.hrs')} />
-          <Separator />
-          <Segment value={timeLeft.minutes} unit={t('timer.min')} />
-          <Separator />
-          <Segment value={timeLeft.seconds} unit={t('timer.sec')} />
-        </View>
-      )}
+      <View className="flex-row items-center justify-center">
+        <Segment value={timeLeft.days} unit={t('timer.days')} />
+        <Separator />
+        <Segment value={timeLeft.hours} unit={t('timer.hrs')} />
+        <Separator />
+        <Segment value={timeLeft.minutes} unit={t('timer.min')} />
+        <Separator />
+        <Segment value={timeLeft.seconds} unit={t('timer.sec')} />
+      </View>
     </View>
   );
 };

@@ -124,7 +124,7 @@ export const RaffleCard: React.FC<RaffleCardProps> = ({
             </View>
             <Ionicons name="chevron-forward" size={13} color="#D97706" />
           </View>
-        ) : diffDays > 0 ? (
+        ) : raffle.status !== 'completed' && diffDays > 0 ? (
           <View className="mt-3 bg-red-50 py-2 px-3 rounded-lg flex-row items-center justify-between">
             <View className="flex-row items-center">
               <Ionicons name="time-outline" size={13} color="#B91C1C" />
