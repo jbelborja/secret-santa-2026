@@ -221,13 +221,13 @@ export default function MyRafflesScreen() {
       <View className="mt-2 pt-4 border-t border-gray-200">
         <Pressable
           onPress={() => setShowPastRaffles(!showPastRaffles)}
-          className="flex-row items-center justify-between bg-white p-3.5 rounded-2xl border border-gray-200 active:bg-gray-50 shadow-xs"
+          className="bg-white p-3.5 rounded-2xl border border-gray-200 active:bg-gray-50 shadow-xs"
         >
           <View className="flex-row items-center">
             <View className="w-8 h-8 rounded-lg bg-gray-100 items-center justify-center mr-2.5">
               <Ionicons name="archive-outline" size={17} color="#4B5563" />
             </View>
-            <Text className="text-sm font-bold text-gray-800">
+            <Text className="text-sm font-bold text-gray-800 flex-1" numberOfLines={2}>
               {t('home.pastSection')}
             </Text>
             <View className="ml-2 bg-gray-100 px-2 py-0.5 rounded-full">
@@ -237,8 +237,8 @@ export default function MyRafflesScreen() {
             </View>
           </View>
 
-          <View className="flex-row items-center">
-            <Text className="text-xs font-semibold text-gray-500 mr-1.5">
+          <View className="flex-row items-center justify-end mt-2">
+            <Text className="text-xs font-semibold text-gray-500 mr-1.5" numberOfLines={1}>
               {showPastRaffles
                 ? t('home.hidePastRaffles')
                 : t('home.showPastRaffles', { count: pastRaffles.length })}

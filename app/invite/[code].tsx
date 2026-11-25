@@ -132,8 +132,15 @@ export default function InviteScreen() {
         userId: user.uid,
         name: joinName.trim() || existingParticipant.name,
         joinedAt: new Date(),
-        giftSuggestions: giftSuggestions.trim() || existingParticipant.giftSuggestions || '',
       };
+      const suggestionsClosed =
+        raffle.status === 'completed' ||
+        (raffle.status === 'drawn' &&
+          new Date(raffle.giftDate).getTime() <= Date.now());
+      if (!suggestionsClosed) {
+        participantPayload.giftSuggestions =
+          giftSuggestions.trim() || existingParticipant.giftSuggestions || '';
+      }
       if (user.expoPushToken) {
         participantPayload.expoPushToken = user.expoPushToken;
       }
@@ -225,6 +232,9 @@ export default function InviteScreen() {
 
   // If raffle has already been drawn and the user is NOT one of the participants
   const isAlreadyDrawn = raffle.status === 'drawn' || raffle.status === 'completed';
+  const suggestionsClosed =
+    raffle.status === 'completed' ||
+    (raffle.status === 'drawn' && new Date(raffle.giftDate).getTime() <= Date.now());
   if (isAlreadyDrawn && !existingParticipant) {
     return (
       <View className="flex-1 items-center justify-center p-6 bg-white">
@@ -374,18 +384,20 @@ export default function InviteScreen() {
       </View>
 
       {/* Gift Suggestions Input (Optional) */}
-      <View className="mb-6">
-        <Input
-          label={t('invite.suggestionsLabel')}
-          placeholder={t('invite.suggestionsPlaceholder')}
-          value={giftSuggestions}
-          onChangeText={setGiftSuggestions}
-          multiline
-        />
-        <Text className="text-[11px] text-gray-400 ml-1">
-          {t('invite.suggestionsHint')}
-        </Text>
-      </View>
+      {!suggestionsClosed ? (
+        <View className="mb-6">
+          <Input
+            label={t('invite.suggestionsLabel')}
+            placeholder={t('invite.suggestionsPlaceholder')}
+            value={giftSuggestions}
+            onChangeText={setGiftSuggestions}
+            multiline
+          />
+          <Text className="text-[11px] text-gray-400 ml-1">
+            {t('invite.suggestionsHint')}
+          </Text>
+        </View>
+      ) : null}
 
       {/* Action Buttons */}
       <View className="space-y-3">

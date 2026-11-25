@@ -99,6 +99,9 @@ export default function ManageRaffleScreen() {
     );
   }
 
+  const isRaffleReadOnly =
+    raffle.status === 'completed' ||
+    (raffle.status === 'drawn' && new Date(raffle.giftDate).getTime() < Date.now());
   const invitedCount = participants.filter((p) => p.status === 'invited').length;
   const acceptedCount = participants.filter((p) => p.status === 'accepted').length;
   const declinedCount = participants.filter((p) => p.status === 'declined').length;
@@ -108,6 +111,7 @@ export default function ManageRaffleScreen() {
   );
 
   const startEdit = () => {
+    if (isRaffleReadOnly) return;
     setEditName(raffle.name);
     setEditTopic(raffle.topic);
     setEditPriceLimit(String(raffle.priceLimit));
@@ -116,6 +120,8 @@ export default function ManageRaffleScreen() {
   };
 
   const handleSaveEdit = async () => {
+    if (isRaffleReadOnly) return;
+
     const price = parseFloat(editPriceLimit);
     const parsedGiftDate = parse(editGiftDate, 'yyyy-MM-dd', new Date());
 
@@ -363,7 +369,7 @@ export default function ManageRaffleScreen() {
         <Card className="mb-4 bg-white border border-gray-100">
         <View className="flex-row items-center justify-between mb-2">
           <StatusBadge status={raffle.status} />
-          {!editing ? (
+          {!editing && !isRaffleReadOnly ? (
             <Pressable
               onPress={startEdit}
               className="flex-row items-center bg-gray-100 px-3 py-1.5 rounded-lg active:bg-gray-200"
@@ -374,7 +380,7 @@ export default function ManageRaffleScreen() {
           ) : null}
         </View>
 
-        {!editing ? (
+        {!editing || isRaffleReadOnly ? (
           <View>
             <Text className="text-2xl font-black text-gray-900 mt-1">{raffle.name}</Text>
             <Text className="text-sm text-gray-600 mt-1">

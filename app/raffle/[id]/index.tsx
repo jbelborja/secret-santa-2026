@@ -116,6 +116,9 @@ export default function RaffleParticipantScreen() {
   );
 
   const isDrawn = raffle.status === 'drawn' || raffle.status === 'completed';
+  const suggestionsClosed =
+    raffle.status === 'completed' ||
+    (raffle.status === 'drawn' && new Date(raffle.giftDate).getTime() <= Date.now());
   const targetDateForTimer = isDrawn ? raffle.giftDate : raffle.raffleDate;
   const timerLabel = isDrawn ? t('raffleDetail.giftExchangeIn') : t('raffleDetail.pairingsDrawnIn');
 
@@ -165,7 +168,7 @@ export default function RaffleParticipantScreen() {
   };
 
   const handleSaveSuggestions = async () => {
-    if (!id || !myParticipant) return;
+    if (!id || !myParticipant || suggestionsClosed) return;
     setSavingSuggestions(true);
     try {
       await updateDoc(participantDoc(id, myParticipant.id), {
@@ -188,6 +191,7 @@ export default function RaffleParticipantScreen() {
     if (
       !id ||
       !myParticipant ||
+      suggestionsClosed ||
       myParticipant.status !== 'accepted' ||
       !target ||
       target.status !== 'accepted' ||
@@ -389,39 +393,47 @@ export default function RaffleParticipantScreen() {
             </View>
           </View>
 
-          <View className="mt-3 mb-2">
-            <Input
-              placeholder={t('raffleDetail.suggestionsPlaceholder')}
-              value={mySuggestions}
-              onChangeText={setMySuggestions}
-              multiline
-            />
-          </View>
-
-          <View className="flex-row items-center justify-between pt-1">
-            {suggestionsSaved ? (
-              <View className="flex-row items-center">
-                <Ionicons name="checkmark-circle" size={16} color="#15803D" />
-                <Text className="text-xs font-semibold text-[#15803D] ml-1">
-                  {t('raffleDetail.suggestionsSaved')}
-                </Text>
+          {suggestionsClosed ? (
+            mySuggestions ? (
+              <Text className="text-sm text-gray-700 mt-3">{mySuggestions}</Text>
+            ) : null
+          ) : (
+            <>
+              <View className="mt-3 mb-2">
+                <Input
+                  placeholder={t('raffleDetail.suggestionsPlaceholder')}
+                  value={mySuggestions}
+                  onChangeText={setMySuggestions}
+                  multiline
+                />
               </View>
-            ) : (
-              <View />
-            )}
 
-            <Button
-              title={t('raffleDetail.saveSuggestions')}
-              variant="outline"
-              size="sm"
-              loading={savingSuggestions}
-              onPress={handleSaveSuggestions}
-            />
-          </View>
+              <View className="flex-row items-center justify-between pt-1">
+                {suggestionsSaved ? (
+                  <View className="flex-row items-center">
+                    <Ionicons name="checkmark-circle" size={16} color="#15803D" />
+                    <Text className="text-xs font-semibold text-[#15803D] ml-1">
+                      {t('raffleDetail.suggestionsSaved')}
+                    </Text>
+                  </View>
+                ) : (
+                  <View />
+                )}
+
+                <Button
+                  title={t('raffleDetail.saveSuggestions')}
+                  variant="outline"
+                  size="sm"
+                  loading={savingSuggestions}
+                  onPress={handleSaveSuggestions}
+                />
+              </View>
+            </>
+          )}
         </Card>
       ) : null}
 
-      {myParticipant?.status === 'accepted' && raffle.status !== 'completed' ? (
+      {myParticipant?.status === 'accepted' && !suggestionsClosed ? (
         <Card className="mb-4 bg-white border border-gray-100">
           <View className="flex-row items-center mb-1">
             <View className="w-8 h-8 rounded-full bg-amber-50 items-center justify-center mr-2.5 border border-amber-100">
