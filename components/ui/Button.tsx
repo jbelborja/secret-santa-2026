@@ -103,9 +103,12 @@ export const Button: React.FC<ButtonProps> = ({
       {loading ? (
         <ActivityIndicator size="small" color={getSpinnerColor()} />
       ) : (
-        <View className="flex-row items-center justify-center">
+        <View className="flex-row items-center justify-center flex-1 min-w-0">
           {leftIcon ? <View className="mr-2">{leftIcon}</View> : null}
-          <Text className={`text-center ${getVariantTextStyles()} ${getSizeTextStyles()}`}>
+          <Text
+            className={`text-center ${getVariantTextStyles()} ${getSizeTextStyles()}`}
+            style={{ flexShrink: 1 }}
+          >
             {title}
           </Text>
           {rightIcon ? <View className="ml-2">{rightIcon}</View> : null}

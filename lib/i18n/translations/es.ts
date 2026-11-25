@@ -198,7 +198,6 @@ export const es = {
     accepted: 'Aceptados',
     declined: 'Rechazados',
     manageParticipantsBtn: 'Gestionar Participantes',
-    inviteCodeBtn: 'Código de Invitación',
     drawIssue: 'Problema en el Sorteo',
     drawErrors: {
       need_two: 'Se necesitan al menos 2 participantes aceptados para realizar el sorteo.',

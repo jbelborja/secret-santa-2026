@@ -23,7 +23,6 @@ import {
 import { sendBatchPushNotifications } from '@/lib/notifications';
 import { sendDrawEmails } from '@/lib/email';
 import { StatusBadge } from '@/components/raffle/StatusBadge';
-import { InviteCodeDisplay } from '@/components/raffle/InviteCodeDisplay';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -39,7 +38,6 @@ export default function ManageRaffleScreen() {
   const { raffle, loading: raffleLoading, updateRaffle, deleteRaffle } = useRaffle(id);
   const { participants, loading: partsLoading } = useParticipants(id);
 
-  const [inviteModalVisible, setInviteModalVisible] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editTopic, setEditTopic] = useState('');
@@ -147,7 +145,6 @@ export default function ManageRaffleScreen() {
   const handleOpenForInvitations = async () => {
     try {
       await updateRaffle({ status: 'inviting' });
-      setInviteModalVisible(true);
     } catch (err: unknown) {
       const msg = (err as any)?.message || t('common.error');
       if (Platform.OS === 'web') window.alert(`${t('common.error')}: ${msg}`);
@@ -451,25 +448,18 @@ export default function ManageRaffleScreen() {
           </View>
         </View>
 
-        {/* Quick action navigation buttons */}
-        <View className="flex-row space-x-2 pt-2 border-t border-gray-100">
-          <Button
-            title={t('manageRaffle.manageParticipantsBtn')}
-            variant="outline"
-            size="md"
-            className="flex-1 mr-2"
-            onPress={() => router.push(`/raffle/${raffle.id}/participants` as any)}
-            leftIcon={<Ionicons name="people-outline" size={16} color="#B91C1C" />}
-          />
-          <Button
-            title={t('manageRaffle.inviteCodeBtn')}
-            variant="outline"
-            size="md"
-            className="flex-1 ml-2"
-            onPress={() => setInviteModalVisible(true)}
-            leftIcon={<Ionicons name="share-social-outline" size={16} color="#B91C1C" />}
-          />
-        </View>
+        {raffle.status !== 'completed' ? (
+          <View className="pt-2 border-t border-gray-100">
+            <Button
+              title={t('manageRaffle.manageParticipantsBtn')}
+              variant="outline"
+              size="md"
+              className="w-full"
+              onPress={() => router.push(`/raffle/${raffle.id}/participants` as any)}
+              leftIcon={<Ionicons name="people-outline" size={16} color="#B91C1C" />}
+            />
+          </View>
+        ) : null}
       </Card>
 
       {/* Pair Constraints (Exclusions) Card */}
@@ -490,27 +480,30 @@ export default function ManageRaffleScreen() {
           </View>
         </View>
 
-        <View className="flex-row items-center justify-between pt-3 border-t border-gray-100">
+        <View className="pt-3 border-t border-gray-100">
           <View className="flex-row items-center">
             <Ionicons
               name={activeExclusionsCount > 0 ? 'shield-checkmark' : 'shield-outline'}
               size={16}
               color={activeExclusionsCount > 0 ? '#B91C1C' : '#9CA3AF'}
             />
-            <Text className="text-xs font-semibold text-gray-700 ml-1.5">
+            <Text className="text-xs font-semibold text-gray-700 ml-1.5 flex-1">
               {activeExclusionsCount > 0
                 ? t('manageRaffle.activeConstraintsCount', { count: activeExclusionsCount })
                 : t('manageRaffle.noConstraintsActive')}
             </Text>
           </View>
 
-          <Button
-            title={t('manageRaffle.manageConstraintsBtn')}
-            variant="outline"
-            size="sm"
-            onPress={() => router.push(`/raffle/${raffle.id}/participants` as any)}
-            leftIcon={<Ionicons name="people-outline" size={14} color="#B91C1C" />}
-          />
+          {raffle.status !== 'completed' ? (
+            <Button
+              title={t('manageRaffle.manageConstraintsBtn')}
+              variant="outline"
+              size="md"
+              className="w-full mt-3"
+              onPress={() => router.push(`/raffle/${raffle.id}/participants` as any)}
+              leftIcon={<Ionicons name="people-outline" size={14} color="#B91C1C" />}
+            />
+          ) : null}
         </View>
       </Card>
 
@@ -667,13 +660,6 @@ export default function ManageRaffleScreen() {
         />
       </Card>
 
-      {/* Invite Code Modal */}
-      <InviteCodeDisplay
-        inviteCode={raffle.inviteCode}
-        raffleName={raffle.name}
-        visible={inviteModalVisible}
-        onClose={() => setInviteModalVisible(false)}
-      />
       </PageContainer>
     </ScrollView>
   );

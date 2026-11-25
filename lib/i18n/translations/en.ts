@@ -200,7 +200,6 @@ export const en: Translations = {
     accepted: 'Accepted',
     declined: 'Declined',
     manageParticipantsBtn: 'Manage Participants',
-    inviteCodeBtn: 'Invite Code',
     drawIssue: 'Draw Issue',
     drawErrors: {
       need_two: 'At least 2 accepted participants are required to run the draw.',

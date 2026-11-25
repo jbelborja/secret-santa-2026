@@ -41,6 +41,7 @@ export default function ParticipantsManagementScreen() {
   const [newEmail, setNewEmail] = useState('');
   const [adding, setAdding] = useState(false);
   const [expandedParticipantId, setExpandedParticipantId] = useState<string | null>(null);
+  const isCompleted = raffle?.status === 'completed';
 
   if (raffleLoading || partsLoading) {
     return <LoadingSpinner message={t('participantsScreen.loading')} />;
@@ -174,7 +175,8 @@ export default function ParticipantsManagementScreen() {
           <PageContainer maxWidth={720}>
           <View className="mb-4">
             {/* Add Participant Card */}
-            <Card className="mb-4 bg-white border border-gray-100">
+            {!isCompleted ? (
+              <Card className="mb-4 bg-white border border-gray-100">
               <View className="flex-row items-center mb-3">
                 <View className="w-8 h-8 rounded-full bg-red-50 items-center justify-center mr-2">
                   <Ionicons name="person-add" size={16} color="#B91C1C" />
@@ -207,15 +209,18 @@ export default function ParticipantsManagementScreen() {
                 loading={adding}
                 className="mt-1"
               />
-            </Card>
+              </Card>
+            ) : null}
 
             <View className="flex-row items-center justify-between mb-2">
               <Text className="text-sm font-bold uppercase tracking-wider text-gray-500">
                 {t('participantsScreen.currentTitle', { count: participants.length })}
               </Text>
-              <Text className="text-xs text-gray-400">
-                {t('participantsScreen.tapToExcludeHint')}
-              </Text>
+              {!isCompleted ? (
+                <Text className="text-xs text-gray-400">
+                  {t('participantsScreen.tapToExcludeHint')}
+                </Text>
+              ) : null}
             </View>
           </View>
           </PageContainer>
@@ -226,17 +231,20 @@ export default function ParticipantsManagementScreen() {
           return (
             <PageContainer maxWidth={720}>
             <View className="mb-2">
-              <Pressable onPress={() => toggleExpand(item.id)}>
+              <Pressable
+                onPress={isCompleted ? undefined : () => toggleExpand(item.id)}
+                disabled={isCompleted}
+              >
                 <ParticipantRow
                   participant={item}
                   allParticipants={participants}
-                  isManager
-                  onRemove={() => handleRemove(item.id, item.name)}
+                  isManager={!isCompleted}
+                  onRemove={isCompleted ? undefined : () => handleRemove(item.id, item.name)}
                 />
               </Pressable>
 
               {/* Exclusion Picker expanded under row */}
-              {isExpanded ? (
+              {!isCompleted && isExpanded ? (
                 <View className="mb-2 ml-2 pl-3 border-l-2 border-red-300">
                   <ExclusionPicker
                     participant={item}
